@@ -24,11 +24,11 @@ const CreateCVScreen = ({ navigation }) => {
         <Text style={styles.textPilihGender}>Pilih Gender</Text>
         <Row>
           <Touchable style={mode == 'pria' ? styles.boxPria : styles.box} onPress={() => setMode('pria')}>
-            <Text style={mode == 'pria' ? styles.textModeActive : styles.textModeInactive}>Pria</Text>
+            <Text style={mode == 'pria' ? styles.textModeActive : styles.textModeInactive}>Laki - laki</Text>
           </Touchable>
           <View style={{ marginHorizontal: 4 }} />
           <Touchable style={mode !== 'pria' ? styles.boxWanita : styles.box} onPress={() => setMode('wanita')}>
-            <Text style={mode !== 'pria' ? styles.textModeActive : styles.textModeInactive}>Wanita</Text>
+            <Text style={mode !== 'pria' ? styles.textModeActive : styles.textModeInactive}>Perempuan</Text>
           </Touchable>
         </Row>
         <View>
@@ -42,7 +42,7 @@ const CreateCVScreen = ({ navigation }) => {
           <Input containerStyle={styles.input} placeholder={'Kota Domisili Orang Tua'} />
           <Input containerStyle={styles.input} placeholder={'Alamat Domisili'} />
           <Input containerStyle={styles.input} keyboardType={'phone-pad'} placeholder={'No Whatsapp'} />
-          <Input containerStyle={styles.input} placeholder={'Kata Sandi'} />
+          <Input type={'password'} showEye={true} containerStyle={styles.input} placeholder={'Kata Sandi'} />
           <View style={{ marginTop: 48 }}>
             <Button title='Lanjutkan' onPress={() => navigation.navigate('DetailCV')} />
           </View>
@@ -73,7 +73,7 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.COLOR_WHITE,
     borderWidth: .5,
     height: 42,
-    width: 72,
+    width: 100,
     borderRadius: 8,
     alignItems: 'center',
     justifyContent: 'center'
@@ -82,7 +82,7 @@ const styles = StyleSheet.create({
   boxPria: {
     backgroundColor: Colors.COLOR_ACCENT,
     height: 42,
-    width: 72,
+    width: 128,
     borderRadius: 8,
     alignItems: 'center',
     justifyContent: 'center'
@@ -91,7 +91,7 @@ const styles = StyleSheet.create({
   boxWanita: {
     backgroundColor: Colors.COLOR_PINK,
     height: 42,
-    width: 72,
+    width: 128,
     borderRadius: 8,
     alignItems: 'center',
     justifyContent: 'center'

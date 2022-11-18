@@ -44,7 +44,7 @@ const styles = StyleSheet.create({
     //Text
 
     textCaption: {
-        ...Typo.TextSmallRegular,
+        ...Typo.TextSmallBold,
         color: Colors.COLOR_DARK_GRAY,
         marginBottom: Size.SIZE_12,
         alignSelf: 'flex-start'

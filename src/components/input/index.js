@@ -11,9 +11,9 @@ const Input = (props) => {
     const [isShowPassword, setIsShowPassword] = React.useState(false)
     const [isFocus, setIsFocus] = React.useState(false)
     return (
-        <View style={{ width: '100%' }}>
+        <View style={[props.containerStyle, { width: '100%' }]}>
             {props?.caption && <Text style={[props.captionStyle, styles.textCaption]}>{props?.caption ?? 'Caption'}</Text>}
-            <View style={[props.containerStyle, isFocus ? styles.containerFocus : styles.container]}>
+            <View style={[isFocus ? styles.containerFocus : styles.container]}>
                 <TextInput
                     {...props}
                     secureTextEntry={!isShowPassword && props.type == 'password'}

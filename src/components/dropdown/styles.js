@@ -40,6 +40,13 @@ const styles = StyleSheet.create({
         flex: 1,
         marginRight: 8
     },
+
+    textCaption: {
+        ...Typo.TextSmallBold,
+        color: Colors.COLOR_DARK_GRAY,
+        marginBottom: Size.SIZE_12,
+        alignSelf: 'flex-start'
+    },
 })
 
 export default styles

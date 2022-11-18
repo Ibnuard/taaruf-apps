@@ -6,7 +6,7 @@ import Row from '../row';
 import Touchable from '../touchable';
 import styles from './styles';
 
-const Dropdown = ({ title = 'title', style, onItemSelected, data = [] }) => {
+const Dropdown = ({ title = 'title', style, onItemSelected, data = [], captionStyle, caption }) => {
     const [expanded, setExpanded] = React.useState(false)
     const [selectedItem, setSelectedItem] = React.useState()
 
@@ -26,6 +26,7 @@ const Dropdown = ({ title = 'title', style, onItemSelected, data = [] }) => {
 
     return (
         <View style={[style, { width: '100%' }]}>
+            {caption && <Text style={[captionStyle, styles.textCaption]}>{caption ?? 'Caption'}</Text>}
             <Touchable style={styles.container} onPress={() => {
                 LayoutAnimation.configureNext(ANIMATION_SPRING_CONFIG);
                 setExpanded(!expanded);
