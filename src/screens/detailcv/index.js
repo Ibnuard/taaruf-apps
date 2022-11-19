@@ -47,6 +47,8 @@ const DetailCVScreen = ({ navigation }) => {
           caption={'Riwayat Pendidikan'}
           containerStyle={styles.input}
           placeholder={'Riwayat Pendidikan'} />
+        <Text
+          style={styles.textInfo}>Sebutkan nama sekolah atau universitas</Text>
         <Dropdown
           caption={'Pilih Status'}
           style={styles.input}

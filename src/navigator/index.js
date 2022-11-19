@@ -6,6 +6,7 @@ import LoginScreen from '../screens/login';
 import SplashScreen from '../screens/splash';
 import CreateCVScreen from '../screens/createcv';
 import DetailCVScreen from '../screens/detailcv';
+import DomisiliScreen from '../screens/domisli';
 
 //create stack screen
 const Stack = createNativeStackNavigator();
@@ -48,11 +49,18 @@ export const AuthStackScreen = () => {
           headerShown: false
         }} />
       <Stack.Screen
+        name="Domisili"
+        component={DomisiliScreen}
+        options={{
+          title: 'Pilih Domisili'
+        }} />
+      <Stack.Screen
         name="DetailCV"
         component={DetailCVScreen}
         options={{
           title: 'Buat CV'
         }} />
+
     </Stack.Navigator>
   );
 };

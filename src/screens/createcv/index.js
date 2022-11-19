@@ -5,9 +5,15 @@ import Touchable from '../../components/touchable';
 import { AuthContext } from '../../context';
 import { IMAGES_RES } from '../../helpers/images';
 import { Colors, Typo } from '../../styles';
+import DatePicker from 'react-native-date-picker'
+import { CHECK_IS_VALID, PARSE_DATE } from '../../utils/moment';
 
-const CreateCVScreen = ({ navigation }) => {
+const CreateCVScreen = ({ navigation, route }) => {
   const [mode, setMode] = React.useState('pria') //pria || wanita
+  const [selectedDate, setSelectedDate] = React.useState(new Date())
+  const [showDatePicker, setShowDatePicker] = React.useState(false)
+
+  const SELECTED_DOMISILI = route?.params?.domisili
 
   //const {signIn} = React.useContext(AuthContext);
 
@@ -16,7 +22,7 @@ const CreateCVScreen = ({ navigation }) => {
       <StatusBar backgroundColor={Colors.COLOR_PRIMARY} />
       <Image
         source={IMAGES_RES.wave_background}
-        style={{ width: '100%', height: 100, top: -32 }}
+        style={{ width: '100%', height: 100, marginBottom: 24 }}
         resizeMode={'stretch'} />
       <View style={styles.child}>
         <Text style={styles.textLogin}>Buat CV</Text>
@@ -32,17 +38,42 @@ const CreateCVScreen = ({ navigation }) => {
           </Touchable>
         </Row>
         <View>
-          <Input containerStyle={styles.input} placeholder={'Nama Lengkap'} />
-          <Touchable>
-            <Input containerStyle={styles.input} editable={false} placeholder={'Tanggal Lahir'} />
+          <Input caption={'Nama Lengkap'} containerStyle={styles.input} placeholder={'Nama Lengkap'} />
+          <Touchable onPress={() => setShowDatePicker(true)}>
+            <Input
+              containerStyle={styles.input}
+              editable={false}
+              caption={'Tanggal Lahir'}
+              placeholder={'Tanggal Lahir'}
+              value={PARSE_DATE(selectedDate)} />
           </Touchable>
-          <Touchable>
-            <Input containerStyle={styles.input} editable={false} placeholder={'Kota Domisili'} />
+          <Touchable onPress={() => navigation.navigate('Domisili')}>
+            <Input
+              caption={'Kota Domisili'}
+              containerStyle={styles.input}
+              editable={false}
+              placeholder={'Kota Domisili'}
+              value={SELECTED_DOMISILI} />
           </Touchable>
-          <Input containerStyle={styles.input} placeholder={'Kota Domisili Orang Tua'} />
-          <Input containerStyle={styles.input} placeholder={'Alamat Domisili'} />
-          <Input containerStyle={styles.input} keyboardType={'phone-pad'} placeholder={'No Whatsapp'} />
-          <Input type={'password'} showEye={true} containerStyle={styles.input} placeholder={'Kata Sandi'} />
+          <Input
+            caption={'Kota Domisili Orang Tua'}
+            containerStyle={styles.input}
+            placeholder={'Kota Domisili Orang Tua'} />
+          <Input
+            caption={'Alamat Domisili'}
+            containerStyle={styles.input}
+            placeholder={'Alamat Domisili'} />
+          <Input
+            caption={'No Whatsapp'}
+            containerStyle={styles.input}
+            keyboardType={'phone-pad'}
+            placeholder={'No Whatsapp'} />
+          <Input
+            caption={'Kata Sandi'}
+            type={'password'}
+            showEye={true}
+            containerStyle={styles.input}
+            placeholder={'Kata Sandi'} />
           <View style={{ marginTop: 48 }}>
             <Button title='Lanjutkan' onPress={() => navigation.navigate('DetailCV')} />
           </View>
@@ -54,6 +85,19 @@ const CreateCVScreen = ({ navigation }) => {
           </Row>
         </View>
       </View>
+      <DatePicker
+        modal
+        open={showDatePicker}
+        date={selectedDate}
+        mode={'date'}
+        onConfirm={(date) => {
+          setShowDatePicker(false)
+          setSelectedDate(date)
+        }}
+        onCancel={() => {
+          setShowDatePicker(false)
+        }}
+      />
     </ScrollView>
   );
 };

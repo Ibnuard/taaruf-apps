@@ -12,10 +12,10 @@ const LoginScreen = ({ navigation }) => {
 
   return (
     <View style={styles.container}>
-      <StatusBar backgroundColor={Colors.COLOR_PRIMARY} />
+      <StatusBar backgroundColor={Colors.COLOR_STATUSBAR} />
       <Image
         source={IMAGES_RES.wave_background}
-        style={{ width: '100%', height: 100, top: -32 }}
+        style={{ width: '100%', height: 100, marginBottom: 24 }}
         resizeMode={'stretch'} />
       <View style={styles.child}>
         <Text style={styles.textLogin}>Masuk</Text>
