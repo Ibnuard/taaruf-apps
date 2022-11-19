@@ -413,7 +413,7 @@ const DetailCVScreen = ({ navigation }) => {
         placeholder={'Kode Sertifikasi Alumni Kelas Pranikah'} />
       <Text style={styles.textInfo}>Kosongi jika tidak punya</Text>
       <View style={{ marginTop: 48 }}>
-        <Button disabled={isButtonDisabled()} title='Buat CV' />
+        <Button disabled={!isButtonDisabled()} title='Buat CV' onPress={() => navigation.navigate('DoneCV')} />
       </View>
       <Modal
         type={'popup3b'}

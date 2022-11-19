@@ -8,7 +8,7 @@ import { Colors, Typo } from '../../styles';
 
 const LoginScreen = ({ navigation }) => {
 
-  //const {signIn} = React.useContext(AuthContext);
+  const { signIn } = React.useContext(AuthContext);
 
   return (
     <View style={styles.container}>
@@ -31,7 +31,7 @@ const LoginScreen = ({ navigation }) => {
             type={'password'} />
         </View>
         <View style={styles.bottomContainer}>
-          <Button title='Masuk' />
+          <Button title='Masuk' onPress={() => signIn()} />
           <Row style={styles.rowBottom}>
             <Text style={styles.textDontHaveAccount}>Belum punya akun?</Text>
             <Touchable onPress={() => navigation.navigate('CreateCV')}>
