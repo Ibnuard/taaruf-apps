@@ -76,7 +76,7 @@ const CreateCVScreen = ({ navigation, route }) => {
 
     console.log(errors);
 
-    if (_.isEmpty(errors)) {
+    if (!_.isEmpty(errors)) {
       navigation.navigate('DetailCV')
     }
   }
@@ -165,7 +165,7 @@ const CreateCVScreen = ({ navigation, route }) => {
             errorMessage={inputError['password']} />
           <View style={{ marginTop: 48 }}>
             <Button
-              disabled={!name.length || !SELECTED_DOMISILI.length || !domisiliOrangTua.length || !alamat.length || !noWA.length || !password.length}
+              // disabled={!name.length || !SELECTED_DOMISILI.length || !domisiliOrangTua.length || !alamat.length || !noWA.length || !password.length}
               title='Lanjutkan'
               onPress={() => _doInputValidation()} />
           </View>
