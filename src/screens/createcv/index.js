@@ -7,15 +7,79 @@ import { IMAGES_RES } from '../../helpers/images';
 import { Colors, Typo } from '../../styles';
 import DatePicker from 'react-native-date-picker'
 import { CHECK_IS_VALID, PARSE_DATE } from '../../utils/moment';
+import { MushForm } from '../../utils/forms';
+import _ from 'lodash'
 
 const CreateCVScreen = ({ navigation, route }) => {
   const [mode, setMode] = React.useState('pria') //pria || wanita
   const [selectedDate, setSelectedDate] = React.useState(new Date())
   const [showDatePicker, setShowDatePicker] = React.useState(false)
+  const [inputError, setInputError] = React.useState([])
+
+  //input
+  const [name, setName] = React.useState('')
+  const [domisiliOrangTua, setDomisiliOrangTua] = React.useState('')
+  const [alamat, setAlamat] = React.useState('')
+  const [noWA, setNoWA] = React.useState('')
+  const [email, setEmail] = React.useState('')
+  const [password, setPassword] = React.useState('')
 
   const SELECTED_DOMISILI = route?.params?.domisili
 
   //const {signIn} = React.useContext(AuthContext);
+
+  //input validation
+  const input_config = [
+    {
+      key: 'name',
+      required: true,
+      minMaxChar: [3, 64],
+      value: name
+    },
+    {
+      key: 'olddomisili',
+      required: true,
+      minMaxChar: [3, 128],
+      value: domisiliOrangTua
+    },
+    {
+      key: 'alamat',
+      required: true,
+      minMaxChar: [3, 128],
+      value: alamat
+    },
+    {
+      key: 'noWA',
+      required: true,
+      minMaxChar: [9, 15],
+      value: noWA
+    },
+    {
+      key: 'email',
+      required: true,
+      minMaxChar: [3, 128],
+      type: 'email',
+      value: email
+    },
+    {
+      key: 'password',
+      required: true,
+      minMaxChar: [6, 32],
+      value: password
+    }
+
+  ]
+
+  const _doInputValidation = () => {
+    const { errors } = MushForm(input_config)
+    setInputError(errors)
+
+    console.log(errors);
+
+    if (_.isEmpty(errors)) {
+      navigation.navigate('DetailCV')
+    }
+  }
 
   return (
     <ScrollView style={styles.container} showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 60 }}>
@@ -38,7 +102,13 @@ const CreateCVScreen = ({ navigation, route }) => {
           </Touchable>
         </Row>
         <View>
-          <Input caption={'Nama Lengkap'} containerStyle={styles.input} placeholder={'Nama Lengkap'} />
+          <Input
+            caption={'Nama Lengkap'}
+            containerStyle={styles.input}
+            placeholder={'Nama Lengkap'}
+            onChangeText={text => setName(text)}
+            value={name}
+            errorMessage={inputError['name']} />
           <Touchable onPress={() => setShowDatePicker(true)}>
             <Input
               containerStyle={styles.input}
@@ -58,24 +128,46 @@ const CreateCVScreen = ({ navigation, route }) => {
           <Input
             caption={'Kota Domisili Orang Tua'}
             containerStyle={styles.input}
-            placeholder={'Kota Domisili Orang Tua'} />
+            placeholder={'Kota Domisili Orang Tua'}
+            onChangeText={text => setDomisiliOrangTua(text)}
+            value={domisiliOrangTua}
+            errorMessage={inputError['olddomisili']} />
           <Input
             caption={'Alamat Domisili'}
             containerStyle={styles.input}
-            placeholder={'Alamat Domisili'} />
+            placeholder={'Alamat Domisili'}
+            onChangeText={(text) => setAlamat(text)}
+            value={alamat}
+            errorMessage={inputError['alamat']} />
           <Input
             caption={'No Whatsapp'}
             containerStyle={styles.input}
             keyboardType={'phone-pad'}
-            placeholder={'No Whatsapp'} />
+            placeholder={'No Whatsapp'}
+            onChangeText={text => setNoWA(text)}
+            value={noWA}
+            errorMessage={inputError['noWA']} />
+          <Input
+            caption={'Email'}
+            containerStyle={styles.input}
+            placeholder={'Email'}
+            onChangeText={text => setEmail(text)}
+            value={email}
+            errorMessage={inputError['email']} />
           <Input
             caption={'Kata Sandi'}
             type={'password'}
             showEye={true}
             containerStyle={styles.input}
-            placeholder={'Kata Sandi'} />
+            placeholder={'Kata Sandi'}
+            onChangeText={text => setPassword(text)}
+            value={password}
+            errorMessage={inputError['password']} />
           <View style={{ marginTop: 48 }}>
-            <Button title='Lanjutkan' onPress={() => navigation.navigate('DetailCV')} />
+            <Button
+              disabled={!name.length || !SELECTED_DOMISILI.length || !domisiliOrangTua.length || !alamat.length || !noWA.length || !password.length}
+              title='Lanjutkan'
+              onPress={() => _doInputValidation()} />
           </View>
           <Row style={styles.rowBottom}>
             <Text style={styles.textDontHaveAccount}>Sudah punya akun?</Text>

@@ -53,6 +53,12 @@ const styles = StyleSheet.create({
     textIDCode: {
         ...Typo.TextNormalRegular,
         marginLeft: Scaler.scaleSize(8)
+    },
+
+    textErrorMessage: {
+        ...Typo.TextSmallRegular,
+        color: Colors.COLOR_RED,
+        marginTop: 4
     }
 })
 

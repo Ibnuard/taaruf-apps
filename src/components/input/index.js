@@ -4,7 +4,6 @@ import Touchable from '../touchable'
 import styles from './styles'
 import Icon from 'react-native-vector-icons/AntDesign';
 import { Colors } from '../../styles';
-import Row from '../row';
 
 
 const Input = (props) => {
@@ -24,6 +23,7 @@ const Input = (props) => {
                     <Icon name={isShowPassword ? 'eye' : 'eyeo'} size={20} color={Colors.COLOR_GRAY} />
                 </Touchable>}
             </View>
+            {props?.errorMessage && <Text style={styles.textErrorMessage}>{props?.errorMessage ?? 'Error message'}</Text>}
         </View>
 
     )
