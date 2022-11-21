@@ -1,5 +1,5 @@
-import { StyleSheet } from 'react-native';
-import { Colors, Size } from '../../styles';
+import {StyleSheet} from 'react-native';
+import {Colors, Size} from '../../styles';
 
 const styles = StyleSheet.create({
   container: {
@@ -14,7 +14,7 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 3.05,
     elevation: 2,
-    margin: 2
+    margin: 2,
   },
 });
 

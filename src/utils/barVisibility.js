@@ -9,7 +9,9 @@ export const getIsTabBarVisible = route => {
   switch (routeName) {
     case 'Home':
       return true;
-    case 'Transaction':
+    case 'Notif':
+      return true;
+    case 'Profile':
       return true;
     default:
       return false;
