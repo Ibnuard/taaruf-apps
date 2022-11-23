@@ -8,4 +8,6 @@ export const IMAGES_RES = {
   kirimTaaruf: require('../../assets/images/paper-plane.png'),
   terimaTaaruf: require('../../assets/images/complaint.png'),
   backIcon: require('../../assets/images/backIcon.png'),
+  filter: require('../../assets/images/filter.png'),
+  heart: require('../../assets/images/heart.png'),
 };

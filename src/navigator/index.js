@@ -21,6 +21,8 @@ import {Colors} from '../styles';
 import KirimTaarufScreen from '../screens/kirimtaaruf';
 import TerimaTaarufScreen from '../screens/terimataaruf';
 import {getFocusedRouteNameFromRoute} from '@react-navigation/native';
+import FavoriteScreen from '../screens/cvfavorit';
+import UpgradeScreen from '../screens/upgrade';
 
 //create stack screen
 const Stack = createNativeStackNavigator();
@@ -135,7 +137,7 @@ export const MainScreen = () => {
           tabBarStyle: (route => {
             const routeName = getFocusedRouteNameFromRoute(route) ?? '';
             console.log(routeName);
-            if (routeName === 'HomeInit') {
+            if (routeName === 'HomeInit' || !routeName) {
               return {display: 'flex'};
             } else {
               return {display: 'none'};
@@ -232,6 +234,32 @@ export const HomeStack = () => {
         }}
       />
       <Stack.Screen
+        name="Upgrade"
+        component={UpgradeScreen}
+        options={{
+          title: 'Tingkatkan Akun',
+          headerTitleStyle: {
+            color: Colors.COLOR_WHITE,
+          },
+          headerStyle: {
+            backgroundColor: Colors.COLOR_STATUSBAR,
+          },
+        }}
+      />
+      <Stack.Screen
+        name="Favorite"
+        component={FavoriteScreen}
+        options={{
+          title: 'Favorit',
+          headerTitleStyle: {
+            color: Colors.COLOR_WHITE,
+          },
+          headerStyle: {
+            backgroundColor: Colors.COLOR_STATUSBAR,
+          },
+        }}
+      />
+      <Stack.Screen
         name="ProfileDetail"
         component={ProfileScreen}
         options={{
@@ -248,7 +276,13 @@ export const HomeStack = () => {
         name="TerimaTaaruf"
         component={TerimaTaarufScreen}
         options={{
-          title: 'Daftar CV Taaruf',
+          title: 'Menerima CV',
+          headerTitleStyle: {
+            color: Colors.COLOR_WHITE,
+          },
+          headerStyle: {
+            backgroundColor: Colors.COLOR_STATUSBAR,
+          },
         }}
       />
     </Stack.Navigator>

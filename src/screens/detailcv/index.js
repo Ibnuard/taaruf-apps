@@ -286,7 +286,7 @@ const DetailCVScreen = ({navigation}) => {
       <Card style={{margin: 4}}>
         <Row>
           <Icon name="infocirlceo" size={24} color={Colors.COLOR_ACCENT} />
-          <View style={{marginHorizontal: 14}}>
+          <View style={{marginHorizontal: 14, flex: 1}}>
             <Text style={styles.textSmallInfo}>
               * Upload foto yang menutupi aurat
             </Text>
@@ -507,7 +507,7 @@ const DetailCVScreen = ({navigation}) => {
       <Card style={{margin: 4}}>
         <Row>
           <Icon name="infocirlceo" size={24} color={Colors.COLOR_ACCENT} />
-          <View style={{marginHorizontal: 14}}>
+          <View style={{marginHorizontal: 14, flex: 1}}>
             <Text style={styles.textSmallInfo}>
               Buat 3 pertanyaan untuk calon, Buatlah pertanyaan yang menurut
               antum penting untuk diketahui dari calon sehingga memudahkan antum

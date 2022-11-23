@@ -12,8 +12,80 @@ import {IMAGES_RES} from '../../helpers/images';
 import {Colors, Typo} from '../../styles';
 import Icon from 'react-native-vector-icons/AntDesign';
 import Touchable from '../../components/touchable';
+import {AuthContext} from '../../context';
 
-const ProfileScreen = () => {
+const ProfileScreen = ({navigation, route}) => {
+  const [firstQ, setFirstQ] = React.useState('');
+  const [secondQ, setSecondQ] = React.useState('');
+  const [thirdQ, setThirdQ] = React.useState('');
+
+  const KEY = route?.params?.key;
+
+  const {signOut} = React.useContext(AuthContext);
+
+  const PROFILE_DATA = [
+    {
+      title: 'Kriteria yang diinginkan',
+      type: 'data',
+      value: ['value 1', 'value 2'],
+    },
+    {
+      title: 'Hobi',
+      type: 'data',
+      value: ['value 1', 'value 2'],
+    },
+    {
+      title: 'Anak ke',
+      type: 'default',
+      value: '123',
+    },
+    {
+      title: 'Suku',
+      type: 'default',
+      value: '123',
+    },
+    {
+      title: 'Warna Kulit',
+      type: 'default',
+      value: '123',
+    },
+    {
+      title: 'Riwayat Penyakit',
+      type: 'default',
+      value: '123',
+    },
+    {
+      title: 'Organisas yang pernah diikuti',
+      type: 'default',
+      value: '123',
+    },
+    {
+      title: 'Pendidikan',
+      type: 'default',
+      value: '123',
+    },
+    {
+      title: 'Riwayat Pendidikan',
+      type: 'default',
+      value: '123',
+    },
+    {
+      title: 'Kelebihan Diri',
+      type: 'default',
+      value: '123',
+    },
+    {
+      title: 'Kota Domisili',
+      type: 'default',
+      value: '123',
+    },
+    {
+      title: 'Visi Misi Pernikahan',
+      type: 'default',
+      value: '123',
+    },
+  ];
+
   return (
     <ScrollView
       style={styles.container}
@@ -111,73 +183,184 @@ const ProfileScreen = () => {
           </View>
 
           <View style={{marginTop: 24}}>
-            <View
-              style={{
-                borderBottomWidth: 0.5,
-                borderBottomColor: Colors.COLOR_GRAY,
-                marginBottom: 24,
-              }}>
-              <Text style={styles.textCaption}>Kriteria yang diinginkan</Text>
-              <View style={{flexDirection: 'row'}}>
-                <View style={styles.badge}>
-                  <Text style={styles.textBadgeValue}>Value</Text>
-                </View>
-              </View>
-            </View>
-            <View
-              style={{
-                borderBottomWidth: 0.5,
-                borderBottomColor: Colors.COLOR_GRAY,
-                marginBottom: 24,
-              }}>
-              <Text style={styles.textCaption}>Hobi</Text>
-              <View style={{flexDirection: 'row'}}>
-                <View style={styles.badge}>
-                  <Text style={styles.textBadgeValue}>Value</Text>
-                </View>
-              </View>
-            </View>
-            <View
-              style={{
-                borderBottomWidth: 0.5,
-                borderBottomColor: Colors.COLOR_GRAY,
-                marginBottom: 24,
-              }}>
-              <Text style={styles.textCaption}>Anak ke</Text>
-              <Text style={styles.textNormalValue}>Value</Text>
-            </View>
-            <View
-              style={{
-                borderBottomWidth: 0.5,
-                borderBottomColor: Colors.COLOR_GRAY,
-                marginBottom: 24,
-              }}>
-              <Text style={styles.textCaption}>Suku</Text>
-              <Text style={styles.textNormalValue}>Value</Text>
-            </View>
+            {PROFILE_DATA.map((item, index) => {
+              if (item.type == 'data') {
+                return (
+                  <View
+                    style={{
+                      borderBottomWidth: 0.5,
+                      borderBottomColor: Colors.COLOR_GRAY,
+                      paddingBottom: 14,
+                      marginBottom: 24,
+                    }}>
+                    <Text style={styles.textCaption}>{item.title}</Text>
+                    <View style={{flexDirection: 'row'}}>
+                      <View style={styles.badge}>
+                        <Text style={styles.textBadgeValue}>Value</Text>
+                      </View>
+                    </View>
+                  </View>
+                );
+              } else {
+                return (
+                  <View
+                    style={{
+                      borderBottomWidth: 0.5,
+                      borderBottomColor: Colors.COLOR_GRAY,
+                      marginBottom: 24,
+                    }}>
+                    <Text style={styles.textCaption}>{item.title}</Text>
+                    <Text style={styles.textNormalValue}>Value</Text>
+                  </View>
+                );
+              }
+            })}
           </View>
         </View>
 
-        <View>
-          <Row style={{marginVertical: 8}}>
-            <Touchable
-              style={{
-                height: 42,
-                width: 42,
-                borderRadius: 8,
-                borderWidth: 2,
-                borderColor: Colors.COLOR_ACCENT,
-                backgroundColor: Colors.COLOR_WHITE,
-                alignItems: 'center',
-                justifyContent: 'center',
-                marginRight: 8,
-              }}>
-              <Icon name="heart" color={Colors.COLOR_LIGHT_GRAY} size={20} />
-            </Touchable>
-            <Button title="Terima Taaruf" buttonStyle={{flex: 1}} />
-          </Row>
-          <Button title="Tolak Taaruf" invert />
-        </View>
+        {!KEY ? (
+          <Card style={{marginTop: 14}}>
+            <View>
+              <Text style={styles.textQuestion}>Pertanyaan 1</Text>
+              <Text style={styles.textCaptionQuestion}>
+                Ini pertanyaan pertama lorem ipsum lorem ipsu lorem ipsum lorem
+                ipsum?
+              </Text>
+            </View>
+            <View>
+              <Text style={styles.textQuestion}>Pertanyaan 2</Text>
+              <Text style={styles.textCaptionQuestion}>
+                Ini pertanyaan pertama?
+              </Text>
+            </View>
+            <View>
+              <Text style={styles.textQuestion}>Pertanyaan 3</Text>
+              <Text style={styles.textCaptionQuestion}>
+                Ini pertanyaan pertama?
+              </Text>
+            </View>
+          </Card>
+        ) : KEY == 'terimataaruf' ? (
+          <Card style={{marginTop: 14}}>
+            <View>
+              <Text style={styles.textQuestion}>Pertanyaan 1</Text>
+              <Text style={styles.textCaption}>
+                Ini pertanyaan pertama lorem ipsum lorem ipsu lorem ipsum lorem
+                ipsum?
+              </Text>
+              <Text style={styles.textNormalValue}>ini jawabannya</Text>
+            </View>
+            <View>
+              <Text style={styles.textQuestion}>Pertanyaan 2</Text>
+              <Text style={styles.textCaption}>Ini pertanyaan pertama?</Text>
+              <Text style={styles.textNormalValue}>ini jawabannya</Text>
+            </View>
+            <View>
+              <Text style={styles.textQuestion}>Pertanyaan 3</Text>
+              <Text style={styles.textCaption}>Ini pertanyaan pertama?</Text>
+              <Text style={styles.textNormalValue}>ini jawabannya</Text>
+            </View>
+          </Card>
+        ) : (
+          <Card style={{marginTop: 14}}>
+            <View>
+              <Text style={styles.textQuestion}>Pertanyaan 1</Text>
+              <Text style={styles.textCaption}>
+                Ini pertanyaan pertama lorem ipsum lorem ipsu lorem ipsum lorem
+                ipsum?
+              </Text>
+              <Input
+                containerStyle={{height: 32, marginBottom: 18, marginTop: 8}}
+                placeholder={'Tulis Jawaban'}
+                onChangeText={text => setFirstQ(text)}
+                value={firstQ}
+              />
+            </View>
+            <View>
+              <Text style={styles.textQuestion}>Pertanyaan 2</Text>
+              <Text style={styles.textCaption}>Ini pertanyaan pertama?</Text>
+              <Input
+                containerStyle={{height: 32, marginBottom: 18, marginTop: 8}}
+                placeholder={'Tulis Jawaban'}
+                onChangeText={text => setSecondQ(text)}
+                value={secondQ}
+              />
+            </View>
+            <View>
+              <Text style={styles.textQuestion}>Pertanyaan 3</Text>
+              <Text style={styles.textCaption}>Ini pertanyaan pertama?</Text>
+              <Input
+                containerStyle={{height: 32, marginBottom: 18, marginTop: 8}}
+                placeholder={'Tulis Jawaban'}
+                onChangeText={text => setThirdQ(text)}
+                value={thirdQ}
+              />
+            </View>
+          </Card>
+        )}
+
+        {KEY ? (
+          <View style={{marginTop: 14}}>
+            {KEY == 'terimataaruf' ? (
+              <>
+                <Row style={{marginVertical: 8}}>
+                  <Touchable
+                    style={{
+                      height: 42,
+                      width: 42,
+                      borderRadius: 8,
+                      borderWidth: 2,
+                      borderColor: Colors.COLOR_ACCENT,
+                      backgroundColor: Colors.COLOR_WHITE,
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      marginRight: 8,
+                    }}>
+                    <Icon
+                      name="heart"
+                      color={Colors.COLOR_LIGHT_GRAY}
+                      size={20}
+                    />
+                  </Touchable>
+                  <Button title="Terima Taaruf" buttonStyle={{flex: 1}} />
+                </Row>
+                <Button title="Tolak Taaruf" invert />
+              </>
+            ) : (
+              <>
+                <Row style={{marginVertical: 8}}>
+                  <Touchable
+                    style={{
+                      height: 42,
+                      width: 42,
+                      borderRadius: 8,
+                      borderWidth: 2,
+                      borderColor: Colors.COLOR_ACCENT,
+                      backgroundColor: Colors.COLOR_WHITE,
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      marginRight: 8,
+                    }}>
+                    <Icon
+                      name="heart"
+                      color={Colors.COLOR_LIGHT_GRAY}
+                      size={20}
+                    />
+                  </Touchable>
+                  <Button
+                    disabled={!firstQ || !secondQ || !thirdQ}
+                    title="Ajukan Taaruf"
+                    buttonStyle={{flex: 1}}
+                  />
+                </Row>
+              </>
+            )}
+          </View>
+        ) : (
+          <View style={{marginVertical: 24}}>
+            <Button title="Keluar" onPress={() => signOut()} />
+          </View>
+        )}
       </View>
     </ScrollView>
   );
@@ -221,7 +404,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     paddingHorizontal: 16,
     borderRadius: 20,
-    margin: 8,
+    margin: 4,
   },
 
   textInfo: {
@@ -244,9 +427,22 @@ const styles = StyleSheet.create({
     color: Colors.COLOR_DARK_GRAY,
   },
 
+  textCaptionQuestion: {
+    ...Typo.TextSmallRegular,
+    color: Colors.COLOR_DARK_GRAY,
+    marginTop: 4,
+    marginBottom: 8,
+  },
+
+  textQuestion: {
+    ...Typo.TextSmallRegular,
+    color: Colors.COLOR_ACCENT,
+  },
+
   textNormalValue: {
     ...Typo.TextNormalRegular,
-    paddingVertical: 8,
+    paddingTop: 8,
+    paddingBottom: 18,
   },
 
   textBadgeValue: {

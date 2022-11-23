@@ -4,7 +4,7 @@ import PeopleCardList from '../../components/PeopleCardList';
 import {FloatingAction} from 'react-native-floating-action';
 import {IMAGES_RES} from '../../helpers/images';
 
-const KirimTaarufScreen = ({navigation}) => {
+const FavoriteScreen = ({navigation}) => {
   const arr = [1, 2, 3, 49, 0, 1, 6, 7, 8];
 
   const actions = [
@@ -28,16 +28,6 @@ const KirimTaarufScreen = ({navigation}) => {
     },
   ];
 
-  function _onFabPress(item) {
-    if (item == 'bt_favorite') {
-      navigation.navigate('Favorite');
-    } else if (item == bt_filter) {
-      navigation.navigate('filter');
-    } else {
-      navigation.navigate('sendcv');
-    }
-  }
-
   return (
     <View style={styles.container}>
       <FlatList
@@ -45,20 +35,14 @@ const KirimTaarufScreen = ({navigation}) => {
         contentContainerStyle={{paddingBottom: 64}}
         renderItem={({item, index}) => (
           <PeopleCardList
-            onPress={
-              () =>
-                navigation.navigate('ProfileDetail', {
-                  key: 'kirimtaaruf',
-                })
-              // navigation.navigate('Upgrade')
+            onPress={() =>
+              navigation.navigate('ProfileDetail', {
+                key: 'kirimtaaruf',
+              })
             }
           />
         )}
         numColumns={2}
-      />
-      <FloatingAction
-        actions={actions}
-        onPressItem={item => _onFabPress(item)}
       />
     </View>
   );
@@ -71,4 +55,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default KirimTaarufScreen;
+export default FavoriteScreen;

@@ -24,7 +24,9 @@ const HomeScreen = ({navigation}) => {
           alignItems: 'center',
           paddingHorizontal: 14,
         }}>
-        <View style={{flex: 1}}>
+        <Touchable
+          style={{flex: 1}}
+          onPress={() => navigation.jumpTo('Profile')}>
           <Image
             style={{
               height: 36,
@@ -33,10 +35,10 @@ const HomeScreen = ({navigation}) => {
               backgroundColor: 'white',
             }}
           />
-        </View>
-        <View>
+        </Touchable>
+        <Touchable onPress={() => navigation.navigate('Favorite')}>
           <Icon name="heart" color={Colors.COLOR_WHITE} size={20} />
-        </View>
+        </Touchable>
       </View>
       <View style={{paddingHorizontal: 14}}>
         <Card>
