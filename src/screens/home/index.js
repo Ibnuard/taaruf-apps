@@ -5,6 +5,7 @@ import Touchable from '../../components/touchable';
 import {AuthContext} from '../../context';
 import {IMAGES_RES} from '../../helpers/images';
 import {Colors, Typo} from '../../styles';
+import Icon from 'react-native-vector-icons/AntDesign';
 
 const HomeScreen = ({navigation}) => {
   return (
@@ -15,7 +16,29 @@ const HomeScreen = ({navigation}) => {
         style={{width: '100%', height: 100, marginBottom: 24}}
         resizeMode={'stretch'}
       />
-      <View style={{paddingHorizontal: 24}}>
+      <View
+        style={{
+          position: 'absolute',
+          top: 40,
+          flexDirection: 'row',
+          alignItems: 'center',
+          paddingHorizontal: 14,
+        }}>
+        <View style={{flex: 1}}>
+          <Image
+            style={{
+              height: 36,
+              width: 36,
+              borderRadius: 28,
+              backgroundColor: 'white',
+            }}
+          />
+        </View>
+        <View>
+          <Icon name="heart" color={Colors.COLOR_WHITE} size={20} />
+        </View>
+      </View>
+      <View style={{paddingHorizontal: 14}}>
         <Card>
           <Touchable onPress={() => navigation.navigate('KirimTaaruf')}>
             <Row>
@@ -24,7 +47,7 @@ const HomeScreen = ({navigation}) => {
                 style={{width: 48, height: 48, marginRight: 18}}
                 resizeMode={'contain'}
               />
-              <View style={{marginRight: 24}}>
+              <View style={{flex: 1}}>
                 <Text style={styles.textTitle}>Pengajuan Taaruf</Text>
                 <Text style={styles.textDesc}>
                   Antum mengajukan CV ke akhwat
@@ -42,7 +65,7 @@ const HomeScreen = ({navigation}) => {
                 style={{width: 48, height: 48, marginRight: 18}}
                 resizeMode={'contain'}
               />
-              <View style={{marginRight: 24}}>
+              <View style={{flex: 1}}>
                 <Text style={styles.textTitle}>Menerima Taaruf</Text>
                 <Text style={styles.textDesc}>
                   Daftar CV yang diajukan akhwat ke antum

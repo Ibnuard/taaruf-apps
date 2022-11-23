@@ -16,6 +16,13 @@ const styles = StyleSheet.create({
     elevation: 2,
     margin: 2,
   },
+
+  containerNoShadow: {
+    backgroundColor: Colors.COLOR_WHITE,
+    borderRadius: 10,
+    elevation: 1,
+    margin: 2,
+  },
 });
 
 export default styles;

@@ -1,20 +1,30 @@
 import * as React from 'react';
-import {View, Text, Image, StyleSheet, StatusBar} from 'react-native';
+import {
+  View,
+  Text,
+  Image,
+  StyleSheet,
+  StatusBar,
+  ScrollView,
+} from 'react-native';
 import {Button, Card, Modal, Input, Row} from '../../components';
 import {IMAGES_RES} from '../../helpers/images';
 import {Colors, Typo} from '../../styles';
 import Icon from 'react-native-vector-icons/AntDesign';
+import Touchable from '../../components/touchable';
 
 const ProfileScreen = () => {
   return (
-    <View style={styles.container}>
+    <ScrollView
+      style={styles.container}
+      contentContainerStyle={{paddingBottom: 60}}>
       <StatusBar backgroundColor={Colors.COLOR_STATUSBAR} />
       <Image
         source={IMAGES_RES.wave_background}
         style={{width: '100%', height: 100}}
         resizeMode={'stretch'}
       />
-      <View style={{paddingHorizontal: 24}}>
+      <View style={{paddingHorizontal: 14}}>
         <View style={styles.card}>
           <View style={{flexDirection: 'row'}}>
             <View style={{marginRight: 24}}>
@@ -33,7 +43,7 @@ const ProfileScreen = () => {
                 <Text style={styles.textBadgeTopValue}>Siap Taaruf</Text>
               </View>
             </View>
-            <View>
+            <View style={{flex: 1, marginRight: 8}}>
               <View
                 style={{
                   flexDirection: 'row',
@@ -41,7 +51,6 @@ const ProfileScreen = () => {
                   borderBottomWidth: 0.5,
                   borderBottomColor: Colors.COLOR_GRAY,
                   paddingVertical: 10,
-                  maxWidth: '78%',
                 }}>
                 <Icon name="idcard" size={20} color={Colors.COLOR_DARK_GRAY} />
                 <Text style={styles.textInfo}>
@@ -148,8 +157,29 @@ const ProfileScreen = () => {
             </View>
           </View>
         </View>
+
+        <View>
+          <Row style={{marginVertical: 8}}>
+            <Touchable
+              style={{
+                height: 42,
+                width: 42,
+                borderRadius: 8,
+                borderWidth: 2,
+                borderColor: Colors.COLOR_ACCENT,
+                backgroundColor: Colors.COLOR_WHITE,
+                alignItems: 'center',
+                justifyContent: 'center',
+                marginRight: 8,
+              }}>
+              <Icon name="heart" color={Colors.COLOR_LIGHT_GRAY} size={20} />
+            </Touchable>
+            <Button title="Terima Taaruf" buttonStyle={{flex: 1}} />
+          </Row>
+          <Button title="Tolak Taaruf" invert />
+        </View>
       </View>
-    </View>
+    </ScrollView>
   );
 };
 

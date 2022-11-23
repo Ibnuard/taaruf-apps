@@ -1,4 +1,5 @@
 import * as React from 'react';
+import {Image} from 'react-native';
 import Icon from 'react-native-vector-icons/AntDesign';
 
 import {createNativeStackNavigator} from '@react-navigation/native-stack';
@@ -134,10 +135,11 @@ export const MainScreen = () => {
           tabBarStyle: (route => {
             const routeName = getFocusedRouteNameFromRoute(route) ?? '';
             console.log(routeName);
-            if (routeName === 'TerimaTaaruf' || routeName === 'KirimTaaruf') {
+            if (routeName === 'HomeInit') {
+              return {display: 'flex'};
+            } else {
               return {display: 'none'};
             }
-            return;
           })(route),
         })}
       />
@@ -147,7 +149,7 @@ export const MainScreen = () => {
         options={{
           title: 'Pemberitahuan',
           headerStyle: {
-            backgroundColor: Colors.COLOR_DARK_BACKGROUND,
+            backgroundColor: Colors.COLOR_STATUSBAR,
             elevation: 0,
             shadowOpacity: 0,
             borderBottomWidth: 0,
@@ -184,7 +186,7 @@ const NotifBarStack = () => {
           textTransform: 'none',
         },
         tabBarStyle: {
-          backgroundColor: Colors.COLOR_DARK_BACKGROUND,
+          backgroundColor: Colors.COLOR_STATUSBAR,
         },
       }}>
       <Stack.Screen
@@ -221,6 +223,25 @@ export const HomeStack = () => {
         component={KirimTaarufScreen}
         options={{
           title: 'Pengajuan Taaruf',
+          headerTitleStyle: {
+            color: Colors.COLOR_WHITE,
+          },
+          headerStyle: {
+            backgroundColor: Colors.COLOR_STATUSBAR,
+          },
+        }}
+      />
+      <Stack.Screen
+        name="ProfileDetail"
+        component={ProfileScreen}
+        options={{
+          title: 'Detail Biodata',
+          headerTitleStyle: {
+            color: Colors.COLOR_WHITE,
+          },
+          headerStyle: {
+            backgroundColor: Colors.COLOR_STATUSBAR,
+          },
         }}
       />
       <Stack.Screen
