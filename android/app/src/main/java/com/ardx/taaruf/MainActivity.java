@@ -1,4 +1,4 @@
-package com.ardxreactnativeboilerplate;
+package com.ardx.taaruf;
 
 import com.facebook.react.ReactActivity;
 import com.facebook.react.ReactActivityDelegate;

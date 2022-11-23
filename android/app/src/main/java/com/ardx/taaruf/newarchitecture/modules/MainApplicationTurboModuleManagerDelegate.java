@@ -1,4 +1,4 @@
-package com.ardxreactnativeboilerplate.newarchitecture.modules;
+package com.ardx.taaruf.newarchitecture.modules;
 
 import com.facebook.jni.HybridData;
 import com.facebook.react.ReactPackage;

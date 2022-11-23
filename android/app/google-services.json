@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "645282766216",
+    "project_id": "mencaricintasejati-33409",
+    "storage_bucket": "mencaricintasejati-33409.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:645282766216:android:d1a22aa0088d01b3baae3d",
+        "android_client_info": {
+          "package_name": "com.ardx.taaruf"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "645282766216-0055570t86i16c8cs6eivso9f1c575qa.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCpJ_eVbctVOs290EmOANasFl5VSWyTIzk"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "645282766216-0055570t86i16c8cs6eivso9f1c575qa.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
