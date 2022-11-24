@@ -22,3 +22,11 @@ export const wait = timeout => {
     setTimeout(resolve, timeout);
   });
 };
+
+export function getRandomNumber(min, max) {
+  return Math.floor(Math.random() * (max - min) + min);
+}
+
+export const generateUID = () => {
+  return `ID${getRandomNumber(10000, 99999)}`;
+};

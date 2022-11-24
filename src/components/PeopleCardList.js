@@ -2,27 +2,30 @@ import * as React from 'react';
 import {View, Text, StyleSheet, Image} from 'react-native';
 import Card from './card';
 import Pic from '../../assets/images/pic.jpeg';
-import Touchable from './touchable';
 import Icon from 'react-native-vector-icons/AntDesign';
 import {Colors, Typo} from '../styles';
 
-const PeopleCardList = ({onPress}) => {
+const PeopleCardList = ({onPress, data}) => {
   return (
     <Card useShadow={false} style={styles.container} onPress={onPress}>
       <Image
         blurRadius={24}
-        source={Pic}
+        source={{uri: `data:image/png;base64,${data?.fotowajah}`}}
         resizeMode={'contain'}
         style={styles.image}
       />
       <View style={{padding: 8, flexDirection: 'row', alignItems: 'center'}}>
-        <View style={{flex: 1}}>
-          <Text style={styles.textTitle}>ID, 20 th</Text>
-          <Text style={styles.textDesc}>Desc</Text>
+        <View style={{flex: 1, marginHorizontal: 4}}>
+          <Text style={styles.textTitle}>
+            {data?.id}, {data?.umur} th
+          </Text>
+          <Text style={styles.textDesc}>
+            {data?.status}, {data?.pekerjaan}, {data?.kota}
+          </Text>
         </View>
         <View style={{alignItems: 'center', justifyContent: 'center'}}>
           <Icon name="heart" color={Colors.COLOR_RED} size={24} />
-          <Text style={styles.textFavCount}>100</Text>
+          <Text style={styles.textFavCount}>{data?.favoritCount}</Text>
         </View>
       </View>
     </Card>

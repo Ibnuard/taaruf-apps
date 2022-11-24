@@ -75,6 +75,7 @@ const Dropdown = ({
           {data.map((item, index) => {
             return (
               <Touchable
+                key={index}
                 style={styles.childItem}
                 onPress={() => {
                   setSelectedItem(item);

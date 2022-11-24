@@ -6,16 +6,18 @@ import {
   StyleSheet,
   StatusBar,
   ScrollView,
+  Alert,
 } from 'react-native';
 import {IMAGES_RES} from '../../helpers/images';
 import {Button, Card, Modal, Input, Row, Dropdown} from '../../components';
-import Touchable from '../../components/touchable';
-import {AuthContext} from '../../context';
 import {Colors, Typo} from '../../styles';
 import Icon from 'react-native-vector-icons/AntDesign';
 import {LaunchCamera, LaunchGallery} from '../../utils/imagePicker';
+import _ from 'lodash';
+import {MushForm} from '../../utils/forms';
+import {USER_REGISTER} from '../../helpers/firebase';
 
-const DetailCVScreen = ({navigation}) => {
+const DetailCVScreen = ({navigation, route}) => {
   const [mode, setMode] = React.useState('pria'); //pria || wanita
   const [imagePickerVisible, setImagePickerVisible] = React.useState(false);
   const [inputError, setInputError] = React.useState([]);
@@ -54,8 +56,12 @@ const DetailCVScreen = ({navigation}) => {
 
   //other
   const [kode, setKode] = React.useState('');
+  const [isLoading, setIsLoading] = React.useState(false);
 
   //const {signIn} = React.useContext(AuthContext);
+
+  //DATA FROM PREVIOUS SCREEN
+  const PREV_DATA = route?.params?.data;
 
   const pekerjaan = [
     'Pelajar',
@@ -106,7 +112,7 @@ const DetailCVScreen = ({navigation}) => {
     'Lampung',
     'Tolaki',
   ];
-  const skin = ['Putih', 'Kuning Lamgsat', 'Coklat', 'Hitam'];
+  const skin = ['Putih', 'Kuning Langsat', 'Coklat', 'Hitam'];
 
   const input_config = [
     {
@@ -136,7 +142,7 @@ const DetailCVScreen = ({navigation}) => {
     {
       key: 'deskripsi',
       required: true,
-      minMaxChar: [100, 1000],
+      minMaxChar: [100, 1000], //100
       value: deskripsi,
     },
     {
@@ -184,31 +190,31 @@ const DetailCVScreen = ({navigation}) => {
     {
       key: 'aktivitas',
       required: true,
-      minMaxChar: [3, 128],
+      minMaxChar: [3, 150],
       value: aktivitasHarian,
     },
     {
       key: 'visimisi',
       required: true,
-      minMaxChar: [3, 128],
+      minMaxChar: [3, 150],
       value: visimisi,
     },
     {
       key: 'q1',
       required: true,
-      minMaxChar: [3, 128],
+      minMaxChar: [3, 150],
       value: firstQA,
     },
     {
       key: 'q2',
       required: true,
-      minMaxChar: [3, 128],
+      minMaxChar: [3, 150],
       value: secondQA,
     },
     {
       key: 'q3',
       required: true,
-      minMaxChar: [3, 128],
+      minMaxChar: [3, 150],
       value: thirdQA,
     },
   ];
@@ -250,7 +256,7 @@ const DetailCVScreen = ({navigation}) => {
       !ktpImage ||
       !selectedPekerjaan ||
       !selectedPendidikan ||
-      !pendidikan ||
+      !riwayatPendidikan ||
       !status ||
       !tinggiBadan ||
       !beratBadan ||
@@ -269,13 +275,74 @@ const DetailCVScreen = ({navigation}) => {
       !visimisi ||
       !firstQA ||
       !secondQA ||
-      !!thirdQA
+      !thirdQA
     ) {
       return true;
     } else {
       return false;
     }
   };
+
+  const _onDoneButtonPressed = () => {
+    setIsLoading(true);
+    const {errors} = MushForm(input_config);
+    setInputError(errors);
+
+    console.log(errors);
+
+    const data = {
+      ...PREV_DATA,
+      fotoWajah: faceImage,
+      fotoFull: bodyImage,
+      fotoid: ktpImage,
+      pekerjaan: selectedPekerjaan,
+      pendidikanTerakhir: selectedPendidikan,
+      riwayatPendidikan: riwayatPendidikan,
+      status: selectedStatus,
+      tinggi: tinggiBadan,
+      berat: beratBadan,
+      ibadah: selectedIbadah,
+      kriteria: kriteria,
+      deskripsi: deskripsi,
+      hobi: hobi,
+      anak: anak,
+      suku: selectedSuku,
+      kulit: selectedWarnaKulit,
+      penyakit: penyakit,
+      organisasi: organisasi,
+      kelebihan: kelebihan,
+      kekurangan: kekurangan,
+      aktivitas: aktivitasHarian,
+      visimisi: visimisi,
+      pertanyaansatu: firstQA,
+      pertanyaandua: secondQA,
+      pertanyaantiga: thirdQA,
+      sertifikat: kode,
+    };
+
+    if (_.isEmpty(errors)) {
+      //navigation.navigate('DoneCV');
+      //setIsLoading(false);
+      USER_REGISTER(data)
+        .then(() => {
+          setIsLoading(false);
+          navigation.navigate('DoneCV');
+        })
+        .catch(err => {
+          setIsLoading(false);
+          Alert.alert(
+            'Pendaftaran Gagal',
+            'Ada kesalahan data, mohon di cek kembali',
+          );
+        });
+    } else {
+      setIsLoading(false);
+    }
+  };
+
+  React.useEffect(() => {
+    console.log(faceImage?.length, bodyImage?.length, ktpImage?.length);
+  }, [faceImage, bodyImage, ktpImage]);
 
   return (
     <ScrollView
@@ -310,7 +377,9 @@ const DetailCVScreen = ({navigation}) => {
             source={
               faceImage
                 ? {uri: `data:image/png;base64,${faceImage}`}
-                : IMAGES_RES.man_head
+                : PREV_DATA?.gender == 'pria'
+                ? IMAGES_RES.man_head
+                : IMAGES_RES.girl_head
             }
             style={{height: 152, margin: 4, borderRadius: 4, width: 152}}
             resizeMode={'contain'}
@@ -327,7 +396,9 @@ const DetailCVScreen = ({navigation}) => {
             source={
               bodyImage
                 ? {uri: `data:image/png;base64,${bodyImage}`}
-                : IMAGES_RES.man_body
+                : PREV_DATA?.gender == 'pria'
+                ? IMAGES_RES.man_body
+                : IMAGES_RES?.girl_body
             }
             style={{height: 152, margin: 4, borderRadius: 4, width: 152}}
             resizeMode={'contain'}
@@ -375,6 +446,8 @@ const DetailCVScreen = ({navigation}) => {
           containerStyle={styles.input}
           placeholder={'Riwayat Pendidikan'}
           errorMessage={inputError['riwayat']}
+          onChangeText={text => setRiwayatPendidikan(text)}
+          value={riwayatPendidikan}
         />
         <Text style={styles.textInfo}>
           Sebutkan nama sekolah atau universitas
@@ -382,7 +455,6 @@ const DetailCVScreen = ({navigation}) => {
         <Dropdown
           caption={'Pilih Status'}
           style={styles.input}
-          maxLength={3}
           data={status}
           title={'Pilih Status'}
           onItemSelected={item => setSelectedStatus(item)}
@@ -394,13 +466,18 @@ const DetailCVScreen = ({navigation}) => {
           containerStyle={styles.input}
           placeholder={'Tinggi Badan ( CM )'}
           errorMessage={inputError['tinggi']}
+          onChangeText={text => setTinggiBadan(text)}
+          value={tinggiBadan}
         />
         <Input
           caption={'Berat Badan ( KG )'}
           keyboardType={'phone-pad'}
+          maxLength={3}
           containerStyle={styles.input}
           placeholder={'Berat Badan ( KG )'}
           errorMessage={inputError['berat']}
+          onChangeText={text => setBeratBadan(text)}
+          value={beratBadan}
         />
         <Dropdown
           caption={'Melakukan Ibadah'}
@@ -414,6 +491,8 @@ const DetailCVScreen = ({navigation}) => {
           containerStyle={styles.input}
           placeholder={'Kriteria yang diinginkan'}
           errorMessage={inputError['kriteria']}
+          onChangeText={text => setKriteria(text)}
+          value={kriteria}
         />
         <Text style={styles.textInfo}>
           Harap tambahkan "," (koma) setiap menambahkan kriteria
@@ -424,12 +503,16 @@ const DetailCVScreen = ({navigation}) => {
           containerStyle={styles.multiline}
           placeholder={'Deskripsi singkat tentang diri'}
           errorMessage={inputError['deskripsi']}
+          onChangeText={text => setDeskripsi(text)}
+          value={deskripsi}
         />
         <Input
           caption={'Hobi'}
           containerStyle={styles.input}
           placeholder={'Hobi'}
           errorMessage={inputError['hobi']}
+          onChangeText={text => setHobi(text)}
+          value={hobi}
         />
         <Text style={styles.textInfo}>
           Harap tambahkan "," (koma) setiap menambahkan hobi
@@ -437,8 +520,11 @@ const DetailCVScreen = ({navigation}) => {
         <Input
           caption={'Anak ke ( contoh 1 dari 3 )'}
           containerStyle={styles.input}
+          keyboardType={'phone-pad'}
           placeholder={'Anak ke ( contoh 1 dari 3 )'}
           errorMessage={inputError['anak']}
+          onChangeText={text => setAnak(text)}
+          value={anak}
         />
         <Dropdown
           caption={'Suku'}
@@ -459,12 +545,16 @@ const DetailCVScreen = ({navigation}) => {
           containerStyle={styles.input}
           placeholder={'Riwayat Penyakit'}
           errorMessage={inputError['penyakit']}
+          onChangeText={text => setPenyakit(text)}
+          value={penyakit}
         />
         <Input
           caption={'Organisasi atau komunitas yang diikuti'}
           containerStyle={styles.input}
           placeholder={'Organisasi atau komunitas yang diikuti'}
           errorMessage={inputError['organisasi']}
+          onChangeText={text => setOrganisasi(text)}
+          value={organisasi}
         />
         <Input
           caption={'Kelebihan diri'}
@@ -472,6 +562,8 @@ const DetailCVScreen = ({navigation}) => {
           containerStyle={styles.multiline}
           placeholder={'Kelebihan diri'}
           errorMessage={inputError['kelebihan']}
+          onChangeText={text => setKelebihan(text)}
+          value={kelebihan}
         />
         <Text style={styles.textInfo}>
           Sebutkan dan jelaskan minimal 3 sifat antum
@@ -482,6 +574,8 @@ const DetailCVScreen = ({navigation}) => {
           containerStyle={styles.multiline}
           placeholder={'Kekurangan diri'}
           errorMessage={inputError['kekurangan']}
+          onChangeText={text => setKekurangan(text)}
+          value={kekurangan}
         />
         <Text style={styles.textInfo}>
           Sebutkan dan jelaskan minimal 3 sifat antum
@@ -492,6 +586,8 @@ const DetailCVScreen = ({navigation}) => {
           containerStyle={styles.multiline}
           placeholder={'Aktivitas Harian'}
           errorMessage={inputError['aktivitas']}
+          onChangeText={text => setAktivitasHarian(text)}
+          value={aktivitasHarian}
         />
         <Text style={styles.textInfo}>
           Contoh: Pagi-Sore Bekerja dsb, semakin detail semakin baik
@@ -502,6 +598,8 @@ const DetailCVScreen = ({navigation}) => {
           containerStyle={styles.multiline}
           placeholder={'Visi Misi Pernikahan'}
           errorMessage={inputError['visimisi']}
+          onChangeText={text => setVisimisi(text)}
+          value={visimisi}
         />
       </View>
       <Card style={{margin: 4}}>
@@ -524,6 +622,8 @@ const DetailCVScreen = ({navigation}) => {
         maxLength={150}
         containerStyle={styles.input}
         placeholder={'Pertanyaan ke 1'}
+        onChangeText={text => setFirstQA(text)}
+        value={firstQA}
       />
       <Text style={styles.textInfo}>Maksimal 150 karakter</Text>
       <Input
@@ -531,6 +631,8 @@ const DetailCVScreen = ({navigation}) => {
         maxLength={150}
         containerStyle={styles.input}
         placeholder={'Pertanyaan ke 2'}
+        onChangeText={text => setSecondQA(text)}
+        value={secondQA}
       />
       <Text style={styles.textInfo}>Maksimal 150 karakter</Text>
       <Input
@@ -538,19 +640,24 @@ const DetailCVScreen = ({navigation}) => {
         maxLength={150}
         containerStyle={styles.input}
         placeholder={'Pertanyaan ke 3'}
+        onChangeText={text => setThirdQA(text)}
+        value={thirdQA}
       />
       <Text style={styles.textInfo}>Maksimal 150 karakter</Text>
       <Input
         maxLength={150}
         containerStyle={styles.input}
         placeholder={'Kode Sertifikasi Alumni Kelas Pranikah'}
+        onChangeText={text => setKode(text)}
+        value={kode}
       />
       <Text style={styles.textInfo}>Kosongi jika tidak punya</Text>
       <View style={{marginTop: 48}}>
         <Button
-          disabled={!isButtonDisabled()}
+          disabled={isButtonDisabled()}
+          isLoading={isLoading}
           title="Buat CV"
-          onPress={() => navigation.navigate('DoneCV')}
+          onPress={() => _onDoneButtonPressed()}
         />
       </View>
       <Modal
@@ -579,6 +686,7 @@ const styles = StyleSheet.create({
   multiline: {
     marginTop: 24,
     maxHeight: 72,
+    marginBottom: 14,
   },
 
   child: {

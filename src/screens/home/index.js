@@ -6,8 +6,23 @@ import {AuthContext} from '../../context';
 import {IMAGES_RES} from '../../helpers/images';
 import {Colors, Typo} from '../../styles';
 import Icon from 'react-native-vector-icons/AntDesign';
+import {retrieveUserSession} from '../../helpers/storage';
 
 const HomeScreen = ({navigation}) => {
+  const [user, setUser] = React.useState();
+
+  React.useEffect(() => {
+    getUserData();
+  }, []);
+
+  const getUserData = async () => {
+    const user = await retrieveUserSession();
+
+    const parsed = JSON.parse(user);
+
+    setUser(parsed);
+  };
+
   return (
     <View style={styles.container}>
       <StatusBar backgroundColor={Colors.COLOR_STATUSBAR} />
@@ -42,7 +57,8 @@ const HomeScreen = ({navigation}) => {
       </View>
       <View style={{paddingHorizontal: 14}}>
         <Card>
-          <Touchable onPress={() => navigation.navigate('KirimTaaruf')}>
+          <Touchable
+            onPress={() => navigation.navigate('KirimTaaruf', {user: user})}>
             <Row>
               <Image
                 source={IMAGES_RES.kirimTaaruf}

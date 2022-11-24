@@ -1,6 +1,7 @@
 import * as React from 'react';
 import {View, Text} from 'react-native';
 import {AuthContext} from '../../context';
+import {retrieveUserSession} from '../../helpers/storage';
 import {retrieveData} from '../../utils/store';
 import {wait} from '../../utils/utils';
 import styles from './styles';
@@ -14,7 +15,7 @@ const SplashScreen = () => {
       let userToken;
 
       try {
-        userToken = await retrieveData('token', false);
+        userToken = await retrieveUserSession();
       } catch (e) {
         // Restoring token failed
       }

@@ -4,6 +4,7 @@ import {AuthStackScreen, MainScreen, SplashStack} from './navigator';
 import {AuthContext} from './context';
 import {retrieveData} from './utils/store';
 import SplashScreen from './screens/splash';
+import {removeUserSession} from './helpers/storage';
 
 const App = () => {
   //handle auth flow
@@ -68,7 +69,10 @@ const App = () => {
 
         dispatch({type: 'SIGN_IN', token: 'dummy-auth-token'});
       },
-      signOut: () => dispatch({type: 'SIGN_OUT'}),
+      signOut: async () => {
+        await removeUserSession();
+        dispatch({type: 'SIGN_OUT'});
+      },
       signUp: async data => {
         // In a production app, we need to send user data to server and get a token
         // We will also need to handle errors if sign up failed

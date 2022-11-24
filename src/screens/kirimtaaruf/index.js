@@ -3,9 +3,27 @@ import {View, Text, StyleSheet, FlatList} from 'react-native';
 import PeopleCardList from '../../components/PeopleCardList';
 import {FloatingAction} from 'react-native-floating-action';
 import {IMAGES_RES} from '../../helpers/images';
+import {GET_USER_LIST} from '../../helpers/firebase';
+import {retrieveUserSession} from '../../helpers/storage';
 
-const KirimTaarufScreen = ({navigation}) => {
-  const arr = [1, 2, 3, 49, 0, 1, 6, 7, 8];
+const KirimTaarufScreen = ({navigation, route}) => {
+  const [users, setUsers] = React.useState([]);
+
+  const USER = route?.params?.user;
+
+  React.useEffect(() => {
+    getAllUsers();
+  }, []);
+
+  const getAllUsers = async () => {
+    const users = await GET_USER_LIST();
+
+    const filtered = users.filter((item, inex) => {
+      return item?.id !== USER?.id;
+    });
+
+    setUsers(filtered);
+  };
 
   const actions = [
     {
@@ -41,14 +59,16 @@ const KirimTaarufScreen = ({navigation}) => {
   return (
     <View style={styles.container}>
       <FlatList
-        data={arr}
+        data={users}
         contentContainerStyle={{paddingBottom: 64}}
         renderItem={({item, index}) => (
           <PeopleCardList
+            data={item}
             onPress={
               () =>
                 navigation.navigate('ProfileDetail', {
                   key: 'kirimtaaruf',
+                  data: item,
                 })
               // navigation.navigate('Upgrade')
             }

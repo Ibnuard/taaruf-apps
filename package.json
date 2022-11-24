@@ -22,7 +22,7 @@
     "react-native": "0.68.2",
     "react-native-big-list": "^1.6.0",
     "react-native-date-picker": "^4.2.6",
-    "react-native-encrypted-storage": "^4.0.2",
+    "react-native-encrypted-storage": "^4.0.3",
     "react-native-floating-action": "^1.22.0",
     "react-native-image-picker": "^4.10.1",
     "react-native-modal": "^13.0.1",

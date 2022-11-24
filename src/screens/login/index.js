@@ -1,25 +1,42 @@
 import * as React from 'react';
-import {View, Text, Image, StyleSheet, StatusBar} from 'react-native';
+import {View, Text, Image, StyleSheet, StatusBar, Alert} from 'react-native';
 import {Button, Card, Modal, Input, Row} from '../../components';
 import Touchable from '../../components/touchable';
 import {AuthContext} from '../../context';
-import {USER_REGISTER} from '../../helpers/firebase';
+import {USER_LOGIN, USER_REGISTER} from '../../helpers/firebase';
 import {IMAGES_RES} from '../../helpers/images';
+import {storeUserSession} from '../../helpers/storage';
 import {Colors, Typo} from '../../styles';
 
 const LoginScreen = ({navigation}) => {
+  const [nomor, setNomor] = React.useState('');
+  const [pw, setPW] = React.useState('');
+
+  const [isLoading, setIsLoading] = React.useState(false);
+
   const {signIn} = React.useContext(AuthContext);
 
-  const _userLogin = () => {
+  const _userLogin = async () => {
+    setIsLoading(true);
     const data = {
-      phone: '0857',
-      name: 'Ibnu',
-      password: 1234,
+      nomor: nomor,
+      password: pw,
     };
 
-    USER_REGISTER(data)
-      .then(() => console.log('Sukses'))
-      .catch(error => console.log('Error: ' + error));
+    const login = await USER_LOGIN(data);
+
+    if (login == 'NOT_USER') {
+      setIsLoading(false);
+      Alert.alert('Gagal Masuk', 'User tidak ditemukan!');
+    } else if (login == 'PASSWORD_INVALID') {
+      setIsLoading(false);
+      Alert.alert('Gagal Masuk', 'Kata Sandi salah!');
+    } else {
+      setIsLoading(false);
+      await storeUserSession(login);
+
+      signIn();
+    }
   };
 
   return (
@@ -33,18 +50,35 @@ const LoginScreen = ({navigation}) => {
       <View style={styles.child}>
         <Text style={styles.textLogin}>Masuk</Text>
         <Text style={styles.textDesc}>
-          Bismillah, mencari pasangan yang halal dengan cara taaruf
+          Mencari Cinta Sejati adalah aplikasi pencari jodoh dengan jalan
+          ta'aruf silahkan buat CV atau login untuk yang sudah membuat CV.
         </Text>
         <View style={styles.inputContainer}>
           <Input
             containerStyle={styles.input}
             placeholder={'No Whatsapp'}
             keyboardType={'phone-pad'}
+            onChangeText={item => setNomor(item)}
+            value={nomor}
           />
-          <Input placeholder={'Kata Sandi'} showEye type={'password'} />
+          <Input
+            placeholder={'Kata Sandi'}
+            showEye
+            type={'password'}
+            onChangeText={item => setPW(item)}
+            value={pw}
+          />
         </View>
+        <Touchable style={{alignSelf: 'flex-end', marginTop: 14}}>
+          <Text style={styles.textCreateCV}>Lupa Password?</Text>
+        </Touchable>
         <View style={styles.bottomContainer}>
-          <Button title="Masuk" onPress={() => _userLogin()} />
+          <Button
+            isLoading={isLoading}
+            disabled={!nomor || !pw}
+            title="Masuk"
+            onPress={() => _userLogin()}
+          />
           <Row style={styles.rowBottom}>
             <Text style={styles.textDontHaveAccount}>Belum punya akun?</Text>
             <Touchable onPress={() => navigation.navigate('CreateCV')}>

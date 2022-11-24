@@ -13,76 +13,154 @@ import {Colors, Typo} from '../../styles';
 import Icon from 'react-native-vector-icons/AntDesign';
 import Touchable from '../../components/touchable';
 import {AuthContext} from '../../context';
+import {retrieveUserSession} from '../../helpers/storage';
+import {
+  ADD_TO_FAVORITE,
+  IS_FAVORITED,
+  REMOVE_FROM_FAVORITE,
+} from '../../helpers/firebase';
 
 const ProfileScreen = ({navigation, route}) => {
   const [firstQ, setFirstQ] = React.useState('');
   const [secondQ, setSecondQ] = React.useState('');
   const [thirdQ, setThirdQ] = React.useState('');
 
+  const [user, setUser] = React.useState('');
+
+  const [isLoading, setIsLoading] = React.useState(false);
+  const [favorited, setIsFavorited] = React.useState(false);
+
   const KEY = route?.params?.key;
+  const USER_DATA = route?.params?.data;
 
   const {signOut} = React.useContext(AuthContext);
+
+  React.useEffect(() => {
+    if (!KEY) {
+      //own profile
+      getOwnProfile();
+    } else {
+      setUser(USER_DATA);
+      checkIsFavorited();
+    }
+
+    return () => null;
+  }, []);
+
+  // React.useEffect(() => {
+  //   if (KEY) {
+  //     console.log('check fav');
+  //     checkIsFavorited();
+  //   }
+  // }, [isLoading]);
+
+  const checkIsFavorited = async () => {
+    const favorited = await IS_FAVORITED(user);
+
+    console.log('is fav : ' + favorited);
+
+    setIsFavorited(favorited);
+  };
+
+  async function getOwnProfile() {
+    const user = await retrieveUserSession();
+    const parse = JSON.parse(user);
+
+    setUser(parse);
+  }
+
+  const normalizeDataList = (data = '') => {
+    const splitting = data.split(',');
+
+    return splitting;
+  };
+
+  const onFavoriteButtonPress = async () => {
+    setIsLoading(true);
+
+    if (favorited) {
+      await REMOVE_FROM_FAVORITE(user).then(() => {
+        console.log('remove succes');
+        setIsLoading(false);
+      });
+    } else {
+      await ADD_TO_FAVORITE(user).then(() => {
+        console.log('add succes');
+        setIsLoading(false);
+      });
+    }
+  };
 
   const PROFILE_DATA = [
     {
       title: 'Kriteria yang diinginkan',
       type: 'data',
-      value: ['value 1', 'value 2'],
+      value: normalizeDataList(user?.kriteria),
     },
     {
       title: 'Hobi',
       type: 'data',
-      value: ['value 1', 'value 2'],
+      value: normalizeDataList(user?.hobi),
     },
     {
       title: 'Anak ke',
       type: 'default',
-      value: '123',
+      value: user?.anak,
     },
     {
       title: 'Suku',
       type: 'default',
-      value: '123',
+      value: user?.suku,
     },
     {
       title: 'Warna Kulit',
       type: 'default',
-      value: '123',
+      value: user?.kulit,
     },
     {
       title: 'Riwayat Penyakit',
       type: 'default',
-      value: '123',
+      value: user?.penyakit,
     },
     {
-      title: 'Organisas yang pernah diikuti',
+      title: 'Organisasi yang pernah diikuti',
       type: 'default',
-      value: '123',
+      value: user?.organisasi,
     },
     {
       title: 'Pendidikan',
       type: 'default',
-      value: '123',
+      value: user?.pendidikanTerakhir,
     },
     {
       title: 'Riwayat Pendidikan',
       type: 'default',
-      value: '123',
+      value: user?.riwayatPendidikan,
     },
     {
       title: 'Kelebihan Diri',
       type: 'default',
-      value: '123',
+      value: user?.kelebihan,
     },
     {
-      title: 'Kota Domisili',
+      title: 'Kekurangan Diri',
       type: 'default',
-      value: '123',
+      value: user?.kekurangan,
+    },
+    {
+      title: 'Aktivitas Keseharian',
+      type: 'default',
+      value: user?.aktivitas,
+    },
+    {
+      title: 'Kota Domisili Orang Tua',
+      type: 'default',
+      value: user?.orangtuadom,
     },
     {
       title: 'Visi Misi Pernikahan',
       type: 'default',
-      value: '123',
+      value: user?.visimisi,
     },
   ];
 
@@ -104,13 +182,14 @@ const ProfileScreen = ({navigation, route}) => {
                 style={{
                   height: 128,
                   width: 96,
-                  backgroundColor: 'red',
+                  backgroundColor: Colors.COLOR_LIGHT_GRAY,
                   marginBottom: 8,
                   borderRadius: 8,
                 }}
+                source={{uri: `data:image/png;base64,${user?.fotowajah}`}}
               />
-              <Text style={styles.textName}>Nama</Text>
-              <Text style={styles.textUmur}>Umur</Text>
+              <Text style={styles.textName}>{user?.nama}</Text>
+              <Text style={styles.textUmur}>{user?.umur} tahun</Text>
               <View style={styles.badgeTop}>
                 <Text style={styles.textBadgeTopValue}>Siap Taaruf</Text>
               </View>
@@ -126,7 +205,7 @@ const ProfileScreen = ({navigation, route}) => {
                 }}>
                 <Icon name="idcard" size={20} color={Colors.COLOR_DARK_GRAY} />
                 <Text style={styles.textInfo}>
-                  lorem ipsum lorem ipsum lorem ipsum lorem ipsmu
+                  {`${user?.status}, ${user?.pekerjaan}, ${user?.kota}`}
                 </Text>
               </View>
               <View
@@ -144,7 +223,7 @@ const ProfileScreen = ({navigation, route}) => {
                   color={Colors.COLOR_DARK_GRAY}
                 />
                 <Text style={styles.textInfo}>
-                  lorem ipsum lorem ipsum lorem ipsum lorem ipsmu
+                  {`${user?.tinggi}cm/${user?.berat}kg`}
                 </Text>
               </View>
               <View
@@ -157,9 +236,7 @@ const ProfileScreen = ({navigation, route}) => {
                   maxWidth: '78%',
                 }}>
                 <Icon name="home" size={20} color={Colors.COLOR_DARK_GRAY} />
-                <Text style={styles.textInfo}>
-                  lorem ipsum lorem ipsum lorem ipsum lorem ipsmu
-                </Text>
+                <Text style={styles.textInfo}>{user?.ibadah}</Text>
               </View>
               <View
                 style={{
@@ -175,9 +252,7 @@ const ProfileScreen = ({navigation, route}) => {
                   size={20}
                   color={Colors.COLOR_DARK_GRAY}
                 />
-                <Text style={styles.textInfo}>
-                  lorem ipsum lorem ipsum lorem ipsum lorem ipsmu
-                </Text>
+                <Text style={styles.textInfo}>{user?.deskripsi}</Text>
               </View>
             </View>
           </View>
@@ -187,6 +262,7 @@ const ProfileScreen = ({navigation, route}) => {
               if (item.type == 'data') {
                 return (
                   <View
+                    key={index}
                     style={{
                       borderBottomWidth: 0.5,
                       borderBottomColor: Colors.COLOR_GRAY,
@@ -194,23 +270,28 @@ const ProfileScreen = ({navigation, route}) => {
                       marginBottom: 24,
                     }}>
                     <Text style={styles.textCaption}>{item.title}</Text>
-                    <View style={{flexDirection: 'row'}}>
-                      <View style={styles.badge}>
-                        <Text style={styles.textBadgeValue}>Value</Text>
-                      </View>
+                    <View style={{flexDirection: 'row', paddingTop: 10}}>
+                      {item.value.map((item, index) => {
+                        return (
+                          <View key={index} style={styles.badge}>
+                            <Text style={styles.textBadgeValue}>{item}</Text>
+                          </View>
+                        );
+                      })}
                     </View>
                   </View>
                 );
               } else {
                 return (
                   <View
+                    key={index}
                     style={{
                       borderBottomWidth: 0.5,
                       borderBottomColor: Colors.COLOR_GRAY,
                       marginBottom: 24,
                     }}>
                     <Text style={styles.textCaption}>{item.title}</Text>
-                    <Text style={styles.textNormalValue}>Value</Text>
+                    <Text style={styles.textNormalValue}>{item?.value}</Text>
                   </View>
                 );
               }
@@ -223,20 +304,19 @@ const ProfileScreen = ({navigation, route}) => {
             <View>
               <Text style={styles.textQuestion}>Pertanyaan 1</Text>
               <Text style={styles.textCaptionQuestion}>
-                Ini pertanyaan pertama lorem ipsum lorem ipsu lorem ipsum lorem
-                ipsum?
+                {user?.pertanyaansatu}
               </Text>
             </View>
             <View>
               <Text style={styles.textQuestion}>Pertanyaan 2</Text>
               <Text style={styles.textCaptionQuestion}>
-                Ini pertanyaan pertama?
+                {user?.pertanyaandua}
               </Text>
             </View>
             <View>
               <Text style={styles.textQuestion}>Pertanyaan 3</Text>
               <Text style={styles.textCaptionQuestion}>
-                Ini pertanyaan pertama?
+                {user?.pertanyaantiga}
               </Text>
             </View>
           </Card>
@@ -244,20 +324,17 @@ const ProfileScreen = ({navigation, route}) => {
           <Card style={{marginTop: 14}}>
             <View>
               <Text style={styles.textQuestion}>Pertanyaan 1</Text>
-              <Text style={styles.textCaption}>
-                Ini pertanyaan pertama lorem ipsum lorem ipsu lorem ipsum lorem
-                ipsum?
-              </Text>
+              <Text style={styles.textCaption}>{user?.pertanyaansatu}</Text>
               <Text style={styles.textNormalValue}>ini jawabannya</Text>
             </View>
             <View>
               <Text style={styles.textQuestion}>Pertanyaan 2</Text>
-              <Text style={styles.textCaption}>Ini pertanyaan pertama?</Text>
+              <Text style={styles.textCaption}>{user?.pertanyaandua}</Text>
               <Text style={styles.textNormalValue}>ini jawabannya</Text>
             </View>
             <View>
               <Text style={styles.textQuestion}>Pertanyaan 3</Text>
-              <Text style={styles.textCaption}>Ini pertanyaan pertama?</Text>
+              <Text style={styles.textCaption}>{user?.pertanyaantiga}</Text>
               <Text style={styles.textNormalValue}>ini jawabannya</Text>
             </View>
           </Card>
@@ -265,10 +342,7 @@ const ProfileScreen = ({navigation, route}) => {
           <Card style={{marginTop: 14}}>
             <View>
               <Text style={styles.textQuestion}>Pertanyaan 1</Text>
-              <Text style={styles.textCaption}>
-                Ini pertanyaan pertama lorem ipsum lorem ipsu lorem ipsum lorem
-                ipsum?
-              </Text>
+              <Text style={styles.textCaption}>{user?.pertanyaansatu}</Text>
               <Input
                 containerStyle={{height: 32, marginBottom: 18, marginTop: 8}}
                 placeholder={'Tulis Jawaban'}
@@ -278,7 +352,7 @@ const ProfileScreen = ({navigation, route}) => {
             </View>
             <View>
               <Text style={styles.textQuestion}>Pertanyaan 2</Text>
-              <Text style={styles.textCaption}>Ini pertanyaan pertama?</Text>
+              <Text style={styles.textCaption}>{user?.pertanyaandua}</Text>
               <Input
                 containerStyle={{height: 32, marginBottom: 18, marginTop: 8}}
                 placeholder={'Tulis Jawaban'}
@@ -288,7 +362,7 @@ const ProfileScreen = ({navigation, route}) => {
             </View>
             <View>
               <Text style={styles.textQuestion}>Pertanyaan 3</Text>
-              <Text style={styles.textCaption}>Ini pertanyaan pertama?</Text>
+              <Text style={styles.textCaption}>{user?.pertanyaantiga}</Text>
               <Input
                 containerStyle={{height: 32, marginBottom: 18, marginTop: 8}}
                 placeholder={'Tulis Jawaban'}
@@ -315,10 +389,13 @@ const ProfileScreen = ({navigation, route}) => {
                       alignItems: 'center',
                       justifyContent: 'center',
                       marginRight: 8,
-                    }}>
+                    }}
+                    onPress={() => onFavoriteButtonPress()}>
                     <Icon
                       name="heart"
-                      color={Colors.COLOR_LIGHT_GRAY}
+                      color={
+                        favorited ? Colors.COLOR_RED : Colors.COLOR_LIGHT_GRAY
+                      }
                       size={20}
                     />
                   </Touchable>
@@ -340,10 +417,13 @@ const ProfileScreen = ({navigation, route}) => {
                       alignItems: 'center',
                       justifyContent: 'center',
                       marginRight: 8,
-                    }}>
+                    }}
+                    onPress={() => onFavoriteButtonPress()}>
                     <Icon
                       name="heart"
-                      color={Colors.COLOR_LIGHT_GRAY}
+                      color={
+                        favorited ? Colors.COLOR_RED : Colors.COLOR_LIGHT_GRAY
+                      }
                       size={20}
                     />
                   </Touchable>
