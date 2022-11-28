@@ -6,6 +6,7 @@ import {
   StyleSheet,
   StatusBar,
   ScrollView,
+  Alert,
 } from 'react-native';
 import {Button, Card, Modal, Input, Row} from '../../components';
 import {IMAGES_RES} from '../../helpers/images';
@@ -16,8 +17,11 @@ import {AuthContext} from '../../context';
 import {retrieveUserSession} from '../../helpers/storage';
 import {
   ADD_TO_FAVORITE,
+  CANCEL_TAARUF,
+  CHECK_IS_TAARUFED,
   IS_FAVORITED,
   REMOVE_FROM_FAVORITE,
+  SEND_TAARUF,
 } from '../../helpers/firebase';
 
 const ProfileScreen = ({navigation, route}) => {
@@ -29,6 +33,9 @@ const ProfileScreen = ({navigation, route}) => {
 
   const [isLoading, setIsLoading] = React.useState(false);
   const [favorited, setIsFavorited] = React.useState(false);
+  const [taarufed, setTaarufed] = React.useState(false);
+
+  const [buttonId, setButtonId] = React.useState('idle');
 
   const KEY = route?.params?.key;
   const USER_DATA = route?.params?.data;
@@ -42,10 +49,11 @@ const ProfileScreen = ({navigation, route}) => {
     } else {
       setUser(USER_DATA);
       checkIsFavorited();
+      checkIsTaarufed();
     }
 
     return () => null;
-  }, []);
+  }, [favorited, isLoading]);
 
   // React.useEffect(() => {
   //   if (KEY) {
@@ -55,11 +63,20 @@ const ProfileScreen = ({navigation, route}) => {
   // }, [isLoading]);
 
   const checkIsFavorited = async () => {
-    const favorited = await IS_FAVORITED(user);
+    const favorited = await IS_FAVORITED(USER_DATA);
 
     console.log('is fav : ' + favorited);
 
     setIsFavorited(favorited);
+  };
+
+  const checkIsTaarufed = async () => {
+    const result = await CHECK_IS_TAARUFED(USER_DATA);
+
+    if (result) {
+      console.log('is taarufed : ' + result);
+      setTaarufed(result);
+    }
   };
 
   async function getOwnProfile() {
@@ -75,7 +92,9 @@ const ProfileScreen = ({navigation, route}) => {
     return splitting;
   };
 
+  //ADD OR REMOVE FROM FAV
   const onFavoriteButtonPress = async () => {
+    setButtonId('favorite');
     setIsLoading(true);
 
     if (favorited) {
@@ -88,6 +107,51 @@ const ProfileScreen = ({navigation, route}) => {
         console.log('add succes');
         setIsLoading(false);
       });
+    }
+  };
+
+  //AJUKAN TAARUF PRESSED
+  const onSendTaarufButtonPressed = async () => {
+    setButtonId('taaruf');
+    setIsLoading(true);
+    if (taarufed) {
+      console.log('cancel');
+      await CANCEL_TAARUF(USER_DATA)
+        .then(() => {
+          setIsLoading(false);
+          setTaarufed(false);
+          Alert.alert('Sukses!', 'Permintaan taaruf telah dibatalkan!');
+        })
+        .catch(err => {
+          console.log('errors: ' + err);
+          setIsLoading(false);
+          Alert.alert(
+            'Gagal!',
+            'Permintaan taaruf gagal dibatalkan, mohon coba lagi!',
+          );
+        });
+    } else {
+      console.log('send');
+      const answers = {
+        q1: firstQ,
+        q2: secondQ,
+        q3: thirdQ,
+      };
+      await SEND_TAARUF(USER_DATA, answers)
+        .then(() => {
+          setIsLoading(false);
+          Alert.alert('Sukses!', 'Pengajuan taaruf telah terkirim!', [
+            {text: 'OK', onPress: () => navigation.goBack()},
+          ]);
+        })
+        .catch(err => {
+          console.log('fail : ' + err);
+          setIsLoading(false);
+          Alert.alert(
+            'Gagal!',
+            'Permintaan taaruf gagal dikirim, mohon coba lagi!',
+          );
+        });
     }
   };
 
@@ -325,52 +389,54 @@ const ProfileScreen = ({navigation, route}) => {
             <View>
               <Text style={styles.textQuestion}>Pertanyaan 1</Text>
               <Text style={styles.textCaption}>{user?.pertanyaansatu}</Text>
-              <Text style={styles.textNormalValue}>ini jawabannya</Text>
+              <Text style={styles.textNormalValue}>{user?.answer?.q1}</Text>
             </View>
             <View>
               <Text style={styles.textQuestion}>Pertanyaan 2</Text>
               <Text style={styles.textCaption}>{user?.pertanyaandua}</Text>
-              <Text style={styles.textNormalValue}>ini jawabannya</Text>
+              <Text style={styles.textNormalValue}>{user?.answer?.q2}</Text>
             </View>
             <View>
               <Text style={styles.textQuestion}>Pertanyaan 3</Text>
               <Text style={styles.textCaption}>{user?.pertanyaantiga}</Text>
-              <Text style={styles.textNormalValue}>ini jawabannya</Text>
+              <Text style={styles.textNormalValue}>{user?.answer?.q3}</Text>
             </View>
           </Card>
         ) : (
-          <Card style={{marginTop: 14}}>
-            <View>
-              <Text style={styles.textQuestion}>Pertanyaan 1</Text>
-              <Text style={styles.textCaption}>{user?.pertanyaansatu}</Text>
-              <Input
-                containerStyle={{height: 32, marginBottom: 18, marginTop: 8}}
-                placeholder={'Tulis Jawaban'}
-                onChangeText={text => setFirstQ(text)}
-                value={firstQ}
-              />
-            </View>
-            <View>
-              <Text style={styles.textQuestion}>Pertanyaan 2</Text>
-              <Text style={styles.textCaption}>{user?.pertanyaandua}</Text>
-              <Input
-                containerStyle={{height: 32, marginBottom: 18, marginTop: 8}}
-                placeholder={'Tulis Jawaban'}
-                onChangeText={text => setSecondQ(text)}
-                value={secondQ}
-              />
-            </View>
-            <View>
-              <Text style={styles.textQuestion}>Pertanyaan 3</Text>
-              <Text style={styles.textCaption}>{user?.pertanyaantiga}</Text>
-              <Input
-                containerStyle={{height: 32, marginBottom: 18, marginTop: 8}}
-                placeholder={'Tulis Jawaban'}
-                onChangeText={text => setThirdQ(text)}
-                value={thirdQ}
-              />
-            </View>
-          </Card>
+          !taarufed && (
+            <Card style={{marginTop: 14}}>
+              <View>
+                <Text style={styles.textQuestion}>Pertanyaan 1</Text>
+                <Text style={styles.textCaption}>{user?.pertanyaansatu}</Text>
+                <Input
+                  containerStyle={{height: 32, marginBottom: 18, marginTop: 8}}
+                  placeholder={'Tulis Jawaban'}
+                  onChangeText={text => setFirstQ(text)}
+                  value={firstQ}
+                />
+              </View>
+              <View>
+                <Text style={styles.textQuestion}>Pertanyaan 2</Text>
+                <Text style={styles.textCaption}>{user?.pertanyaandua}</Text>
+                <Input
+                  containerStyle={{height: 32, marginBottom: 18, marginTop: 8}}
+                  placeholder={'Tulis Jawaban'}
+                  onChangeText={text => setSecondQ(text)}
+                  value={secondQ}
+                />
+              </View>
+              <View>
+                <Text style={styles.textQuestion}>Pertanyaan 3</Text>
+                <Text style={styles.textCaption}>{user?.pertanyaantiga}</Text>
+                <Input
+                  containerStyle={{height: 32, marginBottom: 18, marginTop: 8}}
+                  placeholder={'Tulis Jawaban'}
+                  onChangeText={text => setThirdQ(text)}
+                  value={thirdQ}
+                />
+              </View>
+            </Card>
+          )
         )}
 
         {KEY ? (
@@ -428,9 +494,13 @@ const ProfileScreen = ({navigation, route}) => {
                     />
                   </Touchable>
                   <Button
-                    disabled={!firstQ || !secondQ || !thirdQ}
-                    title="Ajukan Taaruf"
+                    disabled={taarufed ? false : !firstQ || !secondQ || !thirdQ}
+                    isLoading={buttonId == 'taaruf' ? isLoading : false}
+                    title={
+                      !taarufed ? 'Ajukan Taaruf' : 'Batalkan Pengajuan Taaruf'
+                    }
                     buttonStyle={{flex: 1}}
+                    onPress={() => onSendTaarufButtonPressed()}
                   />
                 </Row>
               </>

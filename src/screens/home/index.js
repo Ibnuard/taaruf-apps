@@ -76,7 +76,8 @@ const HomeScreen = ({navigation}) => {
         </Card>
 
         <Card style={{marginTop: 14}}>
-          <Touchable onPress={() => navigation.navigate('TerimaTaaruf')}>
+          <Touchable
+            onPress={() => navigation.navigate('TerimaTaaruf', {user: user})}>
             <Row>
               <Image
                 source={IMAGES_RES.terimaTaaruf}

@@ -1,10 +1,11 @@
 import firestore from '@react-native-firebase/firestore';
-import {CHECK_IS_VALID} from '../utils/moment';
-import {generateUID} from '../utils/utils';
+import {CHECK_IS_VALID, GET_CURRENT_DATE} from '../utils/moment';
+import {generateMonthData, generateUID} from '../utils/utils';
 import {retrieveUserSession} from './storage';
 
 //COLLECTIONS
 const usersCollection = firestore().collection('Users');
+const taarufCollection = firestore().collection('Taaruf');
 
 //QUERY
 
@@ -113,7 +114,7 @@ const GET_USER_LIST = async () => {
 const ADD_TO_FAVORITE = async data => {
   const user = await retrieveUserSession();
   const parsed = JSON.parse(user);
-  const path = usersCollection.doc(parsed?.nomorwa).collection('Favorites');
+  const path = usersCollection.doc(parsed?.nomorwa).collection('Favs');
 
   return firestore()
     .runTransaction(async transaction => {
@@ -142,7 +143,7 @@ const ADD_TO_FAVORITE = async data => {
 const REMOVE_FROM_FAVORITE = async data => {
   const user = await retrieveUserSession();
   const parsed = JSON.parse(user);
-  const path = usersCollection.doc(parsed?.nomorwa).collection('Favorites');
+  const path = usersCollection.doc(parsed?.nomorwa).collection('Favs');
 
   return firestore()
     .runTransaction(async transaction => {
@@ -171,20 +172,194 @@ const REMOVE_FROM_FAVORITE = async data => {
 const IS_FAVORITED = async data => {
   const user = await retrieveUserSession();
   const parsed = JSON.parse(user);
-  const path = usersCollection
+  const favData = await usersCollection
     .doc(parsed?.nomorwa)
-    .collection('Favorites')
-    .doc(data?.nomorwa);
+    .collection('Favs')
+    .get()
+    .then(snapshot => {
+      if (snapshot.size > 0) {
+        let temp = [];
 
-  const favorite = await path.get();
+        snapshot.forEach(doc => {
+          temp.push({id: doc.id, ...doc.data()});
+        });
 
-  const favDetail = favorite.data();
+        return temp;
+      } else {
+        return [];
+      }
+    });
 
-  if (favDetail) {
-    console.log('ada');
+  if (favData.length > 0) {
+    console.log('fav data exist');
+    const selectedFav = favData.filter((item, index) => {
+      return item?.nomorwa == data?.nomorwa;
+    });
+
+    return selectedFav?.length > 0 ? true : false;
   } else {
-    console.log('ga ada');
+    return false;
   }
+};
+
+// ==========
+// ==========
+//SEND TAARUF
+
+const SEND_TAARUF = async (data, answers) => {
+  const user = await retrieveUserSession();
+  const parsed = JSON.parse(user);
+
+  const _addUserTaaruf = async () => {
+    console.log('save taaruf data');
+    const monthId = generateMonthData();
+
+    const taarufDateData = {
+      monthId: monthId,
+      ...data,
+    };
+
+    return taarufCollection
+      .doc(parsed?.nomorwa)
+      .collection('LIST')
+      .doc(data?.nomorwa)
+      .set(taarufDateData);
+  };
+
+  const taarufData = {
+    answer: answers,
+    ...parsed,
+  };
+
+  return usersCollection
+    .doc(data?.nomorwa)
+    .collection('Taaruf')
+    .doc(parsed.nomorwa)
+    .set(taarufData)
+    .then(() => {
+      console.log('received taaruf');
+      return _addUserTaaruf();
+    });
+};
+
+//CANCEL TAARUF
+const CANCEL_TAARUF = async data => {
+  const user = await retrieveUserSession();
+  const parsed = JSON.parse(user);
+
+  const _removeUserTaaruf = async () => {
+    console.log('save taaruf data');
+    const monthId = generateMonthData();
+
+    return taarufCollection
+      .doc(parsed?.nomorwa)
+      .collection('LIST')
+      .doc(data?.nomorwa)
+      .delete();
+  };
+
+  return usersCollection
+    .doc(data?.nomorwa)
+    .collection('Taaruf')
+    .doc(parsed.nomorwa)
+    .delete()
+    .then(() => {
+      return _removeUserTaaruf();
+    });
+};
+
+//CHECK IF TAARUFED
+const CHECK_IS_TAARUFED = async data => {
+  const user = await retrieveUserSession();
+  const parsed = JSON.parse(user);
+
+  const monthId = generateMonthData();
+
+  return await taarufCollection
+    .doc(parsed.nomorwa)
+    .collection('LIST')
+    .doc(data?.nomorwa)
+    .get()
+    .then(snapshot => {
+      if (snapshot.exists) {
+        return true;
+      } else {
+        return false;
+      }
+    });
+};
+
+//GET SENDED CV
+const GET_SENDED_CV = async data => {
+  const user = await retrieveUserSession();
+  const parsed = JSON.parse(user);
+
+  return await taarufCollection
+    .doc(parsed.nomorwa)
+    .collection('LIST')
+    .get()
+    .then(snapshot => {
+      if (snapshot.size > 0) {
+        let temp = [];
+
+        snapshot.forEach(doc => {
+          temp.push({id: doc.id, ...doc.data()});
+        });
+
+        return temp;
+      } else {
+        return [];
+      }
+    });
+};
+
+//GET FAVORITED CV
+const GET_FAVORITED_CV = async data => {
+  const user = await retrieveUserSession();
+  const parsed = JSON.parse(user);
+
+  return await usersCollection
+    .doc(parsed.nomorwa)
+    .collection('Favs')
+    .get()
+    .then(snapshot => {
+      console.log('fav count : ' + snapshot.size);
+      if (snapshot.size > 0) {
+        let temp = [];
+
+        snapshot.forEach(doc => {
+          temp.push({id: doc.id, ...doc.data()});
+        });
+
+        return temp;
+      } else {
+        return [];
+      }
+    });
+};
+
+//GET TERIMA CV
+const GET_RECEIVED_CV = async data => {
+  const user = await retrieveUserSession();
+  const parsed = JSON.parse(user);
+
+  return await usersCollection
+    .doc(parsed.nomorwa)
+    .collection('Taaruf')
+    .get()
+    .then(snapshot => {
+      if (snapshot.size > 0) {
+        let temp = [];
+
+        snapshot.forEach(doc => {
+          temp.push({id: doc.id, ...doc.data()});
+        });
+
+        return temp;
+      } else {
+        return [];
+      }
+    });
 };
 
 export {
@@ -195,4 +370,10 @@ export {
   ADD_TO_FAVORITE,
   REMOVE_FROM_FAVORITE,
   IS_FAVORITED,
+  SEND_TAARUF,
+  CANCEL_TAARUF,
+  CHECK_IS_TAARUFED,
+  GET_SENDED_CV,
+  GET_FAVORITED_CV,
+  GET_RECEIVED_CV,
 };

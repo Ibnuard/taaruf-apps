@@ -23,6 +23,7 @@ import TerimaTaarufScreen from '../screens/terimataaruf';
 import {getFocusedRouteNameFromRoute} from '@react-navigation/native';
 import FavoriteScreen from '../screens/cvfavorit';
 import UpgradeScreen from '../screens/upgrade';
+import CVTerkirimScreen from '../screens/cvterkirim';
 
 //create stack screen
 const Stack = createNativeStackNavigator();
@@ -225,6 +226,19 @@ export const HomeStack = () => {
         component={KirimTaarufScreen}
         options={{
           title: 'Pengajuan Taaruf',
+          headerTitleStyle: {
+            color: Colors.COLOR_WHITE,
+          },
+          headerStyle: {
+            backgroundColor: Colors.COLOR_STATUSBAR,
+          },
+        }}
+      />
+      <Stack.Screen
+        name="CVTerkirim"
+        component={CVTerkirimScreen}
+        options={{
+          title: 'CV Terkirim',
           headerTitleStyle: {
             color: Colors.COLOR_WHITE,
           },
