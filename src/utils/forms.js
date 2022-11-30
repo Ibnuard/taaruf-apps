@@ -1,4 +1,6 @@
 export const MushForm = (config = []) => {
+  console.log(JSON.stringify(config));
+
   let temp;
 
   for (let i = 0; i < config.length; i++) {

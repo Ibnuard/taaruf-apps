@@ -54,6 +54,51 @@ const USER_REGISTER = data => {
   return usersCollection.doc(data.nomorwa).set(user);
 };
 
+const USER_UPDATE = (id, data) => {
+  const user = {
+    id: generateUID(),
+    gender: data.gender ?? 'kosong',
+    nama: data?.nama ?? 'kosong',
+    ttl: data?.ttl ?? 'kosong',
+    umur: CHECK_IS_VALID(data?.ttl) ?? 'kosong',
+    kota: data?.kota ?? 'kosong',
+    orangtuadom: data?.orangtuadom ?? 'kosong',
+    alamatdom: data?.alamatdom ?? 'kosong',
+    nomorwa: data?.nomorwa ?? 'kosong',
+    email: data?.email ?? 'kosong',
+    password: data?.password ?? 'kosong',
+    fotowajah: data?.fotoWajah ?? 'kosong',
+    fotofull: data?.fotoFull ?? 'kosong',
+    fotoid: data?.fotoid ?? 'kosong',
+    pekerjaan: data?.pekerjaan ?? 'kosong',
+    pendidikanTerakhir: data?.pendidikanTerakhir ?? 'kosong',
+    riwayatPendidikan: data?.riwayatPendidikan ?? 'kosong',
+    status: data?.status ?? 'kosong',
+    tinggi: data?.tinggi ?? 'kosong',
+    berat: data?.berat ?? 'kosong',
+    ibadah: data?.ibadah ?? 'kosong',
+    kriteria: data?.kriteria ?? 'kosong',
+    deskripsi: data?.deskripsi ?? 'kosong',
+    hobi: data?.hobi ?? 'kosong',
+    anak: data?.anak ?? 'kosong',
+    suku: data?.suku ?? 'kosong',
+    kulit: data?.kulit ?? 'kosong',
+    penyakit: data?.penyakit ?? 'kosong',
+    organisasi: data?.organisasi ?? 'kosong',
+    kelebihan: data?.kelebihan ?? 'kosong',
+    kekurangan: data?.kekurangan ?? 'kosong',
+    aktivitas: data?.aktivitas ?? 'kosong',
+    visimisi: data?.visimisi ?? 'kosong',
+    pertanyaansatu: data?.pertanyaansatu ?? 'kosong',
+    pertanyaandua: data?.pertanyaandua ?? 'kosong',
+    pertanyaantiga: data?.pertanyaantiga ?? 'kosong',
+    premium: false,
+    favoritCount: 0,
+  };
+
+  return usersCollection?.doc(id).update(user);
+};
+
 //CHECK IF USER EXIST
 const CHECK_USER = phone => {
   return usersCollection
@@ -364,6 +409,7 @@ const GET_RECEIVED_CV = async data => {
 
 export {
   USER_REGISTER,
+  USER_UPDATE,
   CHECK_USER,
   USER_LOGIN,
   GET_USER_LIST,

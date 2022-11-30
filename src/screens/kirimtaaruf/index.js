@@ -5,9 +5,11 @@ import {FloatingAction} from 'react-native-floating-action';
 import {IMAGES_RES} from '../../helpers/images';
 import {GET_USER_LIST} from '../../helpers/firebase';
 import {retrieveUserSession} from '../../helpers/storage';
+import NoItemScreen from '../../components/NoItem';
 
 const KirimTaarufScreen = ({navigation, route}) => {
   const [users, setUsers] = React.useState([]);
+  const [isLoading, setIsLoading] = React.useState(false);
 
   const USER = route?.params?.user;
 
@@ -24,13 +26,15 @@ const KirimTaarufScreen = ({navigation, route}) => {
   }, [navigation]);
 
   const getAllUsers = async () => {
+    setIsLoading(true);
     const users = await GET_USER_LIST();
 
     const filtered = users.filter((item, inex) => {
-      return item?.id !== USER?.id;
+      return item?.id !== USER?.id && item?.gender !== USER?.gender;
     });
 
     setUsers(filtered);
+    setIsLoading(false);
   };
 
   const actions = [
@@ -66,24 +70,29 @@ const KirimTaarufScreen = ({navigation, route}) => {
 
   return (
     <View style={styles.container}>
-      <FlatList
-        data={users}
-        contentContainerStyle={{paddingBottom: 64}}
-        renderItem={({item, index}) => (
-          <PeopleCardList
-            data={item}
-            onPress={
-              () =>
-                navigation.navigate('ProfileDetail', {
-                  key: 'kirimtaaruf',
-                  data: item,
-                })
-              // navigation.navigate('Upgrade')
-            }
-          />
-        )}
-        numColumns={2}
-      />
+      {users?.length ? (
+        <FlatList
+          data={users}
+          contentContainerStyle={{paddingBottom: 64}}
+          renderItem={({item, index}) => (
+            <PeopleCardList
+              data={item}
+              onPress={
+                () =>
+                  navigation.navigate('ProfileDetail', {
+                    key: 'kirimtaaruf',
+                    data: item,
+                  })
+                // navigation.navigate('Upgrade')
+              }
+            />
+          )}
+          numColumns={2}
+        />
+      ) : (
+        <NoItemScreen isLoading={isLoading} />
+      )}
+
       <FloatingAction
         actions={actions}
         onPressItem={item => _onFabPress(item)}

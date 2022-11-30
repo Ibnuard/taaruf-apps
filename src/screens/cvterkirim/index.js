@@ -5,9 +5,11 @@ import {FloatingAction} from 'react-native-floating-action';
 import {IMAGES_RES} from '../../helpers/images';
 import {GET_SENDED_CV, GET_USER_LIST} from '../../helpers/firebase';
 import {retrieveUserSession} from '../../helpers/storage';
+import NoItemScreen from '../../components/NoItem';
 
 const CVTerkirimScreen = ({navigation, route}) => {
   const [users, setUsers] = React.useState([]);
+  const [isLoading, setIsLoading] = React.useState(false);
 
   const USER = route?.params?.user;
 
@@ -24,6 +26,7 @@ const CVTerkirimScreen = ({navigation, route}) => {
   }, [navigation]);
 
   const getSendedCV = async () => {
+    setIsLoading(true);
     const data = await GET_SENDED_CV();
 
     const filtered = data.filter((item, index) => {
@@ -31,28 +34,33 @@ const CVTerkirimScreen = ({navigation, route}) => {
     });
 
     setUsers(filtered);
+    setIsLoading(false);
   };
 
   return (
     <View style={styles.container}>
-      <FlatList
-        data={users}
-        contentContainerStyle={{paddingBottom: 64}}
-        renderItem={({item, index}) => (
-          <PeopleCardList
-            data={item}
-            onPress={
-              () =>
-                navigation.navigate('ProfileDetail', {
-                  key: 'kirimtaaruf',
-                  data: item,
-                })
-              // navigation.navigate('Upgrade')
-            }
-          />
-        )}
-        numColumns={2}
-      />
+      {users?.length ? (
+        <FlatList
+          data={users}
+          contentContainerStyle={{paddingBottom: 64}}
+          renderItem={({item, index}) => (
+            <PeopleCardList
+              data={item}
+              onPress={
+                () =>
+                  navigation.navigate('ProfileDetail', {
+                    key: 'kirimtaaruf',
+                    data: item,
+                  })
+                // navigation.navigate('Upgrade')
+              }
+            />
+          )}
+          numColumns={2}
+        />
+      ) : (
+        <NoItemScreen isLoading={isLoading} />
+      )}
     </View>
   );
 };

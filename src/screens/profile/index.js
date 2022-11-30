@@ -43,17 +43,32 @@ const ProfileScreen = ({navigation, route}) => {
   const {signOut} = React.useContext(AuthContext);
 
   React.useEffect(() => {
-    if (!KEY) {
-      //own profile
-      getOwnProfile();
-    } else {
-      setUser(USER_DATA);
-      checkIsFavorited();
-      checkIsTaarufed();
-    }
+    const unsubscribe = navigation.addListener('focus', () => {
+      if (!KEY) {
+        //own profile
+        getOwnProfile();
+      } else {
+        setUser(USER_DATA);
+        checkIsFavorited();
+        checkIsTaarufed();
+      }
+    });
 
-    return () => null;
-  }, [favorited, isLoading]);
+    return unsubscribe;
+  }, [navigation, favorited, isLoading]);
+
+  // React.useEffect(() => {
+  //   if (!KEY) {
+  //     //own profile
+  //     getOwnProfile();
+  //   } else {
+  //     setUser(USER_DATA);
+  //     checkIsFavorited();
+  //     checkIsTaarufed();
+  //   }
+
+  //   return () => null;
+  // }, [favorited, isLoading]);
 
   // React.useEffect(() => {
   //   if (KEY) {
@@ -80,8 +95,11 @@ const ProfileScreen = ({navigation, route}) => {
   };
 
   async function getOwnProfile() {
+    console.log('Get user session!!!');
     const user = await retrieveUserSession();
     const parse = JSON.parse(user);
+
+    console.log(parse?.pekerjaan);
 
     setUser(parse);
   }
@@ -509,6 +527,14 @@ const ProfileScreen = ({navigation, route}) => {
         ) : (
           <View style={{marginVertical: 24}}>
             <Button title="Keluar" onPress={() => signOut()} />
+            <View style={{marginTop: 14}} />
+            <Button
+              invert
+              title="Edit CV"
+              onPress={() =>
+                navigation.navigate('EditCV', {key: 'edit', user: user})
+              }
+            />
           </View>
         )}
       </View>

@@ -137,7 +137,6 @@ export const MainScreen = () => {
           headerShown: false,
           tabBarStyle: (route => {
             const routeName = getFocusedRouteNameFromRoute(route) ?? '';
-            console.log(routeName);
             if (routeName === 'HomeInit' || !routeName) {
               return {display: 'flex'};
             } else {
@@ -166,11 +165,19 @@ export const MainScreen = () => {
       />
       <Tab.Screen
         name="Profile"
-        component={ProfileScreen}
-        options={{
-          title: 'Profil',
+        component={ProfileStack}
+        options={({route}) => ({
+          title: 'Profile',
           headerShown: false,
-        }}
+          tabBarStyle: (route => {
+            const routeName = getFocusedRouteNameFromRoute(route) ?? '';
+            if (routeName === 'ProfileInit' || !routeName) {
+              return {display: 'flex'};
+            } else {
+              return {display: 'none'};
+            }
+          })(route),
+        })}
       />
     </Tab.Navigator>
   );
@@ -297,6 +304,34 @@ export const HomeStack = () => {
           headerStyle: {
             backgroundColor: Colors.COLOR_STATUSBAR,
           },
+        }}
+      />
+    </Stack.Navigator>
+  );
+};
+
+const ProfileStack = () => {
+  return (
+    <Stack.Navigator>
+      <Stack.Screen
+        name="ProfileInit"
+        component={ProfileScreen}
+        options={{
+          headerShown: false,
+        }}
+      />
+      <Stack.Screen
+        name="Domisili"
+        component={DomisiliScreen}
+        options={{
+          title: 'Pilih Domisili',
+        }}
+      />
+      <Stack.Screen
+        name="EditCV"
+        component={DetailCVScreen}
+        options={{
+          title: 'Edit CV',
         }}
       />
     </Stack.Navigator>

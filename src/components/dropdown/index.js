@@ -20,6 +20,7 @@ const Dropdown = ({
   onItemSelected,
   data = [],
   captionStyle,
+  defaultValue,
   caption,
 }) => {
   const [expanded, setExpanded] = React.useState(false);
@@ -28,6 +29,12 @@ const Dropdown = ({
   React.useEffect(() => {
     onItemSelected ? onItemSelected(selectedItem) : null;
   }, [selectedItem]);
+
+  React.useEffect(() => {
+    if (defaultValue?.length) {
+      setSelectedItem(defaultValue);
+    }
+  }, [defaultValue]);
 
   if (
     Platform.OS === 'android' &&

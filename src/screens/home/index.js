@@ -43,6 +43,7 @@ const HomeScreen = ({navigation}) => {
           style={{flex: 1}}
           onPress={() => navigation.jumpTo('Profile')}>
           <Image
+            source={{uri: `data:image/png;base64,${user?.fotowajah}`}}
             style={{
               height: 36,
               width: 36,

@@ -24,6 +24,22 @@ async function retrieveUserSession() {
   }
 }
 
+async function updateUserSession(data) {
+  try {
+    const session = await EncryptedStorage.getItem('user_session');
+
+    if (session !== undefined) {
+      const parsedJSON = JSON.parse(session);
+      const update = {...parsedJSON, ...data};
+
+      return await storeUserSession(update);
+    }
+  } catch (error) {
+    // There was an error on the native side
+    console.log('error update user session');
+  }
+}
+
 async function removeUserSession() {
   try {
     await EncryptedStorage.removeItem('user_session');
@@ -34,4 +50,9 @@ async function removeUserSession() {
   }
 }
 
-export {storeUserSession, retrieveUserSession, removeUserSession};
+export {
+  storeUserSession,
+  retrieveUserSession,
+  removeUserSession,
+  updateUserSession,
+};

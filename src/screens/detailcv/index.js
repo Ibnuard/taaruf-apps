@@ -15,48 +15,80 @@ import Icon from 'react-native-vector-icons/AntDesign';
 import {LaunchCamera, LaunchGallery} from '../../utils/imagePicker';
 import _ from 'lodash';
 import {MushForm} from '../../utils/forms';
-import {USER_REGISTER} from '../../helpers/firebase';
+import {USER_REGISTER, USER_UPDATE} from '../../helpers/firebase';
+import {storeUserSession, updateUserSession} from '../../helpers/storage';
+import Touchable from '../../components/touchable';
+import DatePicker from 'react-native-date-picker';
+import {PARSE_DATE} from '../../utils/moment';
 
 const DetailCVScreen = ({navigation, route}) => {
+  const KEY = route?.params?.key;
+  const USER = route?.params?.user;
+
   const [mode, setMode] = React.useState('pria'); //pria || wanita
   const [imagePickerVisible, setImagePickerVisible] = React.useState(false);
   const [inputError, setInputError] = React.useState([]);
 
   //image
   const [selectType, setSelectType] = React.useState();
-  const [faceImage, setFaceImage] = React.useState();
-  const [bodyImage, setBodyImage] = React.useState();
-  const [ktpImage, setKtpImage] = React.useState();
+  const [faceImage, setFaceImage] = React.useState(USER?.fotowajah ?? '');
+  const [bodyImage, setBodyImage] = React.useState(USER?.fotofull ?? '');
+  const [ktpImage, setKtpImage] = React.useState(USER?.fotoid ?? '');
 
   //inpput
-  const [selectedPekerjaan, setSelectedPekerjaan] = React.useState('');
-  const [selectedPendidikan, setSelectedPendidikan] = React.useState('');
-  const [riwayatPendidikan, setRiwayatPendidikan] = React.useState('');
-  const [selectedStatus, setSelectedStatus] = React.useState('');
-  const [tinggiBadan, setTinggiBadan] = React.useState('');
-  const [beratBadan, setBeratBadan] = React.useState('');
-  const [selectedIbadah, setSelectedIbadah] = React.useState('');
-  const [kriteria, setKriteria] = React.useState('');
-  const [deskripsi, setDeskripsi] = React.useState('');
-  const [hobi, setHobi] = React.useState('');
-  const [anak, setAnak] = React.useState('');
-  const [selectedSuku, setSelectedSuku] = React.useState('');
-  const [selectedWarnaKulit, setSelectedWarnaKulit] = React.useState('');
-  const [penyakit, setPenyakit] = React.useState('');
-  const [organisasi, setOrganisasi] = React.useState('');
-  const [kelebihan, setKelebihan] = React.useState('');
-  const [kekurangan, setKekurangan] = React.useState('');
-  const [aktivitasHarian, setAktivitasHarian] = React.useState('');
-  const [visimisi, setVisimisi] = React.useState('');
+  const [selectedPekerjaan, setSelectedPekerjaan] = React.useState(
+    USER?.pekerjaan ?? '',
+  );
+  const [selectedPendidikan, setSelectedPendidikan] = React.useState(
+    USER?.pendidikanTerakhir ?? '',
+  );
+  const [riwayatPendidikan, setRiwayatPendidikan] = React.useState(
+    USER?.riwayatPendidikan ?? '',
+  );
+  const [selectedStatus, setSelectedStatus] = React.useState(
+    USER?.status ?? '',
+  );
+  const [tinggiBadan, setTinggiBadan] = React.useState(USER?.tinggi ?? '');
+  const [beratBadan, setBeratBadan] = React.useState(USER?.berat ?? '');
+  const [selectedIbadah, setSelectedIbadah] = React.useState(
+    USER?.ibadah ?? '',
+  );
+  const [kriteria, setKriteria] = React.useState(USER?.kriteria ?? '');
+  const [deskripsi, setDeskripsi] = React.useState(USER?.deskripsi ?? '');
+  const [hobi, setHobi] = React.useState(USER?.hobi ?? '');
+  const [anak, setAnak] = React.useState(USER?.anak ?? '');
+  const [selectedSuku, setSelectedSuku] = React.useState(USER?.suku ?? '');
+  const [selectedWarnaKulit, setSelectedWarnaKulit] = React.useState(
+    USER?.kulit ?? '',
+  );
+  const [penyakit, setPenyakit] = React.useState(USER?.penyakit ?? '');
+  const [organisasi, setOrganisasi] = React.useState(USER?.organisasi ?? '');
+  const [kelebihan, setKelebihan] = React.useState(USER?.kelebihan ?? '');
+  const [kekurangan, setKekurangan] = React.useState(USER?.kekurangan ?? '');
+  const [aktivitasHarian, setAktivitasHarian] = React.useState(
+    USER?.aktivitas ?? '',
+  );
+  const [visimisi, setVisimisi] = React.useState(USER?.visimisi ?? '');
 
   //question
-  const [firstQA, setFirstQA] = React.useState('');
-  const [secondQA, setSecondQA] = React.useState('');
-  const [thirdQA, setThirdQA] = React.useState('');
+  const [firstQA, setFirstQA] = React.useState(USER?.pertanyaansatu ?? '');
+  const [secondQA, setSecondQA] = React.useState(USER?.pertanyaandua ?? '');
+  const [thirdQA, setThirdQA] = React.useState(USER?.pertanyaantiga ?? '');
 
   //other
   const [kode, setKode] = React.useState('');
   const [isLoading, setIsLoading] = React.useState(false);
+
+  //EDIT
+  const [name, setName] = React.useState(USER?.nama ?? '');
+  const [domisiliOrangTua, setDomisiliOrangTua] = React.useState(
+    USER?.orangtuadom ?? '',
+  );
+  const [alamat, setAlamat] = React.useState(USER?.alamatdom ?? '');
+  const [selectedDate, setSelectedDate] = React.useState(new Date(USER?.ttl));
+  const [showDatePicker, setShowDatePicker] = React.useState(false);
+
+  const SELECTED_DOMISILI = route?.params?.domisili ?? USER?.kota;
 
   //const {signIn} = React.useContext(AuthContext);
 
@@ -219,6 +251,27 @@ const DetailCVScreen = ({navigation, route}) => {
     },
   ];
 
+  const input_config_edit = [
+    {
+      key: 'name',
+      required: true,
+      minMaxChar: [3, 64],
+      value: name,
+    },
+    {
+      key: 'olddomisili',
+      required: true,
+      minMaxChar: [3, 128],
+      value: domisiliOrangTua,
+    },
+    {
+      key: 'alamat',
+      required: true,
+      minMaxChar: [3, 128],
+      value: alamat,
+    },
+  ];
+
   const loadFromGallery = async () => {
     setImagePickerVisible(false);
     const selectedImage = await LaunchGallery();
@@ -275,7 +328,10 @@ const DetailCVScreen = ({navigation, route}) => {
       !visimisi ||
       !firstQA ||
       !secondQA ||
-      !thirdQA
+      !thirdQA ||
+      (KEY == 'edit' && !name) ||
+      (KEY == 'edit' && !domisiliOrangTua) ||
+      (KEY == 'edit' && !alamat)
     ) {
       return true;
     } else {
@@ -285,7 +341,10 @@ const DetailCVScreen = ({navigation, route}) => {
 
   const _onDoneButtonPressed = () => {
     setIsLoading(true);
-    const {errors} = MushForm(input_config);
+
+    const editConfig = input_config.concat(input_config_edit);
+
+    const {errors} = MushForm(KEY == 'edit' ? editConfig : input_config);
     setInputError(errors);
 
     console.log(errors);
@@ -323,26 +382,59 @@ const DetailCVScreen = ({navigation, route}) => {
     if (_.isEmpty(errors)) {
       //navigation.navigate('DoneCV');
       //setIsLoading(false);
-      USER_REGISTER(data)
-        .then(() => {
-          setIsLoading(false);
-          navigation.navigate('DoneCV');
-        })
-        .catch(err => {
-          setIsLoading(false);
-          Alert.alert(
-            'Pendaftaran Gagal',
-            'Ada kesalahan data, mohon di cek kembali',
-          );
-        });
+      KEY == 'edit' ? _updateUser(data) : _registerUser(data);
     } else {
       setIsLoading(false);
     }
   };
 
-  React.useEffect(() => {
-    console.log(faceImage?.length, bodyImage?.length, ktpImage?.length);
-  }, [faceImage, bodyImage, ktpImage]);
+  const _registerUser = async data => {
+    USER_REGISTER(data)
+      .then(() => {
+        setIsLoading(false);
+        navigation.navigate('DoneCV');
+      })
+      .catch(err => {
+        setIsLoading(false);
+        Alert.alert(
+          'Pendaftaran Gagal',
+          'Ada kesalahan data, mohon di cek kembali',
+        );
+      });
+  };
+
+  const _updateUser = async data => {
+    const existingData = {
+      alamatdom: alamat,
+      email: USER?.email,
+      gender: USER?.gender,
+      kota: SELECTED_DOMISILI,
+      nama: name,
+      nomorwa: USER?.nomorwa,
+      orangtuadom: domisiliOrangTua,
+      password: USER?.password,
+      ttl: String(selectedDate),
+    };
+
+    const updateData = {...existingData, ...data};
+
+    USER_UPDATE(USER?.nomorwa, updateData)
+      .then(async () => {
+        setIsLoading(false);
+        await updateUserSession(updateData);
+        Alert.alert('Sukses!', 'Update CV telah berhasil!', [
+          {text: 'OK', onPress: () => navigation.goBack()},
+        ]);
+      })
+      .catch(err => {
+        setIsLoading(false);
+        Alert.alert('Gagal!', 'Ada kesalahan data, mohon di cek kembali!');
+      });
+  };
+
+  // React.useEffect(() => {
+  //   console.log(faceImage?.length, bodyImage?.length, ktpImage?.length);
+  // }, [faceImage, bodyImage, ktpImage]);
 
   return (
     <ScrollView
@@ -427,12 +519,59 @@ const DetailCVScreen = ({navigation, route}) => {
         )}
       </Card>
       <View style={styles.child}>
+        {KEY == 'edit' ? (
+          <>
+            <Input
+              caption={'Nama Lengkap'}
+              containerStyle={styles.input}
+              placeholder={'Nama Lengkap'}
+              onChangeText={text => setName(text)}
+              value={name}
+              errorMessage={inputError['name']}
+            />
+            <Touchable onPress={() => setShowDatePicker(true)}>
+              <Input
+                containerStyle={styles.input}
+                editable={false}
+                caption={'Tanggal Lahir'}
+                placeholder={'Tanggal Lahir'}
+                value={PARSE_DATE(selectedDate)}
+              />
+            </Touchable>
+            <Touchable onPress={() => navigation.navigate('Domisili')}>
+              <Input
+                caption={'Kota Domisili'}
+                containerStyle={styles.input}
+                editable={false}
+                placeholder={'Kota Domisili'}
+                value={SELECTED_DOMISILI}
+              />
+            </Touchable>
+            <Input
+              caption={'Kota Domisili Orang Tua'}
+              containerStyle={styles.input}
+              placeholder={'Kota Domisili Orang Tua'}
+              onChangeText={text => setDomisiliOrangTua(text)}
+              value={domisiliOrangTua}
+              errorMessage={inputError['olddomisili']}
+            />
+            <Input
+              caption={'Alamat Domisili'}
+              containerStyle={styles.input}
+              placeholder={'Alamat Domisili'}
+              onChangeText={text => setAlamat(text)}
+              value={alamat}
+              errorMessage={inputError['alamat']}
+            />
+          </>
+        ) : null}
         <Dropdown
           caption={'Pilih Pekerjaan'}
           style={styles.input}
           data={pekerjaan}
           title={'Pilih Pekerjaan'}
           onItemSelected={item => setSelectedPekerjaan(item)}
+          defaultValue={selectedPekerjaan}
         />
         <Dropdown
           caption={'Pilih Pendidikan Terakhir'}
@@ -440,6 +579,7 @@ const DetailCVScreen = ({navigation, route}) => {
           data={pendidikan}
           title={'Pilih Pendidikan Terakhir'}
           onItemSelected={item => setSelectedPendidikan(item)}
+          defaultValue={selectedPendidikan}
         />
         <Input
           caption={'Riwayat Pendidikan'}
@@ -458,6 +598,7 @@ const DetailCVScreen = ({navigation, route}) => {
           data={status}
           title={'Pilih Status'}
           onItemSelected={item => setSelectedStatus(item)}
+          defaultValue={selectedStatus}
         />
         <Input
           caption={'Tinggi Badan ( CM )'}
@@ -485,6 +626,7 @@ const DetailCVScreen = ({navigation, route}) => {
           data={ibadah_rate}
           title={'Melakukan Ibadah'}
           onItemSelected={item => setSelectedIbadah(item)}
+          defaultValue={selectedIbadah}
         />
         <Input
           caption={'Kriteria yang diinginkan'}
@@ -532,6 +674,7 @@ const DetailCVScreen = ({navigation, route}) => {
           data={suku}
           title={'Suku'}
           onItemSelected={item => setSelectedSuku(item)}
+          defaultValue={selectedSuku}
         />
         <Dropdown
           caption={'Warna Kulit'}
@@ -539,6 +682,7 @@ const DetailCVScreen = ({navigation, route}) => {
           data={skin}
           title={'Warna Kulit'}
           onItemSelected={item => setSelectedWarnaKulit(item)}
+          defaultValue={selectedWarnaKulit}
         />
         <Input
           caption={'Riwayat Penyakit'}
@@ -623,6 +767,7 @@ const DetailCVScreen = ({navigation, route}) => {
         containerStyle={styles.input}
         placeholder={'Pertanyaan ke 1'}
         onChangeText={text => setFirstQA(text)}
+        errorMessage={inputError['q1']}
         value={firstQA}
       />
       <Text style={styles.textInfo}>Maksimal 150 karakter</Text>
@@ -632,6 +777,7 @@ const DetailCVScreen = ({navigation, route}) => {
         containerStyle={styles.input}
         placeholder={'Pertanyaan ke 2'}
         onChangeText={text => setSecondQA(text)}
+        errorMessage={inputError['q2']}
         value={secondQA}
       />
       <Text style={styles.textInfo}>Maksimal 150 karakter</Text>
@@ -641,22 +787,23 @@ const DetailCVScreen = ({navigation, route}) => {
         containerStyle={styles.input}
         placeholder={'Pertanyaan ke 3'}
         onChangeText={text => setThirdQA(text)}
+        errorMessage={inputError['q3']}
         value={thirdQA}
       />
       <Text style={styles.textInfo}>Maksimal 150 karakter</Text>
-      <Input
+      {/* <Input
         maxLength={150}
         containerStyle={styles.input}
         placeholder={'Kode Sertifikasi Alumni Kelas Pranikah'}
         onChangeText={text => setKode(text)}
         value={kode}
       />
-      <Text style={styles.textInfo}>Kosongi jika tidak punya</Text>
+      <Text style={styles.textInfo}>Kosongi jika tidak punya</Text> */}
       <View style={{marginTop: 48}}>
         <Button
           disabled={isButtonDisabled()}
           isLoading={isLoading}
-          title="Buat CV"
+          title={KEY == 'edit' ? 'Update CV' : 'Buat CV'}
           onPress={() => _onDoneButtonPressed()}
         />
       </View>
@@ -667,6 +814,19 @@ const DetailCVScreen = ({navigation, route}) => {
         onOptionButtonPress={type =>
           type == 'first' ? loadFromGallery() : loadFromCamera()
         }
+      />
+      <DatePicker
+        modal
+        open={showDatePicker}
+        date={selectedDate}
+        mode={'date'}
+        onConfirm={date => {
+          setShowDatePicker(false);
+          setSelectedDate(date);
+        }}
+        onCancel={() => {
+          setShowDatePicker(false);
+        }}
       />
     </ScrollView>
   );
