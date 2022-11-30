@@ -47,28 +47,21 @@ const ProfileScreen = ({navigation, route}) => {
       if (!KEY) {
         //own profile
         getOwnProfile();
-      } else {
-        setUser(USER_DATA);
-        checkIsFavorited();
-        checkIsTaarufed();
       }
     });
 
     return unsubscribe;
-  }, [navigation, favorited, isLoading]);
+  }, [navigation]);
 
-  // React.useEffect(() => {
-  //   if (!KEY) {
-  //     //own profile
-  //     getOwnProfile();
-  //   } else {
-  //     setUser(USER_DATA);
-  //     checkIsFavorited();
-  //     checkIsTaarufed();
-  //   }
+  React.useEffect(() => {
+    if (KEY) {
+      setUser(USER_DATA);
+      checkIsFavorited();
+      checkIsTaarufed();
+    }
 
-  //   return () => null;
-  // }, [favorited, isLoading]);
+    return () => null;
+  }, [favorited, isLoading]);
 
   // React.useEffect(() => {
   //   if (KEY) {
@@ -352,7 +345,12 @@ const ProfileScreen = ({navigation, route}) => {
                       marginBottom: 24,
                     }}>
                     <Text style={styles.textCaption}>{item.title}</Text>
-                    <View style={{flexDirection: 'row', paddingTop: 10}}>
+                    <View
+                      style={{
+                        flexWrap: 'wrap',
+                        flexDirection: 'row',
+                        paddingTop: 10,
+                      }}>
                       {item.value.map((item, index) => {
                         return (
                           <View key={index} style={styles.badge}>
