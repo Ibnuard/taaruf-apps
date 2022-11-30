@@ -24,6 +24,7 @@ import {getFocusedRouteNameFromRoute} from '@react-navigation/native';
 import FavoriteScreen from '../screens/cvfavorit';
 import UpgradeScreen from '../screens/upgrade';
 import CVTerkirimScreen from '../screens/cvterkirim';
+import FilterScreen from '../screens/filter';
 
 //create stack screen
 const Stack = createNativeStackNavigator();
@@ -272,6 +273,19 @@ export const HomeStack = () => {
         component={FavoriteScreen}
         options={{
           title: 'Favorit',
+          headerTitleStyle: {
+            color: Colors.COLOR_WHITE,
+          },
+          headerStyle: {
+            backgroundColor: Colors.COLOR_STATUSBAR,
+          },
+        }}
+      />
+      <Stack.Screen
+        name="Filter"
+        component={FilterScreen}
+        options={{
+          title: 'Filter',
           headerTitleStyle: {
             color: Colors.COLOR_WHITE,
           },

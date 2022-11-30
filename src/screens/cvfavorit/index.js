@@ -35,6 +35,7 @@ const FavoriteScreen = ({navigation}) => {
           renderItem={({item, index}) => (
             <PeopleCardList
               data={item}
+              showCount={false}
               onPress={() =>
                 navigation.navigate('ProfileDetail', {
                   key: 'kirimtaaruf',

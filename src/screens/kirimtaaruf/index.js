@@ -62,7 +62,7 @@ const KirimTaarufScreen = ({navigation, route}) => {
     if (item == 'bt_favorite') {
       navigation.navigate('Favorite');
     } else if (item == 'bt_filter') {
-      navigation.navigate('filter');
+      navigation.navigate('Filter');
     } else {
       navigation.navigate('CVTerkirim');
     }

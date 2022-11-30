@@ -5,7 +5,7 @@ import Pic from '../../assets/images/pic.jpeg';
 import Icon from 'react-native-vector-icons/AntDesign';
 import {Colors, Typo} from '../styles';
 
-const PeopleCardList = ({onPress, data}) => {
+const PeopleCardList = ({onPress, data, showCount = true}) => {
   return (
     <Card useShadow={false} style={styles.container} onPress={onPress}>
       <Image
@@ -25,7 +25,9 @@ const PeopleCardList = ({onPress, data}) => {
         </View>
         <View style={{alignItems: 'center', justifyContent: 'center'}}>
           <Icon name="heart" color={Colors.COLOR_RED} size={24} />
-          <Text style={styles.textFavCount}>{data?.favoritCount}</Text>
+          {showCount && (
+            <Text style={styles.textFavCount}>{data?.favoritCount}</Text>
+          )}
         </View>
       </View>
     </Card>
