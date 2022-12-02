@@ -4,18 +4,68 @@ import Slider from '@react-native-community/slider';
 import {Colors, Typo} from '../../styles';
 import {Button, Dropdown} from '../../components';
 
-const FilterScreen = () => {
-  const [umur, setUmur] = React.useState(0);
-  const [umurMax, setUmurMax] = React.useState(0);
-  const [tinggi, setTinggi] = React.useState(0);
+const FilterScreen = ({navigation, route}) => {
+  const USER = route?.params?.user;
+  const FILTER = route?.params?.filter;
+
+  const [umur, setUmur] = React.useState(FILTER?.umurMinMax[0] ?? 18);
+  const [umurMax, setUmurMax] = React.useState(FILTER?.umurMinMax[1] ?? 19);
+  const [umurMaxMinimumAmount, setUmurMaxMinimumAmount] = React.useState(19);
+  const [tinggi, setTinggi] = React.useState(FILTER?.tinggi ?? 0);
 
   //inpput
-  const [selectedPekerjaan, setSelectedPekerjaan] = React.useState('');
-  const [selectedPendidikan, setSelectedPendidikan] = React.useState('');
-  const [selectedStatus, setSelectedStatus] = React.useState('');
-  const [selectedIbadah, setSelectedIbadah] = React.useState('');
+  const [selectedPekerjaan, setSelectedPekerjaan] = React.useState(
+    FILTER?.pekerjaan ?? '',
+  );
+  const [selectedPendidikan, setSelectedPendidikan] = React.useState(
+    FILTER?.pendidikan ?? '',
+  );
+  const [selectedStatus, setSelectedStatus] = React.useState(
+    FILTER?.status ?? '',
+  );
+  const [selectedIbadah, setSelectedIbadah] = React.useState(
+    FILTER?.ibadah ?? '',
+  );
+
+  const onFilterPressed = () => {
+    navigation.navigate('KirimTaaruf', {
+      user: USER,
+      filter: {
+        umurMinMax: [umur, umurMax],
+        tinggi: tinggi ?? 0,
+        pekerjaan: selectedPekerjaan
+          ? selectedPekerjaan == 'Semua'
+            ? ''
+            : selectedPekerjaan
+          : '',
+        pendidikan: selectedPendidikan
+          ? selectedPendidikan == 'Semua'
+            ? ''
+            : selectedPendidikan
+          : '',
+        status: selectedStatus
+          ? selectedStatus == 'Semua'
+            ? ''
+            : selectedStatus
+          : '',
+        ibadah: selectedIbadah
+          ? selectedIbadah == 'Semua'
+            ? ''
+            : selectedIbadah
+          : '',
+      },
+    });
+  };
+
+  const onRemoveFilterPressed = () => {
+    navigation.navigate('KirimTaaruf', {
+      user: USER,
+      filter: null,
+    });
+  };
 
   const pekerjaan = [
+    'Semua',
     'Pelajar',
     'Swasta',
     'Pemerintah',
@@ -25,6 +75,7 @@ const FilterScreen = () => {
     'Tidak / Belum Bekerja',
   ];
   const pendidikan = [
+    'Semua',
     'SD',
     'SMP',
     'SMA / SMK',
@@ -36,8 +87,9 @@ const FilterScreen = () => {
     'S2',
     'S3',
   ];
-  const status = ['Single', 'Duda', 'Menikah'];
+  const status = ['Semua', 'Single', 'Duda', 'Menikah'];
   const ibadah_rate = [
+    'Semua',
     'Kurang Ibadah',
     'Belajar Ibadah',
     'Sering Ibadah',
@@ -57,17 +109,23 @@ const FilterScreen = () => {
         maximumTrackTintColor="#000000"
         thumbTintColor={Colors.COLOR_ACCENT}
         step={1}
+        value={umur}
         onValueChange={val => setUmur(val)}
+        onSlidingComplete={val => {
+          setUmurMax(val + 1);
+          setUmurMaxMinimumAmount(val + 1);
+        }}
       />
       <Text style={styles.textCaption}>Usia Maksimal: {umurMax}</Text>
       <Slider
         style={{width: '100%', height: 40}}
-        minimumValue={18}
+        minimumValue={umurMaxMinimumAmount}
         maximumValue={50}
         minimumTrackTintColor={Colors.COLOR_ACCENT}
         maximumTrackTintColor="#000000"
         thumbTintColor={Colors.COLOR_ACCENT}
         step={1}
+        value={umurMax}
         onValueChange={val => setUmurMax(val)}
       />
       <Text style={styles.textCaption}>Tinggi Minimal: {tinggi}</Text>
@@ -79,6 +137,7 @@ const FilterScreen = () => {
         maximumTrackTintColor="#000000"
         thumbTintColor={Colors.COLOR_ACCENT}
         step={1}
+        value={tinggi}
         onValueChange={val => setTinggi(val)}
       />
       <Dropdown
@@ -114,7 +173,13 @@ const FilterScreen = () => {
         defaultValue={selectedIbadah}
       />
       <View style={{marginTop: 32}}>
-        <Button title="Terapkan Filter" />
+        <Button title="Terapkan Filter" onPress={() => onFilterPressed()} />
+        <View style={{marginTop: 14}} />
+        <Button
+          invert
+          title="Hapus Filter"
+          onPress={() => onRemoveFilterPressed()}
+        />
       </View>
     </ScrollView>
   );
