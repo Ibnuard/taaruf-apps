@@ -22,6 +22,7 @@ import {
   IS_FAVORITED,
   REMOVE_FROM_FAVORITE,
   SEND_TAARUF,
+  USER_IS_PREMIUM,
 } from '../../helpers/firebase';
 
 const ProfileScreen = ({navigation, route}) => {
@@ -30,6 +31,7 @@ const ProfileScreen = ({navigation, route}) => {
   const [thirdQ, setThirdQ] = React.useState('');
 
   const [user, setUser] = React.useState('');
+  const [isPremium, setIsPremium] = React.useState(false);
 
   const [isLoading, setIsLoading] = React.useState(false);
   const [favorited, setIsFavorited] = React.useState(false);
@@ -39,6 +41,7 @@ const ProfileScreen = ({navigation, route}) => {
 
   const KEY = route?.params?.key;
   const USER_DATA = route?.params?.data;
+  const AVAILABLE = route?.params?.available;
 
   const {signOut} = React.useContext(AuthContext);
 
@@ -92,9 +95,11 @@ const ProfileScreen = ({navigation, route}) => {
     const user = await retrieveUserSession();
     const parse = JSON.parse(user);
 
-    console.log(parse?.pekerjaan);
-
+    console.log('is prem : ' + isPremium);
     setUser(parse);
+
+    const isPremium = await USER_IS_PREMIUM();
+    setIsPremium(isPremium);
   }
 
   const normalizeDataList = (data = '') => {
@@ -148,21 +153,30 @@ const ProfileScreen = ({navigation, route}) => {
         q2: secondQ,
         q3: thirdQ,
       };
-      await SEND_TAARUF(USER_DATA, answers)
-        .then(() => {
-          setIsLoading(false);
-          Alert.alert('Sukses!', 'Pengajuan taaruf telah terkirim!', [
-            {text: 'OK', onPress: () => navigation.goBack()},
-          ]);
-        })
-        .catch(err => {
-          console.log('fail : ' + err);
-          setIsLoading(false);
-          Alert.alert(
-            'Gagal!',
-            'Permintaan taaruf gagal dikirim, mohon coba lagi!',
-          );
-        });
+
+      if (AVAILABLE) {
+        await SEND_TAARUF(USER_DATA, answers)
+          .then(() => {
+            setIsLoading(false);
+            Alert.alert('Sukses!', 'Pengajuan taaruf telah terkirim!', [
+              {text: 'OK', onPress: () => navigation.navigate('CVTerkirim')},
+            ]);
+          })
+          .catch(err => {
+            console.log('fail : ' + err);
+            setIsLoading(false);
+            Alert.alert(
+              'Gagal!',
+              'Permintaan taaruf gagal dikirim, mohon coba lagi!',
+            );
+          });
+      } else {
+        setIsLoading(false);
+        Alert.alert(
+          'Gagal!',
+          'Anda telah mencapai batas maksimum pengajuan CV bulan ini!',
+        );
+      }
     }
   };
 
@@ -265,9 +279,11 @@ const ProfileScreen = ({navigation, route}) => {
               />
               <Text style={styles.textName}>{user?.nama}</Text>
               <Text style={styles.textUmur}>{user?.umur} tahun</Text>
-              <View style={styles.badgeTop}>
-                <Text style={styles.textBadgeTopValue}>Siap Taaruf</Text>
-              </View>
+              {isPremium && (
+                <View style={styles.badgeTop}>
+                  <Text style={styles.textBadgeTopValue}>Siap Taaruf</Text>
+                </View>
+              )}
             </View>
             <View style={{flex: 1, marginRight: 8}}>
               <View

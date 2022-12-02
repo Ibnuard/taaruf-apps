@@ -3,12 +3,18 @@ import {View, Text, StyleSheet, FlatList} from 'react-native';
 import PeopleCardList from '../../components/PeopleCardList';
 import {FloatingAction} from 'react-native-floating-action';
 import {IMAGES_RES} from '../../helpers/images';
-import {GET_USER_LIST} from '../../helpers/firebase';
+import {
+  GET_CV_COUNT_BY_MONTH,
+  GET_USER_LIST,
+  USER_IS_PREMIUM,
+} from '../../helpers/firebase';
 import {retrieveUserSession} from '../../helpers/storage';
 import NoItemScreen from '../../components/NoItem';
 
 const KirimTaarufScreen = ({navigation, route}) => {
   const [users, setUsers] = React.useState([]);
+  const [available, setAvailable] = React.useState(false);
+  const [isPremium, setIsPremium] = React.useState(false);
   const [isLoading, setIsLoading] = React.useState(false);
 
   const USER = route?.params?.user;
@@ -123,6 +129,12 @@ const KirimTaarufScreen = ({navigation, route}) => {
       .filter(e => e);
 
     setUsers(sortedbyDomisili);
+
+    const isPremium = await USER_IS_PREMIUM();
+    const chance = await GET_CV_COUNT_BY_MONTH();
+
+    setAvailable(chance);
+    setIsPremium(isPremium);
     setIsLoading(false);
   };
 
@@ -166,11 +178,13 @@ const KirimTaarufScreen = ({navigation, route}) => {
           renderItem={({item, index}) => (
             <PeopleCardList
               data={item}
+              blur={!isPremium}
               onPress={
                 () =>
                   navigation.navigate('ProfileDetail', {
                     key: 'kirimtaaruf',
                     data: item,
+                    available: available,
                   })
                 // navigation.navigate('Upgrade')
               }

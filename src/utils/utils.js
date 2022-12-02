@@ -44,3 +44,21 @@ export const generateMonthData = () => {
 
   return result;
 };
+
+//split array by monht id
+export const splitByMonth = (arr = []) => {
+  const result = arr.reduce((res, org) => {
+    (res[org.monthId] = res[org.monthId] || []).push(org);
+    return res;
+  }, {});
+
+  const obj = Object.entries(result);
+
+  let temp = [];
+
+  for (let i = 0; i < obj.length; i++) {
+    temp.push({title: obj[i][0], data: obj[i][1]});
+  }
+
+  return temp;
+};

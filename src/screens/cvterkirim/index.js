@@ -1,11 +1,13 @@
 import * as React from 'react';
-import {View, Text, StyleSheet, FlatList} from 'react-native';
+import {View, Text, StyleSheet, FlatList, SectionList} from 'react-native';
 import PeopleCardList from '../../components/PeopleCardList';
 import {FloatingAction} from 'react-native-floating-action';
 import {IMAGES_RES} from '../../helpers/images';
 import {GET_SENDED_CV, GET_USER_LIST} from '../../helpers/firebase';
 import {retrieveUserSession} from '../../helpers/storage';
 import NoItemScreen from '../../components/NoItem';
+import {splitByMonth} from '../../utils/utils';
+import {Colors, Typo} from '../../styles';
 
 const CVTerkirimScreen = ({navigation, route}) => {
   const [users, setUsers] = React.useState([]);
@@ -33,16 +35,25 @@ const CVTerkirimScreen = ({navigation, route}) => {
       return item?.id !== USER?.id;
     });
 
-    setUsers(filtered);
+    const dataSplitted = splitByMonth(filtered);
+
+    setUsers(dataSplitted);
     setIsLoading(false);
   };
 
   return (
     <View style={styles.container}>
       {users?.length ? (
-        <FlatList
-          data={users}
-          contentContainerStyle={{paddingBottom: 64}}
+        <SectionList
+          sections={users}
+          contentContainerStyle={{
+            paddingBottom: 64,
+          }}
+          renderSectionHeader={({section: {title, data}}) => (
+            <Text style={styles.header}>
+              {title} ( {data.length} / 5 )
+            </Text>
+          )}
           renderItem={({item, index}) => (
             <PeopleCardList
               data={item}
@@ -56,7 +67,6 @@ const CVTerkirimScreen = ({navigation, route}) => {
               }
             />
           )}
-          numColumns={2}
         />
       ) : (
         <NoItemScreen isLoading={isLoading} />
@@ -69,6 +79,13 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     padding: 14,
+  },
+
+  header: {
+    ...Typo.TextExtraLargeBold,
+    color: Colors.COLOR_BLACK,
+    paddingVertical: 4,
+    marginVertical: 10,
   },
 });
 

@@ -85,7 +85,9 @@ const DetailCVScreen = ({navigation, route}) => {
     USER?.orangtuadom ?? '',
   );
   const [alamat, setAlamat] = React.useState(USER?.alamatdom ?? '');
-  const [selectedDate, setSelectedDate] = React.useState(new Date(USER?.ttl));
+  const [selectedDate, setSelectedDate] = React.useState(
+    USER?.ttl ? new Date(USER?.ttl) : new Date(),
+  );
   const [showDatePicker, setShowDatePicker] = React.useState(false);
 
   const SELECTED_DOMISILI = route?.params?.domisili ?? USER?.kota;

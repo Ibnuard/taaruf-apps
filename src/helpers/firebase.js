@@ -131,6 +131,17 @@ const USER_LOGIN = async data => {
   }
 };
 
+//USER PREMIUM
+const USER_IS_PREMIUM = async () => {
+  const user = await retrieveUserSession();
+  const parsed = JSON.parse(user);
+
+  const userData = await usersCollection.doc(parsed?.nomorwa).get();
+  const userPremium = userData.data();
+
+  return userPremium?.premium;
+};
+
 // ===================================
 //
 //
@@ -294,7 +305,6 @@ const CANCEL_TAARUF = async data => {
 
   const _removeUserTaaruf = async () => {
     console.log('save taaruf data');
-    const monthId = generateMonthData();
 
     return taarufCollection
       .doc(parsed?.nomorwa)
@@ -317,8 +327,6 @@ const CANCEL_TAARUF = async data => {
 const CHECK_IS_TAARUFED = async data => {
   const user = await retrieveUserSession();
   const parsed = JSON.parse(user);
-
-  const monthId = generateMonthData();
 
   return await taarufCollection
     .doc(parsed.nomorwa)
@@ -407,9 +415,31 @@ const GET_RECEIVED_CV = async data => {
     });
 };
 
+//GET SEND CV CHANCE
+const GET_CV_COUNT_BY_MONTH = async () => {
+  const monthId = generateMonthData();
+
+  const sendedCVList = await GET_SENDED_CV();
+
+  if (sendedCVList.length) {
+    const filtered = sendedCVList.filter((item, index) => {
+      return item?.monthId == monthId;
+    });
+
+    if (filtered.length < 5) {
+      return true;
+    } else {
+      return false;
+    }
+  } else {
+    return true;
+  }
+};
+
 export {
   USER_REGISTER,
   USER_UPDATE,
+  USER_IS_PREMIUM,
   CHECK_USER,
   USER_LOGIN,
   GET_USER_LIST,
@@ -422,4 +452,5 @@ export {
   GET_SENDED_CV,
   GET_FAVORITED_CV,
   GET_RECEIVED_CV,
+  GET_CV_COUNT_BY_MONTH,
 };

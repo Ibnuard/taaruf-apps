@@ -5,11 +5,11 @@ import Pic from '../../assets/images/pic.jpeg';
 import Icon from 'react-native-vector-icons/AntDesign';
 import {Colors, Typo} from '../styles';
 
-const PeopleCardList = ({onPress, data, showCount = true}) => {
+const PeopleCardList = ({onPress, data, showCount = true, blur = false}) => {
   return (
     <Card useShadow={false} style={styles.container} onPress={onPress}>
       <Image
-        blurRadius={24}
+        blurRadius={blur ? 24 : 0}
         source={{uri: `data:image/png;base64,${data?.fotowajah}`}}
         resizeMode={'contain'}
         style={styles.image}
