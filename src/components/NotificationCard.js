@@ -31,6 +31,12 @@ const NotificationCard = data => {
           desc: 'Silahkan cek menu Menerima Taaruf untuk melihat detail',
         };
         break;
+      case 'read':
+        return {
+          title: `${DATA?.senderId} Telah Membaca CV Anda`,
+          desc: 'Alhamdulillah CV anda telah dibaca.',
+        };
+        break;
 
       default:
         return {

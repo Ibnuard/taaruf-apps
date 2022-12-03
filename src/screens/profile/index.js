@@ -23,10 +23,12 @@ import {
   CHECK_IS_MATCH,
   CHECK_IS_TAARUFED,
   CHECK_TAARUF_STATUS,
+  CREATE_NOTIFICATION,
   IS_FAVORITED,
   REJECT_TAARUF,
   REMOVE_FROM_FAVORITE,
   SEND_TAARUF,
+  UPDATE_NOTIFICATION,
   USER_IS_PREMIUM,
 } from '../../helpers/firebase';
 
@@ -83,12 +85,18 @@ const ProfileScreen = ({navigation, route}) => {
     return () => null;
   }, [favorited, isLoading]);
 
-  // React.useEffect(() => {
-  //   if (KEY) {
-  //     console.log('check fav');
-  //     checkIsFavorited();
-  //   }
-  // }, [isLoading]);
+  React.useLayoutEffect(() => {
+    if (KEY == 'terimataaruf') {
+      sendNotification();
+    }
+  }, []);
+
+  async function sendNotification() {
+    const user = await retrieveUserSession();
+    const parsed = JSON.parse(user);
+
+    await UPDATE_NOTIFICATION(parsed?.id, 'send', USER_DATA?.nomorwa, 'read');
+  }
 
   const checkIsFavorited = async () => {
     const favorited = await IS_FAVORITED(USER_DATA);
