@@ -1,14 +1,23 @@
 import * as React from 'react';
-import {View, Text, StyleSheet, FlatList} from 'react-native';
+import {View, Text, StyleSheet, FlatList, Alert} from 'react-native';
 import PeopleCardList from '../../components/PeopleCardList';
 import {FloatingAction} from 'react-native-floating-action';
 import {IMAGES_RES} from '../../helpers/images';
-import {GET_FAVORITED_CV} from '../../helpers/firebase';
+import {
+  CHECK_IS_MATCH,
+  GET_CV_COUNT_BY_MONTH,
+  GET_FAVORITED_CV,
+  USER_IS_PREMIUM,
+} from '../../helpers/firebase';
 import NoItemScreen from '../../components/NoItem';
+import {Modal} from '../../components';
 
 const FavoriteScreen = ({navigation}) => {
   const [favList, setFavList] = React.useState([]);
+  const [available, setAvailable] = React.useState(false);
+  const [isPremium, setIsPremium] = React.useState(false);
   const [isLoading, setIsLoading] = React.useState(false);
+  const [modalVisible, setModalVisible] = React.useState(false);
 
   React.useEffect(() => {
     const unsubscribe = navigation.addListener('focus', () => {
@@ -22,9 +31,36 @@ const FavoriteScreen = ({navigation}) => {
     setIsLoading(true);
     const data = await GET_FAVORITED_CV();
 
+    const isPremium = await USER_IS_PREMIUM();
+    const chance = await GET_CV_COUNT_BY_MONTH();
+
+    setAvailable(chance);
+    setIsPremium(isPremium);
+
     setFavList(data);
     setIsLoading(false);
   };
+
+  async function onCardPress(item) {
+    setModalVisible(true);
+    const isMatch = await CHECK_IS_MATCH(item);
+
+    if (isMatch) {
+      setModalVisible(false);
+      Alert.alert(
+        'Pesan!',
+        'User ini telah mengajukan taaruf ke anda, silahkan cek di Menerima CV!',
+        [{text: 'OK', onPress: () => navigation.navigate('TerimaTaaruf')}],
+      );
+    } else {
+      setModalVisible(false);
+      navigation.navigate('ProfileDetail', {
+        key: 'kirimtaaruf',
+        data: item,
+        available: available,
+      });
+    }
+  }
 
   return (
     <View style={styles.container}>
@@ -36,12 +72,7 @@ const FavoriteScreen = ({navigation}) => {
             <PeopleCardList
               data={item}
               showCount={false}
-              onPress={() =>
-                navigation.navigate('ProfileDetail', {
-                  key: 'kirimtaaruf',
-                  data: item,
-                })
-              }
+              onPress={() => onCardPress(item)}
             />
           )}
           numColumns={2}
@@ -49,6 +80,7 @@ const FavoriteScreen = ({navigation}) => {
       ) : (
         <NoItemScreen isLoading={isLoading} />
       )}
+      <Modal visible={modalVisible} type={'loading'} />
     </View>
   );
 };

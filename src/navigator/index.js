@@ -25,6 +25,7 @@ import FavoriteScreen from '../screens/cvfavorit';
 import UpgradeScreen from '../screens/upgrade';
 import CVTerkirimScreen from '../screens/cvterkirim';
 import FilterScreen from '../screens/filter';
+import TaarufScreen from '../screens/taaruf';
 
 //create stack screen
 const Stack = createNativeStackNavigator();
@@ -312,6 +313,19 @@ export const HomeStack = () => {
         component={TerimaTaarufScreen}
         options={{
           title: 'Menerima CV',
+          headerTitleStyle: {
+            color: Colors.COLOR_WHITE,
+          },
+          headerStyle: {
+            backgroundColor: Colors.COLOR_STATUSBAR,
+          },
+        }}
+      />
+      <Stack.Screen
+        name="Taaruf"
+        component={TaarufScreen}
+        options={{
+          title: 'Memulai Taaruf',
           headerTitleStyle: {
             color: Colors.COLOR_WHITE,
           },

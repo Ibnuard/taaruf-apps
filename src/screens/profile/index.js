@@ -7,6 +7,7 @@ import {
   StatusBar,
   ScrollView,
   Alert,
+  Linking,
 } from 'react-native';
 import {Button, Card, Modal, Input, Row} from '../../components';
 import {IMAGES_RES} from '../../helpers/images';
@@ -16,10 +17,14 @@ import Touchable from '../../components/touchable';
 import {AuthContext} from '../../context';
 import {retrieveUserSession} from '../../helpers/storage';
 import {
+  ACCEPT_TAARUF,
   ADD_TO_FAVORITE,
   CANCEL_TAARUF,
+  CHECK_IS_MATCH,
   CHECK_IS_TAARUFED,
+  CHECK_TAARUF_STATUS,
   IS_FAVORITED,
+  REJECT_TAARUF,
   REMOVE_FROM_FAVORITE,
   SEND_TAARUF,
   USER_IS_PREMIUM,
@@ -39,13 +44,25 @@ const ProfileScreen = ({navigation, route}) => {
 
   const [buttonId, setButtonId] = React.useState('idle');
 
+  const scrollRef = React.useRef(null);
+
   const KEY = route?.params?.key;
   const USER_DATA = route?.params?.data;
   const AVAILABLE = route?.params?.available;
+  const CAN_TAARUF = route?.params?.canTaaruf;
+
+  console.log('ct : ' + AVAILABLE);
+
+  const [accepted, setAccepted] = React.useState(USER_DATA?.taaruf ?? false);
+  const [rejected, setRejected] = React.useState(USER_DATA?.rejected ?? false);
 
   const {signOut} = React.useContext(AuthContext);
 
-  React.useEffect(() => {
+  const TAARUF_MESSAGES = id => {
+    return `Assalamualaikum, Saya dari aplikasi Mencari Cinta Sejati, ${id}`;
+  };
+
+  React.useLayoutEffect(() => {
     const unsubscribe = navigation.addListener('focus', () => {
       if (!KEY) {
         //own profile
@@ -56,7 +73,7 @@ const ProfileScreen = ({navigation, route}) => {
     return unsubscribe;
   }, [navigation]);
 
-  React.useEffect(() => {
+  React.useLayoutEffect(() => {
     if (KEY) {
       setUser(USER_DATA);
       checkIsFavorited();
@@ -83,9 +100,19 @@ const ProfileScreen = ({navigation, route}) => {
 
   const checkIsTaarufed = async () => {
     const result = await CHECK_IS_TAARUFED(USER_DATA);
+    const status = await CHECK_TAARUF_STATUS(USER_DATA?.nomorwa);
+
+    console.log('STATUS : ' + status);
 
     if (result) {
       console.log('is taarufed : ' + result);
+
+      if (status == 'ACCEPTED') {
+        setAccepted(true);
+      } else if (status == 'REJECTED') {
+        setRejected(true);
+      }
+
       setTaarufed(result);
     }
   };
@@ -136,7 +163,12 @@ const ProfileScreen = ({navigation, route}) => {
         .then(() => {
           setIsLoading(false);
           setTaarufed(false);
-          Alert.alert('Sukses!', 'Permintaan taaruf telah dibatalkan!');
+          Alert.alert('Sukses!', 'Permintaan taaruf telah dibatalkan!', [
+            {
+              text: 'OK',
+              onPress: () => navigation.goBack(),
+            },
+          ]);
         })
         .catch(err => {
           console.log('errors: ' + err);
@@ -178,6 +210,52 @@ const ProfileScreen = ({navigation, route}) => {
         );
       }
     }
+  };
+
+  //MENERIMA TAARUF
+  const onAcceptTaarufPressed = async () => {
+    if (CAN_TAARUF) {
+      setIsLoading(true);
+      await ACCEPT_TAARUF(user?.nomorwa)
+        .then(() => {
+          setIsLoading(false);
+          setAccepted(true);
+          Alert.alert(
+            'Sukses',
+            'Taaruf Diterima, silahkan hubungi admin untuk proses selanjutnya!',
+            [
+              {
+                text: 'OK',
+                onPress: () =>
+                  scrollRef.current.scrollTo({x: 0, y: 0, animated: true}),
+              },
+            ],
+          );
+        })
+        .catch(err => {
+          setIsLoading(false);
+          Alert.alert('Gagal', 'Ada kesalahan mohon coba lagi!');
+        });
+    } else {
+      Alert.alert(
+        'Gagal',
+        'Kesempatan menerima taaruf anda telah habis, silahkan upgrade akun anda untuk menerima taaruf tanpa batas!',
+      );
+    }
+  };
+
+  const onRejectTaarufPressed = async () => {
+    setIsLoading(true);
+    await REJECT_TAARUF(user?.nomorwa)
+      .then(() => {
+        setIsLoading(false);
+        setRejected(true);
+        Alert.alert('Berhasil', 'Taaruf berhasil ditolak!');
+      })
+      .catch(err => {
+        setIsLoading(false);
+        Alert.alert('Gagal', 'Ada kesalahan mohon coba lagi!');
+      });
   };
 
   const PROFILE_DATA = [
@@ -255,6 +333,7 @@ const ProfileScreen = ({navigation, route}) => {
 
   return (
     <ScrollView
+      ref={scrollRef}
       style={styles.container}
       contentContainerStyle={{paddingBottom: 60}}>
       <StatusBar backgroundColor={Colors.COLOR_STATUSBAR} />
@@ -264,6 +343,27 @@ const ProfileScreen = ({navigation, route}) => {
         resizeMode={'stretch'}
       />
       <View style={{paddingHorizontal: 14}}>
+        {accepted && (
+          <Card style={{marginBottom: 36, marginTop: -32}}>
+            <View style={{paddingBottom: 14}}>
+              <Text style={styles.textTopCard}>
+                Klik tombol chat admin. Antum akan terhubung melalui Whatsapp
+                untuk melakukan proses tanya jawab dengan calon dan menentukan
+                jadwal nadzor
+              </Text>
+            </View>
+            <Button
+              title="Chat Admin Taaruf"
+              onPress={() =>
+                Linking.openURL(
+                  `whatsapp://send?phone=6285741894533&text=${TAARUF_MESSAGES(
+                    user?.id,
+                  )}`,
+                )
+              }
+            />
+          </Card>
+        )}
         <View style={styles.card}>
           <View style={{flexDirection: 'row'}}>
             <View style={{marginRight: 24}}>
@@ -473,70 +573,96 @@ const ProfileScreen = ({navigation, route}) => {
 
         {KEY ? (
           <View style={{marginTop: 14}}>
-            {KEY == 'terimataaruf' ? (
-              <>
-                <Row style={{marginVertical: 8}}>
-                  <Touchable
-                    style={{
-                      height: 42,
-                      width: 42,
-                      borderRadius: 8,
-                      borderWidth: 2,
-                      borderColor: Colors.COLOR_ACCENT,
-                      backgroundColor: Colors.COLOR_WHITE,
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      marginRight: 8,
-                    }}
-                    onPress={() => onFavoriteButtonPress()}>
-                    <Icon
-                      name="heart"
-                      color={
-                        favorited ? Colors.COLOR_RED : Colors.COLOR_LIGHT_GRAY
-                      }
-                      size={20}
+            {KEY == 'terimataaruf'
+              ? !accepted &&
+                (!rejected ? (
+                  <>
+                    <Row style={{marginVertical: 8}}>
+                      <Touchable
+                        style={{
+                          height: 42,
+                          width: 42,
+                          borderRadius: 8,
+                          borderWidth: 2,
+                          borderColor: Colors.COLOR_ACCENT,
+                          backgroundColor: Colors.COLOR_WHITE,
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          marginRight: 8,
+                        }}
+                        onPress={() => onFavoriteButtonPress()}>
+                        <Icon
+                          name="heart"
+                          color={
+                            favorited
+                              ? Colors.COLOR_RED
+                              : Colors.COLOR_LIGHT_GRAY
+                          }
+                          size={20}
+                        />
+                      </Touchable>
+                      <Button
+                        title="Terima Taaruf"
+                        isLoading={isLoading}
+                        buttonStyle={{flex: 1}}
+                        onPress={() => onAcceptTaarufPressed()}
+                      />
+                    </Row>
+                    <Button
+                      isLoading={isLoading}
+                      title="Tolak Taaruf"
+                      invert
+                      onPress={() => onRejectTaarufPressed()}
                     />
-                  </Touchable>
-                  <Button title="Terima Taaruf" buttonStyle={{flex: 1}} />
-                </Row>
-                <Button title="Tolak Taaruf" invert />
-              </>
-            ) : (
-              <>
-                <Row style={{marginVertical: 8}}>
-                  <Touchable
-                    style={{
-                      height: 42,
-                      width: 42,
-                      borderRadius: 8,
-                      borderWidth: 2,
-                      borderColor: Colors.COLOR_ACCENT,
-                      backgroundColor: Colors.COLOR_WHITE,
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      marginRight: 8,
-                    }}
-                    onPress={() => onFavoriteButtonPress()}>
-                    <Icon
-                      name="heart"
-                      color={
-                        favorited ? Colors.COLOR_RED : Colors.COLOR_LIGHT_GRAY
-                      }
-                      size={20}
-                    />
-                  </Touchable>
-                  <Button
-                    disabled={taarufed ? false : !firstQ || !secondQ || !thirdQ}
-                    isLoading={buttonId == 'taaruf' ? isLoading : false}
-                    title={
-                      !taarufed ? 'Ajukan Taaruf' : 'Batalkan Pengajuan Taaruf'
-                    }
-                    buttonStyle={{flex: 1}}
-                    onPress={() => onSendTaarufButtonPressed()}
-                  />
-                </Row>
-              </>
-            )}
+                  </>
+                ) : (
+                  <Button disabled title="Taaruf Ditolak" invert />
+                ))
+              : !accepted &&
+                (!rejected ? (
+                  <>
+                    <Row style={{marginVertical: 8}}>
+                      <Touchable
+                        style={{
+                          height: 42,
+                          width: 42,
+                          borderRadius: 8,
+                          borderWidth: 2,
+                          borderColor: Colors.COLOR_ACCENT,
+                          backgroundColor: Colors.COLOR_WHITE,
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          marginRight: 8,
+                        }}
+                        onPress={() => onFavoriteButtonPress()}>
+                        <Icon
+                          name="heart"
+                          color={
+                            favorited
+                              ? Colors.COLOR_RED
+                              : Colors.COLOR_LIGHT_GRAY
+                          }
+                          size={20}
+                        />
+                      </Touchable>
+                      <Button
+                        disabled={
+                          taarufed ? false : !firstQ || !secondQ || !thirdQ
+                        }
+                        isLoading={buttonId == 'taaruf' ? isLoading : false}
+                        title={
+                          !taarufed
+                            ? 'Ajukan Taaruf'
+                            : 'Batalkan Pengajuan Taaruf'
+                        }
+                        buttonStyle={{flex: 1}}
+                        onPress={() => onSendTaarufButtonPressed()}
+                      />
+                    </Row>
+                  </>
+                ) : (
+                  <Button disabled title="Taaruf Ditolak" invert />
+                ))}
           </View>
         ) : (
           <View style={{marginVertical: 24}}>
@@ -645,6 +771,11 @@ const styles = StyleSheet.create({
     ...Typo.TextSmallRegular,
     color: Colors.COLOR_WHITE,
     paddingVertical: 4,
+  },
+
+  textTopCard: {
+    ...Typo.TextSmallRegular,
+    color: Colors.COLOR_BLACK,
   },
 });
 

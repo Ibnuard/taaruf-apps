@@ -3,13 +3,18 @@ import {View, Text, StyleSheet, FlatList} from 'react-native';
 import PeopleCardList from '../../components/PeopleCardList';
 import {FloatingAction} from 'react-native-floating-action';
 import {IMAGES_RES} from '../../helpers/images';
-import {GET_RECEIVED_CV, GET_USER_LIST} from '../../helpers/firebase';
+import {
+  GET_ACCEPT_TAARUF_COUNT,
+  GET_RECEIVED_CV,
+  GET_USER_LIST,
+} from '../../helpers/firebase';
 import {retrieveUserSession} from '../../helpers/storage';
 import NoItemScreen from '../../components/NoItem';
 
 const TerimaTaarufScreen = ({navigation, route}) => {
   const [users, setUsers] = React.useState([]);
   const [isLoading, setIsLoading] = React.useState(false);
+  const [canTaaruf, setCanTaaruf] = React.useState(false);
 
   const USER = route?.params?.user;
 
@@ -33,6 +38,12 @@ const TerimaTaarufScreen = ({navigation, route}) => {
       return item?.id !== USER?.id;
     });
 
+    const isCanTaaruf = await GET_ACCEPT_TAARUF_COUNT();
+
+    console.log('can taaruf : ' + isCanTaaruf);
+
+    setCanTaaruf(isCanTaaruf);
+
     setUsers(filtered);
     setIsLoading(false);
   };
@@ -51,6 +62,7 @@ const TerimaTaarufScreen = ({navigation, route}) => {
                   navigation.navigate('ProfileDetail', {
                     key: 'terimataaruf',
                     data: item,
+                    canTaaruf: canTaaruf,
                   })
                 // navigation.navigate('Upgrade')
               }

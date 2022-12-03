@@ -1,11 +1,12 @@
 import firestore from '@react-native-firebase/firestore';
 import {CHECK_IS_VALID, GET_CURRENT_DATE} from '../utils/moment';
-import {generateMonthData, generateUID} from '../utils/utils';
+import {generateMonthData, generateUID, getRandomNumber} from '../utils/utils';
 import {retrieveUserSession} from './storage';
 
 //COLLECTIONS
 const usersCollection = firestore().collection('Users');
 const taarufCollection = firestore().collection('Taaruf');
+const ticketCollection = firestore().collection('Ticket');
 
 //QUERY
 
@@ -279,7 +280,26 @@ const SEND_TAARUF = async (data, answers) => {
       .doc(parsed?.nomorwa)
       .collection('LIST')
       .doc(data?.nomorwa)
-      .set(taarufDateData);
+      .set(taarufDateData)
+      .then(() => {
+        return createNotification();
+      });
+
+    async function createNotification() {
+      console.log('creating notification');
+
+      async function _notifSelf() {
+        console.log('notif self');
+        return await CREATE_NOTIFICATION(data?.id, 'send');
+      }
+
+      async function _notifOther() {
+        console.log('notif other');
+        return await CREATE_NOTIFICATION(parsed?.id, 'receive', data?.nomorwa);
+      }
+
+      return Promise.all([_notifSelf(), _notifOther()]);
+    }
   };
 
   const taarufData = {
@@ -303,6 +323,30 @@ const CANCEL_TAARUF = async data => {
   const user = await retrieveUserSession();
   const parsed = JSON.parse(user);
 
+  async function _updateNotification() {
+    console.log('updating notification');
+
+    async function _updateNotifSelf() {
+      return await UPDATE_NOTIFICATION(
+        data?.id,
+        'send',
+        parsed?.nomorwa,
+        'cancel',
+      );
+    }
+
+    async function _updateNotifOther() {
+      return await UPDATE_NOTIFICATION(
+        parsed?.id,
+        'receive',
+        data?.nomorwa,
+        'canceled',
+      );
+    }
+
+    return Promise.all([_updateNotifSelf(), _updateNotifOther()]);
+  }
+
   const _removeUserTaaruf = async () => {
     console.log('save taaruf data');
 
@@ -310,7 +354,10 @@ const CANCEL_TAARUF = async data => {
       .doc(parsed?.nomorwa)
       .collection('LIST')
       .doc(data?.nomorwa)
-      .delete();
+      .delete()
+      .then(() => {
+        return _updateNotification();
+      });
   };
 
   return usersCollection
@@ -340,6 +387,73 @@ const CHECK_IS_TAARUFED = async data => {
         return false;
       }
     });
+};
+
+//CHECK IF OTHER SEND REQUEST
+const CHECK_IS_MATCH = async data => {
+  const user = await retrieveUserSession();
+  const parsed = JSON.parse(user);
+
+  return await usersCollection
+    .doc(parsed.nomorwa)
+    .collection('Taaruf')
+    .doc(data?.nomorwa)
+    .get()
+    .then(snapshot => {
+      if (snapshot.exists) {
+        return true;
+      } else {
+        return false;
+      }
+    });
+};
+
+//CHECK IS ACCEPTED
+const CHECK_TAARUF_STATUS = async id => {
+  const user = await retrieveUserSession();
+  const parsed = JSON.parse(user);
+
+  return await taarufCollection
+    .doc(parsed.nomorwa)
+    .collection('LIST')
+    .doc(id)
+    .get()
+    .then(snapshot => {
+      if (snapshot.exists) {
+        const data = snapshot.data();
+
+        if (data.taaruf) {
+          return 'ACCEPTED';
+        } else if (data.rejected) {
+          return 'REJECTED';
+        } else {
+          return 'IDLE';
+        }
+      } else {
+        return 'NO TAARUFED';
+      }
+    });
+
+  // return await usersCollection
+  //   .doc(parsed.nomorwa)
+  //   .collection('Taaruf')
+  //   .doc(id)
+  //   .get()
+  //   .then(snapshot => {
+  //     if (snapshot.exists) {
+  //       const data = snapshot.data();
+
+  //       if (data.taaruf) {
+  //         return 'ACCEPTED';
+  //       } else if (data.rejected) {
+  //         return 'REJECTED';
+  //       } else {
+  //         return 'IDLE';
+  //       }
+  //     } else {
+  //       return 'NO TAARUFED';
+  //     }
+  //   });
 };
 
 //GET SENDED CV
@@ -436,6 +550,178 @@ const GET_CV_COUNT_BY_MONTH = async () => {
   }
 };
 
+//ACCEPT TAARUF
+const ACCEPT_TAARUF = async id => {
+  const user = await retrieveUserSession();
+  const parsed = JSON.parse(user);
+
+  return await usersCollection
+    .doc(parsed.nomorwa)
+    .collection('Taaruf')
+    .doc(id)
+    .update({
+      taaruf: true,
+    })
+    .then(() => {
+      return _updateStatusOther();
+    });
+
+  async function _updateStatusOther() {
+    console.log('updating other...');
+    return await taarufCollection
+      .doc(id)
+      .collection('LIST')
+      .doc(parsed?.nomorwa)
+      .update({
+        taaruf: true,
+      });
+  }
+};
+
+//TOLAK TAARUF
+const REJECT_TAARUF = async id => {
+  const user = await retrieveUserSession();
+  const parsed = JSON.parse(user);
+
+  return await usersCollection
+    .doc(parsed.nomorwa)
+    .collection('Taaruf')
+    .doc(id)
+    .update({
+      rejected: true,
+    })
+    .then(() => {
+      return _updateStatusOther();
+    });
+
+  async function _updateStatusOther() {
+    console.log('updating other...');
+    return await taarufCollection
+      .doc(id)
+      .collection('LIST')
+      .doc(parsed?.nomorwa)
+      .update({
+        rejected: true,
+      });
+  }
+};
+
+//GET SEND CV CHANCE
+const GET_ACCEPT_TAARUF_COUNT = async () => {
+  const receivedCVList = await GET_RECEIVED_CV();
+
+  const isPremium = await USER_IS_PREMIUM();
+
+  if (isPremium) {
+    console.log('user premium');
+    return true;
+  } else {
+    if (receivedCVList.length) {
+      const filtered = receivedCVList.filter((item, index) => {
+        return item?.taaruf == true;
+      });
+
+      if (filtered.length < 5) {
+        return true;
+      } else {
+        return false;
+      }
+    } else {
+      return true;
+    }
+  }
+};
+
+// ====================================
+//
+//
+//
+//
+// ============ NOTIFICATION GAP /==================
+//
+//
+//
+//
+//
+// ===================================
+
+const CREATE_NOTIFICATION = async (id, type, senderId) => {
+  // Terkirim -> 'sended'
+  // Dibaca -> 'read'
+  // Mengajukan -> 'receive'
+  // Ditolak -> 'reject'
+  // Diterima -> 'accept'
+  // Favorite -> 'favorite'
+
+  const user = await retrieveUserSession();
+  const parsed = JSON.parse(user);
+
+  const notificationId = `NOTIF${getRandomNumber(1000, 9999)}`;
+
+  const timestamp = GET_CURRENT_DATE('LLL');
+
+  return await usersCollection
+    .doc(senderId?.length ? senderId : parsed?.nomorwa)
+    .collection('Notification')
+    .doc(notificationId)
+    .set({
+      id: notificationId,
+      type: type,
+      senderId: id,
+      timestamp: timestamp,
+    })
+    .then(() => {
+      return notificationId;
+    });
+};
+
+const UPDATE_NOTIFICATION = async (senderId, type, target, typeTarget) => {
+  const list = await GET_NOTIFICATION(target);
+  const timestamp = GET_CURRENT_DATE('LLL');
+
+  const filtered = list?.filter((item, index) => {
+    return item.senderId == senderId && item.type == type;
+  });
+
+  const dataId = filtered[0]?.id;
+
+  console.log(target, list);
+
+  return await usersCollection
+    .doc(target)
+    .collection('Notification')
+    .doc(dataId)
+    .update({
+      type: typeTarget,
+      timestamp: timestamp,
+    });
+};
+
+const GET_NOTIFICATION = async id => {
+  console.log('target : ' + id);
+
+  const user = await retrieveUserSession();
+  const parsed = JSON.parse(user);
+
+  return await usersCollection
+    .doc(id?.length ? id : parsed?.nomorwa)
+    .collection('Notification')
+    .get()
+    .then(snapshot => {
+      if (snapshot.size > 0) {
+        let temp = [];
+
+        snapshot.forEach(doc => {
+          temp.push({id: doc.id, ...doc.data()});
+        });
+
+        return temp;
+      } else {
+        return [];
+      }
+    });
+};
+
 export {
   USER_REGISTER,
   USER_UPDATE,
@@ -449,8 +735,16 @@ export {
   SEND_TAARUF,
   CANCEL_TAARUF,
   CHECK_IS_TAARUFED,
+  CHECK_IS_MATCH,
   GET_SENDED_CV,
   GET_FAVORITED_CV,
   GET_RECEIVED_CV,
   GET_CV_COUNT_BY_MONTH,
+  ACCEPT_TAARUF,
+  GET_ACCEPT_TAARUF_COUNT,
+  REJECT_TAARUF,
+  CHECK_TAARUF_STATUS,
+  CREATE_NOTIFICATION,
+  GET_NOTIFICATION,
+  UPDATE_NOTIFICATION,
 };
