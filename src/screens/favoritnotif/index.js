@@ -4,7 +4,7 @@ import NoItemScreen from '../../components/NoItem';
 import NotificationCard from '../../components/NotificationCard';
 import {GET_NOTIFICATION} from '../../helpers/firebase';
 
-const ProsesNotifScreen = ({navigation, route}) => {
+const FavoritNotifScreen = ({navigation, route}) => {
   const [notification, setNotification] = React.useState();
   const [isLoading, setIsLoading] = React.useState(false);
 
@@ -22,7 +22,7 @@ const ProsesNotifScreen = ({navigation, route}) => {
 
     if (data) {
       const filtered = data.filter((item, index) => {
-        return item?.type !== 'favorite';
+        return item?.type == 'favorite';
       });
 
       console.log(JSON.stringify(filtered));
@@ -54,4 +54,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default ProsesNotifScreen;
+export default FavoritNotifScreen;

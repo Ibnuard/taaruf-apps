@@ -26,6 +26,8 @@ import UpgradeScreen from '../screens/upgrade';
 import CVTerkirimScreen from '../screens/cvterkirim';
 import FilterScreen from '../screens/filter';
 import TaarufScreen from '../screens/taaruf';
+import FavoritNotifScreen from '../screens/favoritnotif';
+import SendPokeScreen from '../screens/sendpoke';
 
 //create stack screen
 const Stack = createNativeStackNavigator();
@@ -211,7 +213,7 @@ const NotifBarStack = () => {
       />
       <Stack.Screen
         name="General"
-        component={ProsesNotifScreen}
+        component={FavoritNotifScreen}
         options={{
           headerShown: false,
         }}
@@ -300,6 +302,19 @@ export const HomeStack = () => {
         component={ProfileScreen}
         options={{
           title: 'Detail Biodata',
+          headerTitleStyle: {
+            color: Colors.COLOR_WHITE,
+          },
+          headerStyle: {
+            backgroundColor: Colors.COLOR_STATUSBAR,
+          },
+        }}
+      />
+      <Stack.Screen
+        name="KirimPoke"
+        component={SendPokeScreen}
+        options={{
+          title: 'Poke',
           headerTitleStyle: {
             color: Colors.COLOR_WHITE,
           },

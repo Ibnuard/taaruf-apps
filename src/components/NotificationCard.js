@@ -33,8 +33,26 @@ const NotificationCard = data => {
         break;
       case 'read':
         return {
-          title: `${DATA?.senderId} Telah Membaca CV Anda`,
+          title: `${DATA?.senderId} Telah Membaca CV Taaruf Anda`,
           desc: 'Alhamdulillah CV anda telah dibaca.',
+        };
+        break;
+      case 'accept':
+        return {
+          title: `${DATA?.senderId} Telah Menerima CV Taaruf Anda`,
+          desc: 'Alhamdulillah CV anda telah diterima. Silahkan cek di bagian CV Terkirim untuk melanjutkan proses taaruf.',
+        };
+        break;
+      case 'reject':
+        return {
+          title: `${DATA?.senderId} Telah Menolak CV Taaruf Anda`,
+          desc: 'Mohon bersabar, mungkin belum jodohnya.',
+        };
+        break;
+      case 'favorite':
+        return {
+          title: `${DATA?.senderId} Telah Memfavoritkan Anda`,
+          desc: 'Anda telah di favoritkan.',
         };
         break;
 

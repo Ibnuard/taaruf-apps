@@ -266,6 +266,10 @@ const ProfileScreen = ({navigation, route}) => {
       });
   };
 
+  const onPokeButtonPressed = () => {
+    navigation.navigate('KirimPoke', {data: user});
+  };
+
   const PROFILE_DATA = [
     {
       title: 'Kriteria yang diinginkan',
@@ -667,6 +671,13 @@ const ProfileScreen = ({navigation, route}) => {
                         onPress={() => onSendTaarufButtonPressed()}
                       />
                     </Row>
+                    {taarufed && (
+                      <Button
+                        invert
+                        title="Kirim Poke"
+                        onPress={() => onPokeButtonPressed()}
+                      />
+                    )}
                   </>
                 ) : (
                   <Button disabled title="Taaruf Ditolak" invert />

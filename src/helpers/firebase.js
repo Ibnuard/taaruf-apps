@@ -6,7 +6,7 @@ import {retrieveUserSession} from './storage';
 //COLLECTIONS
 const usersCollection = firestore().collection('Users');
 const taarufCollection = firestore().collection('Taaruf');
-const ticketCollection = firestore().collection('Ticket');
+const pokeCollection = firestore().collection('Poke');
 
 //QUERY
 
@@ -51,6 +51,7 @@ const USER_REGISTER = data => {
     pertanyaantiga: data?.pertanyaantiga ?? 'kosong',
     premium: false,
     favoritCount: 0,
+    poke: 40,
   };
   return usersCollection.doc(data.nomorwa).set(user);
 };
@@ -193,7 +194,17 @@ const ADD_TO_FAVORITE = async data => {
 
   async function _addFavtoUser() {
     console.log('add own fav');
-    return path.doc(data?.nomorwa).set(data);
+    return path
+      .doc(data?.nomorwa)
+      .set(data)
+      .then(() => {
+        return _createNotifOther();
+      });
+  }
+
+  async function _createNotifOther() {
+    console.log('add favorite notif');
+    return await CREATE_NOTIFICATION(parsed.id, 'favorite', data?.nomorwa);
   }
 };
 
@@ -574,7 +585,15 @@ const ACCEPT_TAARUF = async id => {
       .doc(parsed?.nomorwa)
       .update({
         taaruf: true,
+      })
+      .then(() => {
+        return _updateNotifOther();
       });
+
+    async function _updateNotifOther() {
+      console.log('updating read notif');
+      return await UPDATE_NOTIFICATION(parsed?.id, 'read', id, 'accept');
+    }
   }
 };
 
@@ -602,7 +621,15 @@ const REJECT_TAARUF = async id => {
       .doc(parsed?.nomorwa)
       .update({
         rejected: true,
+      })
+      .then(() => {
+        return _updateNotifOther();
       });
+  }
+
+  async function _updateNotifOther() {
+    console.log('updating read notif');
+    return await UPDATE_NOTIFICATION(parsed?.id, 'read', id, 'reject');
   }
 };
 
@@ -676,6 +703,15 @@ const CREATE_NOTIFICATION = async (id, type, senderId) => {
 };
 
 const UPDATE_NOTIFICATION = async (senderId, type, target, typeTarget) => {
+  /**
+   *
+   * senderId -> siapa id pengirim notif
+   * type -> type notif yang hendak dirubah
+   * target -> user.nomorwa target penerima notif
+   * typeTarget -> notif mau di update ke type apa
+   *
+   */
+
   const list = await GET_NOTIFICATION(target);
   const timestamp = GET_CURRENT_DATE('LLL');
 
@@ -687,14 +723,18 @@ const UPDATE_NOTIFICATION = async (senderId, type, target, typeTarget) => {
 
   console.log(target, list);
 
-  return await usersCollection
-    .doc(target)
-    .collection('Notification')
-    .doc(dataId)
-    .update({
-      type: typeTarget,
-      timestamp: timestamp,
-    });
+  if (dataId?.length) {
+    return await usersCollection
+      .doc(target)
+      .collection('Notification')
+      .doc(dataId)
+      .update({
+        type: typeTarget,
+        timestamp: timestamp,
+      });
+  } else {
+    console.log('Notif ID Not found');
+  }
 };
 
 const GET_NOTIFICATION = async id => {
@@ -722,6 +762,31 @@ const GET_NOTIFICATION = async id => {
     });
 };
 
+// ===================================
+//
+//
+// ============= POKE ==============
+//
+// ===================================
+
+const GET_POKE_LIST = async () => {
+  return await pokeCollection.get().then(snapshot => {
+    if (snapshot.size > 0) {
+      console.log('ADA');
+      let temp = [];
+
+      snapshot.forEach(doc => {
+        temp.push({id: doc.id, ...doc.data()});
+      });
+
+      return temp;
+    } else {
+      console.log('NO');
+      return [];
+    }
+  });
+};
+
 export {
   USER_REGISTER,
   USER_UPDATE,
@@ -747,4 +812,5 @@ export {
   CREATE_NOTIFICATION,
   GET_NOTIFICATION,
   UPDATE_NOTIFICATION,
+  GET_POKE_LIST,
 };
