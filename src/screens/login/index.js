@@ -69,7 +69,9 @@ const LoginScreen = ({navigation}) => {
             value={pw}
           />
         </View>
-        <Touchable style={{alignSelf: 'flex-end', marginTop: 14}}>
+        <Touchable
+          style={{alignSelf: 'flex-end', marginTop: 14}}
+          onPress={() => navigation.navigate('Forgot')}>
           <Text style={styles.textCreateCV}>Lupa Password?</Text>
         </Touchable>
         <View style={styles.bottomContainer}>

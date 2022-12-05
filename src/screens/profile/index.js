@@ -31,6 +31,8 @@ import {
   UPDATE_NOTIFICATION,
   USER_IS_PREMIUM,
 } from '../../helpers/firebase';
+import Carousel from 'react-native-reanimated-carousel';
+import {GestureHandlerRootView} from 'react-native-gesture-handler';
 
 const ProfileScreen = ({navigation, route}) => {
   const [firstQ, setFirstQ] = React.useState('');
@@ -343,10 +345,13 @@ const ProfileScreen = ({navigation, route}) => {
     },
   ];
 
+  const IMAGE_PIC = [user?.fotowajah, user?.fotofull];
+
   return (
     <ScrollView
       ref={scrollRef}
       style={styles.container}
+      nestedScrollEnabled
       contentContainerStyle={{paddingBottom: 60}}>
       <StatusBar backgroundColor={Colors.COLOR_STATUSBAR} />
       <Image
@@ -379,16 +384,32 @@ const ProfileScreen = ({navigation, route}) => {
         <View style={styles.card}>
           <View style={{flexDirection: 'row'}}>
             <View style={{marginRight: 24}}>
-              <Image
-                style={{
-                  height: 128,
-                  width: 96,
-                  backgroundColor: Colors.COLOR_LIGHT_GRAY,
-                  marginBottom: 8,
-                  borderRadius: 8,
-                }}
-                source={{uri: `data:image/png;base64,${user?.fotowajah}`}}
-              />
+              <GestureHandlerRootView style={{marginBottom: 8}}>
+                <Carousel
+                  loop={true}
+                  autoPlay={true}
+                  style={{width: 96, height: 128}}
+                  width={96}
+                  data={IMAGE_PIC}
+                  panGestureHandlerProps={{
+                    activeOffsetX: [-10, 10],
+                  }}
+                  renderItem={({item, index}) => {
+                    return (
+                      <Image
+                        style={{
+                          height: 128,
+                          width: 96,
+                          backgroundColor: Colors.COLOR_LIGHT_GRAY,
+                          borderRadius: 8,
+                        }}
+                        source={{uri: `data:image/png;base64,${item}`}}
+                      />
+                    );
+                  }}
+                  scrollAnimationDuration={1200}
+                />
+              </GestureHandlerRootView>
               <Text style={styles.textName}>{user?.nama}</Text>
               <Text style={styles.textUmur}>{user?.umur} tahun</Text>
               {isPremium && (

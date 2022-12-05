@@ -29,6 +29,7 @@ import TaarufScreen from '../screens/taaruf';
 import FavoritNotifScreen from '../screens/favoritnotif';
 import SendPokeScreen from '../screens/sendpoke';
 import PokeScreen from '../screens/poke';
+import ForgotScreen from '../screens/forgot';
 
 //create stack screen
 const Stack = createNativeStackNavigator();
@@ -66,6 +67,14 @@ export const AuthStackScreen = () => {
         component={LoginScreen}
         options={{
           headerShown: false,
+        }}
+      />
+      <Stack.Screen
+        name="Forgot"
+        component={ForgotScreen}
+        options={{
+          headerShown: true,
+          title: 'Lupa Password',
         }}
       />
       <Stack.Screen

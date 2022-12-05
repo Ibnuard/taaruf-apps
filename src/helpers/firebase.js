@@ -1,5 +1,5 @@
 import firestore from '@react-native-firebase/firestore';
-import {CHECK_IS_VALID, GET_CURRENT_DATE} from '../utils/moment';
+import {CHECK_IS_VALID, GET_CURRENT_DATE, PARSE_DATE} from '../utils/moment';
 import {generateMonthData, generateUID, getRandomNumber} from '../utils/utils';
 import {retrieveUserSession} from './storage';
 
@@ -155,6 +155,31 @@ const USER_POKE = async () => {
   if (userData) {
     return userData?.poke;
   }
+};
+
+//user forgot step cek
+const USER_CHECK_DATA = async data => {
+  const user = await usersCollection.doc(data?.nomorwa).get();
+
+  const userData = user?.data();
+
+  if (
+    userData?.email == data?.email &&
+    PARSE_DATE(userData?.ttl) == PARSE_DATE(data?.ttl)
+  ) {
+    console.log('Benar');
+    return true;
+  } else {
+    console.log('Salah');
+    return false;
+  }
+};
+
+//update password
+const USER_UPDATE_PASSWORD = async data => {
+  return await usersCollection.doc(data?.nomorwa).update({
+    password: data?.password,
+  });
 };
 
 // ===================================
@@ -885,4 +910,6 @@ export {
   USER_POKE,
   SEND_POKE,
   GET_POKE_NOTIF,
+  USER_CHECK_DATA,
+  USER_UPDATE_PASSWORD,
 };
