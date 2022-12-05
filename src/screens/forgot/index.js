@@ -19,6 +19,8 @@ import {MushForm} from '../../utils/forms';
 import _ from 'lodash';
 import {USER_CHECK_DATA, USER_UPDATE_PASSWORD} from '../../helpers/firebase';
 
+//log test admin
+
 const ForgotScreen = ({navigation}) => {
   const [selectedDate, setSelectedDate] = React.useState(new Date());
   const [showDatePicker, setShowDatePicker] = React.useState(false);
