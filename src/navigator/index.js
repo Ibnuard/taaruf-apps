@@ -30,6 +30,9 @@ import FavoritNotifScreen from '../screens/favoritnotif';
 import SendPokeScreen from '../screens/sendpoke';
 import PokeScreen from '../screens/poke';
 import ForgotScreen from '../screens/forgot';
+import AdminHomeScreen from '../screens/adminhome';
+import AdminUsersScreen from '../screens/adminusers';
+import AdminDetailScreen from '../screens/admindetail';
 
 //create stack screen
 const Stack = createNativeStackNavigator();
@@ -392,6 +395,34 @@ const ProfileStack = () => {
         component={DetailCVScreen}
         options={{
           title: 'Edit CV',
+        }}
+      />
+    </Stack.Navigator>
+  );
+};
+
+export const AdminStack = () => {
+  return (
+    <Stack.Navigator>
+      <Stack.Screen
+        name="AdminHome"
+        component={AdminHomeScreen}
+        options={{
+          headerShown: false,
+        }}
+      />
+      <Stack.Screen
+        name="AdminUsers"
+        component={AdminUsersScreen}
+        options={{
+          title: 'Semua User',
+        }}
+      />
+      <Stack.Screen
+        name="AdminDetail"
+        component={AdminDetailScreen}
+        options={{
+          title: 'Detail User',
         }}
       />
     </Stack.Navigator>

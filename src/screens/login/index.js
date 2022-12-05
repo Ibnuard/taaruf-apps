@@ -14,7 +14,12 @@ const LoginScreen = ({navigation}) => {
 
   const [isLoading, setIsLoading] = React.useState(false);
 
-  const {signIn} = React.useContext(AuthContext);
+  const {signIn, admin} = React.useContext(AuthContext);
+
+  const ADMIN = {
+    no: '000000',
+    pw: 'ADMIN0123',
+  };
 
   const _userLogin = async () => {
     setIsLoading(true);
@@ -23,19 +28,25 @@ const LoginScreen = ({navigation}) => {
       password: pw,
     };
 
-    const login = await USER_LOGIN(data);
-
-    if (login == 'NOT_USER') {
-      setIsLoading(false);
-      Alert.alert('Gagal Masuk', 'User tidak ditemukan!');
-    } else if (login == 'PASSWORD_INVALID') {
-      setIsLoading(false);
-      Alert.alert('Gagal Masuk', 'Kata Sandi salah!');
+    if (nomor == ADMIN.no && pw == ADMIN.pw) {
+      console.log('login admin');
+      admin();
     } else {
-      setIsLoading(false);
-      await storeUserSession(login);
+      console.log('Login user!');
+      const login = await USER_LOGIN(data);
 
-      signIn();
+      if (login == 'NOT_USER') {
+        setIsLoading(false);
+        Alert.alert('Gagal Masuk', 'User tidak ditemukan!');
+      } else if (login == 'PASSWORD_INVALID') {
+        setIsLoading(false);
+        Alert.alert('Gagal Masuk', 'Kata Sandi salah!');
+      } else {
+        setIsLoading(false);
+        await storeUserSession(login);
+
+        signIn();
+      }
     }
   };
 
