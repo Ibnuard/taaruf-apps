@@ -144,6 +144,19 @@ const USER_IS_PREMIUM = async () => {
   return userPremium?.premium;
 };
 
+//USER POKE
+const USER_POKE = async () => {
+  const user = await retrieveUserSession();
+  const parsed = JSON.parse(user);
+
+  const getData = await usersCollection.doc(parsed.nomorwa).get();
+  const userData = getData.data();
+
+  if (userData) {
+    return userData?.poke;
+  }
+};
+
 // ===================================
 //
 //
@@ -787,6 +800,62 @@ const GET_POKE_LIST = async () => {
   });
 };
 
+const SEND_POKE = async (id, poke) => {
+  const user = await retrieveUserSession();
+  const parsed = JSON.parse(user);
+
+  return firestore()
+    .runTransaction(async transaction => {
+      const userRef = usersCollection.doc(parsed?.nomorwa);
+      // Get post data first
+      const userSnapshot = await transaction.get(userRef);
+      if (!userSnapshot.exists) {
+        throw 'Post does not exist!';
+      }
+      transaction.update(userRef, {
+        poke: userSnapshot.data().poke - 1,
+      });
+    })
+    .then(() => {
+      return _sendToOther();
+    });
+
+  async function _sendToOther() {
+    const timestamp = GET_CURRENT_DATE('LLL');
+    return usersCollection.doc(id).collection('Poke').add({
+      senderId: parsed.id,
+      text: poke?.text,
+      type: poke?.type,
+      timestamp: timestamp,
+    });
+  }
+};
+
+const GET_POKE_NOTIF = async () => {
+  const user = await retrieveUserSession();
+  const parsed = JSON.parse(user);
+
+  return await usersCollection
+    .doc(parsed.nomorwa)
+    .collection('Poke')
+    .get()
+    .then(snapshot => {
+      if (snapshot.size > 0) {
+        console.log('ADA');
+        let temp = [];
+
+        snapshot.forEach(doc => {
+          temp.push({id: doc.id, ...doc.data()});
+        });
+
+        return temp;
+      } else {
+        console.log('NO');
+        return [];
+      }
+    });
+};
+
 export {
   USER_REGISTER,
   USER_UPDATE,
@@ -813,4 +882,7 @@ export {
   GET_NOTIFICATION,
   UPDATE_NOTIFICATION,
   GET_POKE_LIST,
+  USER_POKE,
+  SEND_POKE,
+  GET_POKE_NOTIF,
 };

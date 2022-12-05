@@ -1,15 +1,20 @@
 import * as React from 'react';
-import {View, Text, StyleSheet, Image, FlatList} from 'react-native';
+import {View, Text, StyleSheet, Image, FlatList, Alert} from 'react-native';
 import {Button, Card} from '../../components';
+import LoadingModal from '../../components/LoadingModal';
 import Touchable from '../../components/touchable';
-import {GET_POKE_LIST} from '../../helpers/firebase';
+import {GET_POKE_LIST, SEND_POKE, USER_POKE} from '../../helpers/firebase';
 import {IMAGES_RES} from '../../helpers/images';
 import {Colors, Typo} from '../../styles';
 
-const SendPokeScreen = () => {
+const SendPokeScreen = ({navigation, route}) => {
   const [activeFilter, setActiveFilter] = React.useState('all');
+  const [userPoke, setUserPoke] = React.useState(0);
   const [poke, setPoke] = React.useState();
   const [selected, setSelected] = React.useState();
+  const [isLoading, setIsLoading] = React.useState(false);
+
+  const TARGET = route?.params?.data;
 
   React.useLayoutEffect(() => {
     getPokeList();
@@ -17,9 +22,14 @@ const SendPokeScreen = () => {
 
   async function getPokeList() {
     const list = await GET_POKE_LIST();
+    const poke = await USER_POKE();
 
     if (list) {
       setPoke(list);
+    }
+
+    if (poke) {
+      setUserPoke(poke);
     }
   }
 
@@ -42,13 +52,45 @@ const SendPokeScreen = () => {
     },
   ];
 
+  function showDatabyFilter(data = []) {
+    return data.filter((item, index) => {
+      if (activeFilter == 'all') {
+        return item;
+      } else {
+        return item?.type == activeFilter;
+      }
+    });
+  }
+
+  async function onSendPressed() {
+    setIsLoading(true);
+    await SEND_POKE(TARGET?.nomorwa, poke[selected])
+      .then(() => {
+        setIsLoading(false);
+        Alert.alert('Sukses', 'Poke berhasil dikirim!', [
+          {
+            text: 'OK',
+            onPress: () => navigation.goBack(),
+          },
+        ]);
+      })
+      .catch(err => {
+        console.log('err : ' + err);
+        setIsLoading(false);
+        Alert.alert('Gagal', 'Ada kesalahan mohon coba lagi!');
+      });
+  }
+
   function renderFilterList(item) {
     return (
       <Touchable
         style={
           activeFilter == item?.key ? styles.cardActive : styles.cardNormal
         }
-        onPress={() => setActiveFilter(item.key)}>
+        onPress={() => {
+          setActiveFilter(item.key);
+          setSelected();
+        }}>
         <Text
           style={
             activeFilter == item?.key
@@ -116,7 +158,7 @@ const SendPokeScreen = () => {
             borderRadius: 4,
           }}>
           <Text style={styles.textSisaPoke}>
-            Sisa poke kamu saat ini adalah 32
+            Sisa poke kamu saat ini adalah {userPoke}
           </Text>
         </View>
         <Text style={styles.textSubtitle}>Filter Pesan</Text>
@@ -129,11 +171,16 @@ const SendPokeScreen = () => {
         />
         <FlatList
           contentContainerStyle={{paddingBottom: 60}}
-          data={poke}
+          data={showDatabyFilter(poke)}
           renderItem={({item, index}) => renderPokeList(item, index)}
         />
-        <Button disabled={selected == null} title="Kirim Poke" />
+        <Button
+          disabled={selected == null}
+          title="Kirim Poke"
+          onPress={() => onSendPressed()}
+        />
       </Card>
+      <LoadingModal isLoading={isLoading} />
     </View>
   );
 };

@@ -28,6 +28,7 @@ import FilterScreen from '../screens/filter';
 import TaarufScreen from '../screens/taaruf';
 import FavoritNotifScreen from '../screens/favoritnotif';
 import SendPokeScreen from '../screens/sendpoke';
+import PokeScreen from '../screens/poke';
 
 //create stack screen
 const Stack = createNativeStackNavigator();
@@ -214,6 +215,13 @@ const NotifBarStack = () => {
       <Stack.Screen
         name="General"
         component={FavoritNotifScreen}
+        options={{
+          headerShown: false,
+        }}
+      />
+      <Stack.Screen
+        name="Poke"
+        component={PokeScreen}
         options={{
           headerShown: false,
         }}
