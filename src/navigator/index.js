@@ -33,6 +33,9 @@ import ForgotScreen from '../screens/forgot';
 import AdminHomeScreen from '../screens/adminhome';
 import AdminUsersScreen from '../screens/adminusers';
 import AdminDetailScreen from '../screens/admindetail';
+import AdminNumberScreen from '../screens/adminnumber';
+import AdminPokeScreen from '../screens/adminpoke';
+import AdminPremiumScreen from '../screens/adminpremium';
 
 //create stack screen
 const Stack = createNativeStackNavigator();
@@ -416,6 +419,27 @@ export const AdminStack = () => {
         component={AdminUsersScreen}
         options={{
           title: 'Semua User',
+        }}
+      />
+      <Stack.Screen
+        name="AdminPremium"
+        component={AdminPremiumScreen}
+        options={{
+          title: 'Permintaan Premium',
+        }}
+      />
+      <Stack.Screen
+        name="AdminNumber"
+        component={AdminNumberScreen}
+        options={{
+          title: 'Ganti Nomor Admin',
+        }}
+      />
+      <Stack.Screen
+        name="AdminPoke"
+        component={AdminPokeScreen}
+        options={{
+          title: 'Poke',
         }}
       />
       <Stack.Screen

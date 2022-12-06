@@ -178,22 +178,27 @@ const KirimTaarufScreen = ({navigation, route}) => {
 
   async function onCardPress(item) {
     setModalVisible(true);
-    const isMatch = await CHECK_IS_MATCH(item);
+    if (isPremium) {
+      const isMatch = await CHECK_IS_MATCH(item);
 
-    if (isMatch) {
-      setModalVisible(false);
-      Alert.alert(
-        'Pesan!',
-        'User ini telah mengajukan taaruf ke anda, silahkan cek di Menerima CV!',
-        [{text: 'OK', onPress: () => navigation.navigate('TerimaTaaruf')}],
-      );
+      if (isMatch) {
+        setModalVisible(false);
+        Alert.alert(
+          'Pesan!',
+          'User ini telah mengajukan taaruf ke anda, silahkan cek di Menerima CV!',
+          [{text: 'OK', onPress: () => navigation.navigate('TerimaTaaruf')}],
+        );
+      } else {
+        setModalVisible(false);
+        navigation.navigate('ProfileDetail', {
+          key: 'kirimtaaruf',
+          data: item,
+          available: available,
+        });
+      }
     } else {
-      setModalVisible(false);
-      navigation.navigate('ProfileDetail', {
-        key: 'kirimtaaruf',
-        data: item,
-        available: available,
-      });
+      await setModalVisible(false);
+      navigation.navigate('Upgrade', {user: USER});
     }
   }
 

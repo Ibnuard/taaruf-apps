@@ -29,6 +29,7 @@ import {
   REMOVE_FROM_FAVORITE,
   SEND_TAARUF,
   UPDATE_NOTIFICATION,
+  USER_GET_ADMIN_INFO,
   USER_IS_PREMIUM,
 } from '../../helpers/firebase';
 import Carousel from 'react-native-reanimated-carousel';
@@ -60,10 +61,12 @@ const ProfileScreen = ({navigation, route}) => {
   const [accepted, setAccepted] = React.useState(USER_DATA?.taaruf ?? false);
   const [rejected, setRejected] = React.useState(USER_DATA?.rejected ?? false);
 
+  const [modalVisible, setModalVisible] = React.useState(false);
+
   const {signOut} = React.useContext(AuthContext);
 
   const TAARUF_MESSAGES = id => {
-    return `Assalamualaikum, Saya dari aplikasi Mencari Cinta Sejati, ${id}`;
+    return `Assalamualaikum, Saya dari aplikasi Mencari Cinta Sejati, Partner taaruf saya ${id}`;
   };
 
   React.useLayoutEffect(() => {
@@ -272,6 +275,21 @@ const ProfileScreen = ({navigation, route}) => {
     navigation.navigate('KirimPoke', {data: user});
   };
 
+  async function onChatAdmin() {
+    setIsLoading(true);
+
+    const adminData = await USER_GET_ADMIN_INFO();
+
+    if (adminData?.wa) {
+      Linking.openURL(
+        `whatsapp://send?phone=${adminData?.wa}&text=${TAARUF_MESSAGES(
+          user?.id,
+        )}`,
+      );
+    }
+    setIsLoading(false);
+  }
+
   const PROFILE_DATA = [
     {
       title: 'Kriteria yang diinginkan',
@@ -370,14 +388,9 @@ const ProfileScreen = ({navigation, route}) => {
               </Text>
             </View>
             <Button
+              isLoading={isLoading}
               title="Chat Admin Taaruf"
-              onPress={() =>
-                Linking.openURL(
-                  `whatsapp://send?phone=6285741894533&text=${TAARUF_MESSAGES(
-                    user?.id,
-                  )}`,
-                )
-              }
+              onPress={() => onChatAdmin()}
             />
           </Card>
         )}
@@ -718,6 +731,7 @@ const ProfileScreen = ({navigation, route}) => {
           </View>
         )}
       </View>
+      <Modal type={'loading'} visible={modalVisible} />
     </ScrollView>
   );
 };

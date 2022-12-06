@@ -4,11 +4,11 @@ import {Button, Input} from '../../components';
 import NoItemScreen from '../../components/NoItem';
 import PeopleCardList from '../../components/PeopleCardList';
 import {AuthContext} from '../../context';
-import {ADMIN_USER_LIST} from '../../helpers/admin';
+import {ADMIN_USER_LIST, ADMIN_USER_PREMIUM} from '../../helpers/admin';
 import {IMAGES_RES} from '../../helpers/images';
 import {Colors, Typo} from '../../styles';
 
-const AdminUsersScreen = ({navigation}) => {
+const AdminPremiumScreen = ({navigation}) => {
   const [users, setUsers] = React.useState();
   const [id, setId] = React.useState('');
   const [isLoading, setIsLoading] = React.useState(false);
@@ -31,7 +31,7 @@ const AdminUsersScreen = ({navigation}) => {
 
   async function getAllUsers() {
     setIsLoading(true);
-    const usersList = await ADMIN_USER_LIST();
+    const usersList = await ADMIN_USER_PREMIUM();
 
     if (usersList) {
       setUsers(usersList);
@@ -53,11 +53,11 @@ const AdminUsersScreen = ({navigation}) => {
           renderItem={({item, index}) => (
             <PeopleCardList
               data={item}
-              showBadgePremium
               onPress={
                 () =>
                   navigation.navigate('AdminDetail', {
                     data: item,
+                    key: 'premium',
                   })
                 // navigation.navigate('Upgrade')
               }
@@ -83,4 +83,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default AdminUsersScreen;
+export default AdminPremiumScreen;

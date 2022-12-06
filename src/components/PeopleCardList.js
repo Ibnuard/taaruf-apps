@@ -5,7 +5,13 @@ import Pic from '../../assets/images/pic.jpeg';
 import Icon from 'react-native-vector-icons/AntDesign';
 import {Colors, Typo} from '../styles';
 
-const PeopleCardList = ({onPress, data, showCount = true, blur = false}) => {
+const PeopleCardList = ({
+  onPress,
+  data,
+  showCount = true,
+  blur = false,
+  showBadgePremium = false,
+}) => {
   return (
     <Card useShadow={false} style={styles.container} onPress={onPress}>
       <Image
@@ -14,6 +20,20 @@ const PeopleCardList = ({onPress, data, showCount = true, blur = false}) => {
         resizeMode={'contain'}
         style={styles.image}
       />
+      {showBadgePremium && data?.premium && (
+        <View
+          style={{
+            backgroundColor: Colors.COLOR_ACCENT,
+            position: 'absolute',
+            margin: 8,
+            paddingHorizontal: 14,
+            paddingVertical: 4,
+            borderRadius: 14,
+            opacity: 0.8,
+          }}>
+          <Text style={styles.textPremium}>User Premium</Text>
+        </View>
+      )}
       <View style={{padding: 8, flexDirection: 'row', alignItems: 'center'}}>
         <View style={{flex: 1, marginHorizontal: 4}}>
           <Text style={styles.textTitle}>
@@ -51,6 +71,11 @@ const styles = StyleSheet.create({
   textTitle: {
     ...Typo.TextNormalBold,
     color: Colors.COLOR_BLACK,
+  },
+
+  textPremium: {
+    ...Typo.TextSmallRegular,
+    color: Colors.COLOR_WHITE,
   },
 
   textDesc: {

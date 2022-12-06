@@ -25,9 +25,18 @@ const AdminHomeScreen = ({navigation}) => {
         <Button
           buttonStyle={{marginVertical: 14}}
           title="Edit nomor admin taaruf"
+          onPress={() => navigation.navigate('AdminNumber')}
         />
-        <Button buttonStyle={{marginVertical: 14}} title="Permintaan Premium" />
-        <Button buttonStyle={{marginVertical: 14}} title="Poke" />
+        <Button
+          buttonStyle={{marginVertical: 14}}
+          title="Permintaan Premium"
+          onPress={() => navigation.navigate('AdminPremium')}
+        />
+        <Button
+          buttonStyle={{marginVertical: 14}}
+          title="Poke"
+          onPress={() => navigation.navigate('AdminPoke')}
+        />
         <Button
           onPress={() => signOut()}
           invert

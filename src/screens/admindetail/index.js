@@ -6,6 +6,8 @@ import {
   Image,
   StatusBar,
   ScrollView,
+  Alert,
+  Linking,
 } from 'react-native';
 import {GestureHandlerRootView} from 'react-native-gesture-handler';
 import Carousel from 'react-native-reanimated-carousel';
@@ -14,24 +16,65 @@ import {AuthContext} from '../../context';
 import {IMAGES_RES} from '../../helpers/images';
 import {Colors, Typo} from '../../styles';
 import Icon from 'react-native-vector-icons/AntDesign';
+import {ADMIN_REJECT_PREMIUM, ADMIN_UPGRADE_PREMIUM} from '../../helpers/admin';
+import {USER_CHECK_STATUS} from '../../helpers/firebase';
 
 const AdminDetailScreen = ({navigation, route}) => {
   const [user, setUser] = React.useState('');
   const [isPremium, setIsPremium] = React.useState(false);
-
   const [isLoading, setIsLoading] = React.useState(false);
+  const [status, setStatus] = React.useState('pending');
 
   const USER_DATA = route?.params?.data;
+  const KEY = route?.params?.key;
 
   React.useEffect(() => {
     setUser(USER_DATA);
   }, []);
+
+  React.useEffect(() => {
+    cekUserStatus();
+  }, [isLoading]);
 
   const normalizeDataList = (data = '') => {
     const splitting = data.split(',');
 
     return splitting;
   };
+
+  async function cekUserStatus() {
+    const status = await USER_CHECK_STATUS(USER_DATA?.nomorwa);
+
+    if (status) {
+      setStatus(status);
+    }
+  }
+
+  async function onAdminAcc() {
+    setIsLoading(true);
+    await ADMIN_UPGRADE_PREMIUM(USER_DATA?.nomorwa)
+      .then(() => {
+        setIsLoading(false);
+        Alert.alert('Sukses', 'User berhasil upgrade ke premium!');
+      })
+      .catch(() => {
+        setIsLoading(false);
+        Alert.alert('Gagal', 'Ada kesalahan mohon coba lagi!');
+      });
+  }
+
+  async function onAdminReject() {
+    setIsLoading(true);
+    await ADMIN_REJECT_PREMIUM(USER_DATA?.nomorwa)
+      .then(() => {
+        setIsLoading(false);
+        Alert.alert('Sukses', 'Permintaan premium berhasil ditolak!');
+      })
+      .catch(() => {
+        setIsLoading(false);
+        Alert.alert('Gagal', 'Ada kesalahan mohon coba lagi!');
+      });
+  }
 
   const PROFILE_DATA = [
     {
@@ -119,6 +162,15 @@ const AdminDetailScreen = ({navigation, route}) => {
         resizeMode={'stretch'}
       />
       <View style={{paddingHorizontal: 14}}>
+        <Card style={{marginBottom: 36, marginTop: -32}}>
+          <Button
+            isLoading={isLoading}
+            title="Chat User"
+            onPress={() =>
+              Linking.openURL(`whatsapp://send?phone=${USER_DATA?.nomorwa}}`)
+            }
+          />
+        </Card>
         <View style={styles.card}>
           <View style={{flexDirection: 'row'}}>
             <View style={{marginRight: 24}}>
@@ -150,9 +202,9 @@ const AdminDetailScreen = ({navigation, route}) => {
               </GestureHandlerRootView>
               <Text style={styles.textName}>{user?.nama}</Text>
               <Text style={styles.textUmur}>{user?.umur} tahun</Text>
-              {isPremium && (
+              {status == 'success' && (
                 <View style={styles.badgeTop}>
-                  <Text style={styles.textBadgeTopValue}>Siap Taaruf</Text>
+                  <Text style={styles.textBadgeTopValue}>User Premium</Text>
                 </View>
               )}
             </View>
@@ -285,6 +337,32 @@ const AdminDetailScreen = ({navigation, route}) => {
             </Text>
           </View>
         </Card>
+        {KEY &&
+          status !== 'success' &&
+          (status !== 'reject' ? (
+            <>
+              <Button
+                isLoading={isLoading}
+                buttonStyle={{marginTop: 32}}
+                title={'Upgrade Premium'}
+                onPress={() => onAdminAcc()}
+              />
+              <Button
+                isLoading={isLoading}
+                invert
+                buttonStyle={{marginTop: 14}}
+                title={'Tolak Permintaan Premium'}
+                onPress={() => onAdminReject()}
+              />
+            </>
+          ) : (
+            <Button
+              disabled={true}
+              invert
+              buttonStyle={{marginTop: 32}}
+              title={'Permintaan Premium ditolak'}
+            />
+          ))}
       </View>
     </ScrollView>
   );

@@ -7,6 +7,7 @@ import {retrieveUserSession} from './storage';
 const usersCollection = firestore().collection('Users');
 const taarufCollection = firestore().collection('Taaruf');
 const pokeCollection = firestore().collection('Poke');
+const adminCollection = firestore().collection('ADMIN');
 
 //QUERY
 
@@ -180,6 +181,40 @@ const USER_UPDATE_PASSWORD = async data => {
   return await usersCollection.doc(data?.nomorwa).update({
     password: data?.password,
   });
+};
+
+//CEK REQUEST STATUS
+const USER_CHECK_STATUS = async id => {
+  const data = await adminCollection
+    .doc('PREMIUM')
+    .collection('Users')
+    .doc(id)
+    .get();
+  if (data?.exists) {
+    const userData = data?.data();
+    return userData?.premiumStatus;
+  } else {
+    return 'idle'; // idle || process || reject
+  }
+};
+
+//REQUIEST PREMIUM
+const USER_REQUEST_PREMIUM = async user => {
+  return await adminCollection
+    .doc('PREMIUM')
+    .collection('Users')
+    .doc(user?.nomorwa)
+    .set(user);
+};
+
+//GET ADMIN INFO
+const USER_GET_ADMIN_INFO = async () => {
+  const data = await adminCollection.doc('DATA').get();
+  const adminData = data?.data();
+
+  if (adminData) {
+    return adminData;
+  }
 };
 
 // ===================================
@@ -912,4 +947,7 @@ export {
   GET_POKE_NOTIF,
   USER_CHECK_DATA,
   USER_UPDATE_PASSWORD,
+  USER_CHECK_STATUS,
+  USER_REQUEST_PREMIUM,
+  USER_GET_ADMIN_INFO,
 };
