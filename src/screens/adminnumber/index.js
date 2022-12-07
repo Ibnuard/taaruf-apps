@@ -13,6 +13,9 @@ const AdminNumberScreen = ({navigation}) => {
   const [bankHolder, setBankHolder] = React.useState('');
   const [bankNumber, setBankNumber] = React.useState('');
   const [isLoading, setIsLoading] = React.useState('');
+  const [email, setEmail] = React.useState('');
+  const [alamat, setAlamat] = React.useState('');
+  const [instagram, setInstagram] = React.useState('');
 
   React.useLayoutEffect(() => {
     getAdminNumber();
@@ -27,6 +30,9 @@ const AdminNumberScreen = ({navigation}) => {
       setBankHolder(data?.bankHolder);
       setBankName(data?.bankName);
       setBankNumber(data?.bankNumber);
+      setEmail(data?.email);
+      setAlamat(data?.alamat);
+      setInstagram(data?.instagram);
     }
 
     setIsLoading(false);
@@ -40,6 +46,9 @@ const AdminNumberScreen = ({navigation}) => {
       bankHolder: bankHolder,
       bankName: bankName,
       bankNumber: bankNumber,
+      email: email,
+      alamat: alamat,
+      instagram: instagram,
     };
 
     await SAVE_ADMIN_NUMBER(data)
@@ -70,24 +79,45 @@ const AdminNumberScreen = ({navigation}) => {
         />
         <Text style={styles.textTitle}>Bank Admin ( BCA, MANDIRI, DLL )</Text>
         <Input
-          placeholder={'Masukan nomor wa admin'}
+          placeholder={'Masukan nama bank admin'}
           containerStyle={{marginTop: 14, marginBottom: 24}}
           onChangeText={text => setBankName(text)}
           value={bankName}
         />
         <Text style={styles.textTitle}>Nama Pemegang Rekening Admin</Text>
         <Input
-          placeholder={'Masukan nomor wa admin'}
+          placeholder={'Masukan nama pemegang rekening'}
           containerStyle={{marginTop: 14, marginBottom: 24}}
           onChangeText={text => setBankHolder(text)}
           value={bankHolder}
         />
         <Text style={styles.textTitle}>Nomor Rekening</Text>
         <Input
-          placeholder={'Masukan nomor wa admin'}
+          placeholder={'Masukan nomor rekening'}
           containerStyle={{marginTop: 14, marginBottom: 24}}
           onChangeText={text => setBankNumber(text)}
           value={bankNumber}
+        />
+        <Text style={styles.textTitle}>Email</Text>
+        <Input
+          placeholder={'Masukan email'}
+          containerStyle={{marginTop: 14, marginBottom: 24}}
+          onChangeText={text => setEmail(text)}
+          value={email}
+        />
+        <Text style={styles.textTitle}>Alamat</Text>
+        <Input
+          placeholder={'Masukan alamat'}
+          containerStyle={{marginTop: 14, marginBottom: 24}}
+          onChangeText={text => setAlamat(text)}
+          value={alamat}
+        />
+        <Text style={styles.textTitle}>Instagram</Text>
+        <Input
+          placeholder={'Masukan instagram'}
+          containerStyle={{marginTop: 14, marginBottom: 24}}
+          onChangeText={text => setInstagram(text)}
+          value={instagram}
         />
       </View>
       <View style={{flex: 1, justifyContent: 'flex-end', padding: 24}}>

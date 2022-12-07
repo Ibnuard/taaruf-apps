@@ -39,21 +39,28 @@ const HomeScreen = ({navigation}) => {
           alignItems: 'center',
           paddingHorizontal: 14,
         }}>
+        <View style={{flex: 1}}>
+          <Touchable
+            style={{width: 36}}
+            onPress={() => navigation.jumpTo('Profile')}>
+            <Image
+              source={{uri: `data:image/png;base64,${user?.fotowajah}`}}
+              style={{
+                height: 36,
+                width: 36,
+                borderRadius: 28,
+                backgroundColor: 'white',
+              }}
+            />
+          </Touchable>
+        </View>
         <Touchable
-          style={{flex: 1}}
-          onPress={() => navigation.jumpTo('Profile')}>
-          <Image
-            source={{uri: `data:image/png;base64,${user?.fotowajah}`}}
-            style={{
-              height: 36,
-              width: 36,
-              borderRadius: 28,
-              backgroundColor: 'white',
-            }}
-          />
-        </Touchable>
-        <Touchable onPress={() => navigation.navigate('Favorite')}>
+          style={{marginHorizontal: 14}}
+          onPress={() => navigation.navigate('Favorite')}>
           <Icon name="heart" color={Colors.COLOR_WHITE} size={20} />
+        </Touchable>
+        <Touchable onPress={() => navigation.navigate('Setting')}>
+          <Icon name="setting" color={Colors.COLOR_WHITE} size={20} />
         </Touchable>
       </View>
       <View style={{paddingHorizontal: 14}}>

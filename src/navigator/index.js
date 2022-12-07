@@ -36,6 +36,8 @@ import AdminDetailScreen from '../screens/admindetail';
 import AdminNumberScreen from '../screens/adminnumber';
 import AdminPokeScreen from '../screens/adminpoke';
 import AdminPremiumScreen from '../screens/adminpremium';
+import SettingScreen from '../screens/setting';
+import MenuScreen from '../screens/menu';
 
 //create stack screen
 const Stack = createNativeStackNavigator();
@@ -364,6 +366,32 @@ export const HomeStack = () => {
         component={TaarufScreen}
         options={{
           title: 'Memulai Taaruf',
+          headerTitleStyle: {
+            color: Colors.COLOR_WHITE,
+          },
+          headerStyle: {
+            backgroundColor: Colors.COLOR_STATUSBAR,
+          },
+        }}
+      />
+      <Stack.Screen
+        name="Setting"
+        component={SettingScreen}
+        options={{
+          title: 'Informasi',
+          headerTitleStyle: {
+            color: Colors.COLOR_WHITE,
+          },
+          headerStyle: {
+            backgroundColor: Colors.COLOR_STATUSBAR,
+          },
+        }}
+      />
+      <Stack.Screen
+        name="Menu"
+        component={MenuScreen}
+        options={{
+          title: '',
           headerTitleStyle: {
             color: Colors.COLOR_WHITE,
           },

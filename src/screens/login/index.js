@@ -59,10 +59,10 @@ const LoginScreen = ({navigation}) => {
         resizeMode={'stretch'}
       />
       <View style={styles.child}>
-        <Text style={styles.textLogin}>Masuk</Text>
+        <Text style={styles.textLogin}>Login</Text>
         <Text style={styles.textDesc}>
-          Mencari Cinta Sejati adalah aplikasi pencari jodoh dengan jalan
-          ta'aruf silahkan buat CV atau login untuk yang sudah membuat CV.
+          Mungkinkan jodoh anda di sini ? Ayo dapatkan jodoh dengan jalan
+          ta'aruf silahkan buat CV atau login
         </Text>
         <View style={styles.inputContainer}>
           <Input
