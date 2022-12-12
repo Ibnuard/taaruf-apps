@@ -10,4 +10,8 @@ export const IMAGES_RES = {
   backIcon: require('../../assets/images/backIcon.png'),
   filter: require('../../assets/images/filter.png'),
   heart: require('../../assets/images/heart.png'),
+  info: require('../../assets/images/idea.png'),
+  gear: require('../../assets/images/gear.png'),
+  premium: require('../../assets/images/premium.png'),
+  sended: require('../../assets/images/sended.png'),
 };

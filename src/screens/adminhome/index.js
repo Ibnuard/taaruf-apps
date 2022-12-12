@@ -38,6 +38,16 @@ const AdminHomeScreen = ({navigation}) => {
           onPress={() => navigation.navigate('AdminPoke')}
         />
         <Button
+          buttonStyle={{marginVertical: 14}}
+          title="Banner"
+          onPress={() => navigation.navigate('AdminBanner')}
+        />
+        <Button
+          buttonStyle={{marginVertical: 14}}
+          title="Prosedur"
+          onPress={() => navigation.navigate('AdminProsedur')}
+        />
+        <Button
           onPress={() => signOut()}
           invert
           buttonStyle={{marginVertical: 14}}

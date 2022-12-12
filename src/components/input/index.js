@@ -20,7 +20,7 @@ const Input = props => {
           {...props}
           secureTextEntry={!isShowPassword && props.type == 'password'}
           placeholderTextColor={Colors.COLOR_GRAY}
-          style={styles.input}
+          style={[props?.inputStyle, styles.input]}
           onFocus={() => setIsFocus(true)}
           onBlur={() => setIsFocus(false)}
         />

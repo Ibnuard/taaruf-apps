@@ -55,6 +55,7 @@ const ProfileScreen = ({navigation, route}) => {
   const USER_DATA = route?.params?.data;
   const AVAILABLE = route?.params?.available;
   const CAN_TAARUF = route?.params?.canTaaruf;
+  const IS_PREMIUM = route?.params?.isPremium;
 
   console.log('ct : ' + AVAILABLE);
 
@@ -168,60 +169,64 @@ const ProfileScreen = ({navigation, route}) => {
 
   //AJUKAN TAARUF PRESSED
   const onSendTaarufButtonPressed = async () => {
-    setButtonId('taaruf');
-    setIsLoading(true);
-    if (taarufed) {
-      console.log('cancel');
-      await CANCEL_TAARUF(USER_DATA)
-        .then(() => {
-          setIsLoading(false);
-          setTaarufed(false);
-          Alert.alert('Sukses!', 'Permintaan taaruf telah dibatalkan!', [
-            {
-              text: 'OK',
-              onPress: () => navigation.goBack(),
-            },
-          ]);
-        })
-        .catch(err => {
-          console.log('errors: ' + err);
-          setIsLoading(false);
-          Alert.alert(
-            'Gagal!',
-            'Permintaan taaruf gagal dibatalkan, mohon coba lagi!',
-          );
-        });
-    } else {
-      console.log('send');
-      const answers = {
-        q1: firstQ,
-        q2: secondQ,
-        q3: thirdQ,
-      };
-
-      if (AVAILABLE) {
-        await SEND_TAARUF(USER_DATA, answers)
+    if (IS_PREMIUM) {
+      setButtonId('taaruf');
+      setIsLoading(true);
+      if (taarufed) {
+        console.log('cancel');
+        await CANCEL_TAARUF(USER_DATA)
           .then(() => {
             setIsLoading(false);
-            Alert.alert('Sukses!', 'Pengajuan taaruf telah terkirim!', [
-              {text: 'OK', onPress: () => navigation.navigate('CVTerkirim')},
+            setTaarufed(false);
+            Alert.alert('Sukses!', 'Permintaan taaruf telah dibatalkan!', [
+              {
+                text: 'OK',
+                onPress: () => navigation.goBack(),
+              },
             ]);
           })
           .catch(err => {
-            console.log('fail : ' + err);
+            console.log('errors: ' + err);
             setIsLoading(false);
             Alert.alert(
               'Gagal!',
-              'Permintaan taaruf gagal dikirim, mohon coba lagi!',
+              'Permintaan taaruf gagal dibatalkan, mohon coba lagi!',
             );
           });
       } else {
-        setIsLoading(false);
-        Alert.alert(
-          'Gagal!',
-          'Anda telah mencapai batas maksimum pengajuan CV bulan ini!',
-        );
+        console.log('send');
+        const answers = {
+          q1: firstQ,
+          q2: secondQ,
+          q3: thirdQ,
+        };
+
+        if (AVAILABLE) {
+          await SEND_TAARUF(USER_DATA, answers)
+            .then(() => {
+              setIsLoading(false);
+              Alert.alert('Sukses!', 'Pengajuan taaruf telah terkirim!', [
+                {text: 'OK', onPress: () => navigation.navigate('CVTerkirim')},
+              ]);
+            })
+            .catch(err => {
+              console.log('fail : ' + err);
+              setIsLoading(false);
+              Alert.alert(
+                'Gagal!',
+                'Permintaan taaruf gagal dikirim, mohon coba lagi!',
+              );
+            });
+        } else {
+          setIsLoading(false);
+          Alert.alert(
+            'Gagal!',
+            'Anda telah mencapai batas maksimum pengajuan CV bulan ini!',
+          );
+        }
       }
+    } else {
+      navigation.navigate('Upgrade', {user: USER_DATA});
     }
   };
 
@@ -366,331 +371,311 @@ const ProfileScreen = ({navigation, route}) => {
   const IMAGE_PIC = [user?.fotowajah, user?.fotofull];
 
   return (
-    <ScrollView
-      ref={scrollRef}
-      style={styles.container}
-      nestedScrollEnabled
-      contentContainerStyle={{paddingBottom: 60}}>
-      <StatusBar backgroundColor={Colors.COLOR_STATUSBAR} />
-      <Image
-        source={IMAGES_RES.wave_background}
-        style={{width: '100%', height: 100}}
-        resizeMode={'stretch'}
-      />
-      <View style={{paddingHorizontal: 14}}>
-        {accepted && (
-          <Card style={{marginBottom: 36, marginTop: -32}}>
-            <View style={{paddingBottom: 14}}>
-              <Text style={styles.textTopCard}>
-                Klik tombol chat admin. Antum akan terhubung melalui Whatsapp
-                untuk melakukan proses tanya jawab dengan calon dan menentukan
-                jadwal nadzor
-              </Text>
-            </View>
-            <Button
-              isLoading={isLoading}
-              title="Chat Admin Taaruf"
-              onPress={() => onChatAdmin()}
-            />
-          </Card>
-        )}
-        <View style={styles.card}>
-          <View style={{flexDirection: 'row'}}>
-            <View style={{marginRight: 24}}>
-              <GestureHandlerRootView style={{marginBottom: 8}}>
-                <Carousel
-                  loop={true}
-                  autoPlay={true}
-                  style={{width: 96, height: 128}}
-                  width={96}
-                  data={IMAGE_PIC}
-                  panGestureHandlerProps={{
-                    activeOffsetX: [-10, 10],
-                  }}
-                  renderItem={({item, index}) => {
-                    return (
-                      <Image
-                        style={{
-                          height: 128,
-                          width: 96,
-                          backgroundColor: Colors.COLOR_LIGHT_GRAY,
-                          borderRadius: 8,
-                        }}
-                        source={{uri: `data:image/png;base64,${item}`}}
-                      />
-                    );
-                  }}
-                  scrollAnimationDuration={1200}
-                />
-              </GestureHandlerRootView>
-              <Text style={styles.textName}>{user?.nama}</Text>
-              <Text style={styles.textUmur}>{user?.umur} tahun</Text>
-              {isPremium && (
-                <View style={styles.badgeTop}>
-                  <Text style={styles.textBadgeTopValue}>Siap Taaruf</Text>
+    <View style={{flex: 1}}>
+      <ScrollView
+        ref={scrollRef}
+        style={styles.container}
+        nestedScrollEnabled
+        contentContainerStyle={{paddingBottom: 100}}>
+        <StatusBar backgroundColor={Colors.COLOR_STATUSBAR} />
+        <Image
+          source={IMAGES_RES.wave_background}
+          style={{width: '100%', height: 100}}
+          resizeMode={'stretch'}
+        />
+        <View style={{paddingHorizontal: 14}}>
+          {accepted && (
+            <Card style={{marginBottom: 36, marginTop: -32}}>
+              <View style={{paddingBottom: 14}}>
+                <Text style={styles.textTopCard}>
+                  Klik tombol chat admin. Antum akan terhubung melalui Whatsapp
+                  untuk melakukan proses tanya jawab dengan calon dan menentukan
+                  jadwal nadzor
+                </Text>
+              </View>
+              <Button
+                isLoading={isLoading}
+                title="Chat Admin Taaruf"
+                onPress={() => onChatAdmin()}
+              />
+            </Card>
+          )}
+          <View style={styles.card}>
+            <View style={{flexDirection: 'row'}}>
+              <View style={{marginRight: 24}}>
+                <GestureHandlerRootView style={{marginBottom: 8}}>
+                  <Carousel
+                    loop={true}
+                    autoPlay={true}
+                    style={{width: 96, height: 128}}
+                    width={96}
+                    data={IMAGE_PIC}
+                    panGestureHandlerProps={{
+                      activeOffsetX: [-10, 10],
+                    }}
+                    renderItem={({item, index}) => {
+                      return (
+                        <Image
+                          style={{
+                            height: 128,
+                            width: 96,
+                            backgroundColor: Colors.COLOR_LIGHT_GRAY,
+                            borderRadius: 8,
+                          }}
+                          blurRadius={!KEY ? 0 : IS_PREMIUM ? 0 : 20}
+                          source={{uri: `data:image/png;base64,${item}`}}
+                        />
+                      );
+                    }}
+                    scrollAnimationDuration={1200}
+                  />
+                </GestureHandlerRootView>
+                <Text style={styles.textName}>
+                  {IS_PREMIUM ? user?.nama : user?.id}
+                </Text>
+                <Text style={styles.textUmur}>{user?.umur} tahun</Text>
+                {isPremium && (
+                  <View style={styles.badgeTop}>
+                    <Text style={styles.textBadgeTopValue}>Siap Taaruf</Text>
+                  </View>
+                )}
+              </View>
+              <View style={{flex: 1, marginRight: 8}}>
+                <View
+                  style={{
+                    flexDirection: 'row',
+                    alignItems: 'center',
+                    borderBottomWidth: 0.5,
+                    borderBottomColor: Colors.COLOR_GRAY,
+                    paddingVertical: 10,
+                  }}>
+                  <Icon
+                    name="idcard"
+                    size={20}
+                    color={Colors.COLOR_DARK_GRAY}
+                  />
+                  <Text style={styles.textInfo}>
+                    {`${user?.status}, ${user?.pekerjaan}, ${user?.kota}`}
+                  </Text>
                 </View>
-              )}
-            </View>
-            <View style={{flex: 1, marginRight: 8}}>
-              <View
-                style={{
-                  flexDirection: 'row',
-                  alignItems: 'center',
-                  borderBottomWidth: 0.5,
-                  borderBottomColor: Colors.COLOR_GRAY,
-                  paddingVertical: 10,
-                }}>
-                <Icon name="idcard" size={20} color={Colors.COLOR_DARK_GRAY} />
-                <Text style={styles.textInfo}>
-                  {`${user?.status}, ${user?.pekerjaan}, ${user?.kota}`}
-                </Text>
-              </View>
-              <View
-                style={{
-                  flexDirection: 'row',
-                  alignItems: 'center',
-                  borderBottomWidth: 0.5,
-                  borderBottomColor: Colors.COLOR_GRAY,
-                  paddingVertical: 10,
-                  maxWidth: '78%',
-                }}>
-                <Icon
-                  name="infocirlceo"
-                  size={20}
-                  color={Colors.COLOR_DARK_GRAY}
-                />
-                <Text style={styles.textInfo}>
-                  {`${user?.tinggi}cm/${user?.berat}kg`}
-                </Text>
-              </View>
-              <View
-                style={{
-                  flexDirection: 'row',
-                  alignItems: 'center',
-                  borderBottomWidth: 0.5,
-                  borderBottomColor: Colors.COLOR_GRAY,
-                  paddingVertical: 10,
-                  maxWidth: '78%',
-                }}>
-                <Icon name="home" size={20} color={Colors.COLOR_DARK_GRAY} />
-                <Text style={styles.textInfo}>{user?.ibadah}</Text>
-              </View>
-              <View
-                style={{
-                  flexDirection: 'row',
-                  alignItems: 'center',
-                  borderBottomWidth: 0.5,
-                  borderBottomColor: Colors.COLOR_GRAY,
-                  paddingVertical: 10,
-                  maxWidth: '78%',
-                }}>
-                <Icon
-                  name="solution1"
-                  size={20}
-                  color={Colors.COLOR_DARK_GRAY}
-                />
-                <Text style={styles.textInfo}>{user?.deskripsi}</Text>
+                <View
+                  style={{
+                    flexDirection: 'row',
+                    alignItems: 'center',
+                    borderBottomWidth: 0.5,
+                    borderBottomColor: Colors.COLOR_GRAY,
+                    paddingVertical: 10,
+                    maxWidth: '78%',
+                  }}>
+                  <Icon
+                    name="infocirlceo"
+                    size={20}
+                    color={Colors.COLOR_DARK_GRAY}
+                  />
+                  <Text style={styles.textInfo}>
+                    {`${user?.tinggi}cm/${user?.berat}kg`}
+                  </Text>
+                </View>
+                <View
+                  style={{
+                    flexDirection: 'row',
+                    alignItems: 'center',
+                    borderBottomWidth: 0.5,
+                    borderBottomColor: Colors.COLOR_GRAY,
+                    paddingVertical: 10,
+                    maxWidth: '78%',
+                  }}>
+                  <Icon name="home" size={20} color={Colors.COLOR_DARK_GRAY} />
+                  <Text style={styles.textInfo}>{user?.ibadah}</Text>
+                </View>
+                <View
+                  style={{
+                    flexDirection: 'row',
+                    alignItems: 'center',
+                    borderBottomWidth: 0.5,
+                    borderBottomColor: Colors.COLOR_GRAY,
+                    paddingVertical: 10,
+                    maxWidth: '78%',
+                  }}>
+                  <Icon
+                    name="solution1"
+                    size={20}
+                    color={Colors.COLOR_DARK_GRAY}
+                  />
+                  <Text style={styles.textInfo}>{user?.deskripsi}</Text>
+                </View>
               </View>
             </View>
-          </View>
 
-          <View style={{marginTop: 24}}>
-            {PROFILE_DATA.map((item, index) => {
-              if (item.type == 'data') {
-                return (
-                  <View
-                    key={index}
-                    style={{
-                      borderBottomWidth: 0.5,
-                      borderBottomColor: Colors.COLOR_GRAY,
-                      paddingBottom: 14,
-                      marginBottom: 24,
-                    }}>
-                    <Text style={styles.textCaption}>{item.title}</Text>
+            <View style={{marginTop: 24}}>
+              {PROFILE_DATA.map((item, index) => {
+                if (item.type == 'data') {
+                  return (
                     <View
+                      key={index}
                       style={{
-                        flexWrap: 'wrap',
-                        flexDirection: 'row',
-                        paddingTop: 10,
+                        borderBottomWidth: 0.5,
+                        borderBottomColor: Colors.COLOR_GRAY,
+                        paddingBottom: 14,
+                        marginBottom: 24,
                       }}>
-                      {item.value.map((item, index) => {
-                        return (
-                          <View key={index} style={styles.badge}>
-                            <Text style={styles.textBadgeValue}>{item}</Text>
-                          </View>
-                        );
-                      })}
+                      <Text style={styles.textCaption}>{item.title}</Text>
+                      <View
+                        style={{
+                          flexWrap: 'wrap',
+                          flexDirection: 'row',
+                          paddingTop: 10,
+                        }}>
+                        {item.value.map((item, index) => {
+                          return (
+                            <View key={index} style={styles.badge}>
+                              <Text style={styles.textBadgeValue}>{item}</Text>
+                            </View>
+                          );
+                        })}
+                      </View>
                     </View>
-                  </View>
-                );
-              } else {
-                return (
-                  <View
-                    key={index}
-                    style={{
-                      borderBottomWidth: 0.5,
-                      borderBottomColor: Colors.COLOR_GRAY,
-                      marginBottom: 24,
-                    }}>
-                    <Text style={styles.textCaption}>{item.title}</Text>
-                    <Text style={styles.textNormalValue}>{item?.value}</Text>
-                  </View>
-                );
-              }
-            })}
+                  );
+                } else {
+                  return (
+                    <View
+                      key={index}
+                      style={{
+                        borderBottomWidth: 0.5,
+                        borderBottomColor: Colors.COLOR_GRAY,
+                        marginBottom: 24,
+                      }}>
+                      <Text style={styles.textCaption}>{item.title}</Text>
+                      <Text style={styles.textNormalValue}>{item?.value}</Text>
+                    </View>
+                  );
+                }
+              })}
+            </View>
           </View>
-        </View>
-
-        {!KEY ? (
-          <Card style={{marginTop: 14}}>
-            <View>
-              <Text style={styles.textQuestion}>Pertanyaan 1</Text>
-              <Text style={styles.textCaptionQuestion}>
-                {user?.pertanyaansatu}
-              </Text>
-            </View>
-            <View>
-              <Text style={styles.textQuestion}>Pertanyaan 2</Text>
-              <Text style={styles.textCaptionQuestion}>
-                {user?.pertanyaandua}
-              </Text>
-            </View>
-            <View>
-              <Text style={styles.textQuestion}>Pertanyaan 3</Text>
-              <Text style={styles.textCaptionQuestion}>
-                {user?.pertanyaantiga}
-              </Text>
-            </View>
-          </Card>
-        ) : KEY == 'terimataaruf' ? (
-          <Card style={{marginTop: 14}}>
-            <View>
-              <Text style={styles.textQuestion}>Pertanyaan 1</Text>
-              <Text style={styles.textCaption}>{user?.pertanyaansatu}</Text>
-              <Text style={styles.textNormalValue}>{user?.answer?.q1}</Text>
-            </View>
-            <View>
-              <Text style={styles.textQuestion}>Pertanyaan 2</Text>
-              <Text style={styles.textCaption}>{user?.pertanyaandua}</Text>
-              <Text style={styles.textNormalValue}>{user?.answer?.q2}</Text>
-            </View>
-            <View>
-              <Text style={styles.textQuestion}>Pertanyaan 3</Text>
-              <Text style={styles.textCaption}>{user?.pertanyaantiga}</Text>
-              <Text style={styles.textNormalValue}>{user?.answer?.q3}</Text>
-            </View>
-          </Card>
-        ) : (
-          !taarufed && (
+          {!KEY ? (
+            //USER PROFILE
+            <Card style={{marginTop: 14}}>
+              <View>
+                <Text style={styles.textQuestion}>Pertanyaan 1</Text>
+                <Text style={styles.textCaptionQuestion}>
+                  {user?.pertanyaansatu}
+                </Text>
+              </View>
+              <View>
+                <Text style={styles.textQuestion}>Pertanyaan 2</Text>
+                <Text style={styles.textCaptionQuestion}>
+                  {user?.pertanyaandua}
+                </Text>
+              </View>
+              <View>
+                <Text style={styles.textQuestion}>Pertanyaan 3</Text>
+                <Text style={styles.textCaptionQuestion}>
+                  {user?.pertanyaantiga}
+                </Text>
+              </View>
+            </Card>
+          ) : KEY == 'terimataaruf' ? (
+            // MENERIMA TAARUF
             <Card style={{marginTop: 14}}>
               <View>
                 <Text style={styles.textQuestion}>Pertanyaan 1</Text>
                 <Text style={styles.textCaption}>{user?.pertanyaansatu}</Text>
-                <Input
-                  containerStyle={{height: 32, marginBottom: 18, marginTop: 8}}
-                  placeholder={'Tulis Jawaban'}
-                  onChangeText={text => setFirstQ(text)}
-                  value={firstQ}
-                />
+                <Text style={styles.textNormalValue}>{user?.answer?.q1}</Text>
               </View>
               <View>
                 <Text style={styles.textQuestion}>Pertanyaan 2</Text>
                 <Text style={styles.textCaption}>{user?.pertanyaandua}</Text>
-                <Input
-                  containerStyle={{height: 32, marginBottom: 18, marginTop: 8}}
-                  placeholder={'Tulis Jawaban'}
-                  onChangeText={text => setSecondQ(text)}
-                  value={secondQ}
-                />
+                <Text style={styles.textNormalValue}>{user?.answer?.q2}</Text>
               </View>
               <View>
                 <Text style={styles.textQuestion}>Pertanyaan 3</Text>
                 <Text style={styles.textCaption}>{user?.pertanyaantiga}</Text>
-                <Input
-                  containerStyle={{height: 32, marginBottom: 18, marginTop: 8}}
-                  placeholder={'Tulis Jawaban'}
-                  onChangeText={text => setThirdQ(text)}
-                  value={thirdQ}
-                />
+                <Text style={styles.textNormalValue}>{user?.answer?.q3}</Text>
               </View>
             </Card>
-          )
-        )}
+          ) : (
+            !taarufed && (
+              //MENGAJUKAN TAARUF
+              <Card style={{marginTop: 14}}>
+                <View>
+                  <Text style={styles.textQuestion}>Pertanyaan 1</Text>
+                  <Text style={styles.textCaption}>{user?.pertanyaansatu}</Text>
+                  <Input
+                    containerStyle={{
+                      height: 32,
+                      marginBottom: 18,
+                      marginTop: 8,
+                    }}
+                    placeholder={'Tulis Jawaban'}
+                    onChangeText={text => setFirstQ(text)}
+                    value={firstQ}
+                  />
+                </View>
+                <View>
+                  <Text style={styles.textQuestion}>Pertanyaan 2</Text>
+                  <Text style={styles.textCaption}>{user?.pertanyaandua}</Text>
+                  <Input
+                    containerStyle={{
+                      height: 32,
+                      marginBottom: 18,
+                      marginTop: 8,
+                    }}
+                    placeholder={'Tulis Jawaban'}
+                    onChangeText={text => setSecondQ(text)}
+                    value={secondQ}
+                  />
+                </View>
+                <View>
+                  <Text style={styles.textQuestion}>Pertanyaan 3</Text>
+                  <Text style={styles.textCaption}>{user?.pertanyaantiga}</Text>
+                  <Input
+                    containerStyle={{
+                      height: 32,
+                      marginBottom: 18,
+                      marginTop: 8,
+                    }}
+                    placeholder={'Tulis Jawaban'}
+                    onChangeText={text => setThirdQ(text)}
+                    value={thirdQ}
+                  />
+                </View>
+              </Card>
+            )
+          )}
 
-        {KEY ? (
-          <View style={{marginTop: 14}}>
-            {KEY == 'terimataaruf'
-              ? !accepted &&
-                (!rejected ? (
-                  <>
-                    <Row style={{marginVertical: 8}}>
-                      <Touchable
-                        style={{
-                          height: 42,
-                          width: 42,
-                          borderRadius: 8,
-                          borderWidth: 2,
-                          borderColor: Colors.COLOR_ACCENT,
-                          backgroundColor: Colors.COLOR_WHITE,
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          marginRight: 8,
-                        }}
-                        onPress={() => onFavoriteButtonPress()}>
-                        <Icon
-                          name="heart"
-                          color={
-                            favorited
-                              ? Colors.COLOR_RED
-                              : Colors.COLOR_LIGHT_GRAY
-                          }
-                          size={20}
-                        />
-                      </Touchable>
+          {KEY ? (
+            //TERIMA / AJUKAN TAARUF
+            <View style={{marginTop: 14}}>
+              {KEY == 'terimataaruf'
+                ? //TERIMA TAARUF
+                  !accepted &&
+                  //TIDAK DALAM TAARUF
+                  (!rejected ? (
+                    //TIDAK DI TOLAK
+                    <>
                       <Button
                         title="Terima Taaruf"
                         isLoading={isLoading}
                         buttonStyle={{flex: 1}}
                         onPress={() => onAcceptTaarufPressed()}
                       />
-                    </Row>
-                    <Button
-                      isLoading={isLoading}
-                      title="Tolak Taaruf"
-                      invert
-                      onPress={() => onRejectTaarufPressed()}
-                    />
-                  </>
-                ) : (
-                  <Button disabled title="Taaruf Ditolak" invert />
-                ))
-              : !accepted &&
-                (!rejected ? (
-                  <>
-                    <Row style={{marginVertical: 8}}>
-                      <Touchable
-                        style={{
-                          height: 42,
-                          width: 42,
-                          borderRadius: 8,
-                          borderWidth: 2,
-                          borderColor: Colors.COLOR_ACCENT,
-                          backgroundColor: Colors.COLOR_WHITE,
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          marginRight: 8,
-                        }}
-                        onPress={() => onFavoriteButtonPress()}>
-                        <Icon
-                          name="heart"
-                          color={
-                            favorited
-                              ? Colors.COLOR_RED
-                              : Colors.COLOR_LIGHT_GRAY
-                          }
-                          size={20}
-                        />
-                      </Touchable>
+                      <Button
+                        isLoading={isLoading}
+                        title="Tolak Taaruf"
+                        invert
+                        onPress={() => onRejectTaarufPressed()}
+                      />
+                    </>
+                  ) : (
+                    <Button disabled title="Taaruf Ditolak" invert />
+                  ))
+                : !accepted &&
+                  //AJUKAN TAARUF
+                  //TIDAK DALAM TAARUF
+                  (!rejected ? (
+                    //TIDAK DITOLAK
+                    <>
                       <Button
                         disabled={
                           taarufed ? false : !firstQ || !secondQ || !thirdQ
@@ -704,35 +689,58 @@ const ProfileScreen = ({navigation, route}) => {
                         buttonStyle={{flex: 1}}
                         onPress={() => onSendTaarufButtonPressed()}
                       />
-                    </Row>
-                    {taarufed && (
-                      <Button
-                        invert
-                        title="Kirim Poke"
-                        onPress={() => onPokeButtonPressed()}
-                      />
-                    )}
-                  </>
-                ) : (
-                  <Button disabled title="Taaruf Ditolak" invert />
-                ))}
-          </View>
-        ) : (
-          <View style={{marginVertical: 24}}>
-            <Button title="Keluar" onPress={() => signOut()} />
-            <View style={{marginTop: 14}} />
-            <Button
-              invert
-              title="Edit CV"
-              onPress={() =>
-                navigation.navigate('EditCV', {key: 'edit', user: user})
-              }
-            />
-          </View>
-        )}
+                      {taarufed && (
+                        //TIDAK DIRESPON
+                        <Button
+                          invert
+                          title="Kirim Poke"
+                          onPress={() => onPokeButtonPressed()}
+                        />
+                      )}
+                    </>
+                  ) : (
+                    <Button disabled title="Taaruf Ditolak" invert />
+                  ))}
+            </View>
+          ) : (
+            //USER PROFILE
+            <View style={{marginVertical: 24}}>
+              <Button title="Keluar" onPress={() => signOut()} />
+              <View style={{marginTop: 14}} />
+              <Button
+                invert
+                title="Edit CV"
+                onPress={() =>
+                  navigation.navigate('EditCV', {key: 'edit', user: user})
+                }
+              />
+            </View>
+          )}
+        </View>
+        <Modal type={'loading'} visible={modalVisible} />
+      </ScrollView>
+      <View style={{position: 'absolute', bottom: 20, right: 20}}>
+        <Touchable
+          style={{
+            height: 54,
+            width: 54,
+            borderRadius: 27,
+            borderWidth: 2,
+            borderColor: Colors.COLOR_ACCENT,
+            backgroundColor: Colors.COLOR_ACCENT,
+            alignItems: 'center',
+            justifyContent: 'center',
+            marginRight: 8,
+          }}
+          onPress={() => onFavoriteButtonPress()}>
+          <Icon
+            name="heart"
+            color={favorited ? Colors.COLOR_RED : Colors.COLOR_WHITE}
+            size={24}
+          />
+        </Touchable>
       </View>
-      <Modal type={'loading'} visible={modalVisible} />
-    </ScrollView>
+    </View>
   );
 };
 

@@ -96,3 +96,18 @@ export const ADMIN_REJECT_PREMIUM = async id => {
       premiumStatus: 'reject',
     });
 };
+
+export const GET_BANNER = async () => {
+  const pd = await adminCollection.doc('BANNERS').get();
+  const data = pd.data();
+
+  return data?.banners ?? [];
+};
+
+export const UPDATE_BANNER = async banners => {
+  return await adminCollection.doc('BANNERS').update({banners: banners});
+};
+
+export const UPDATE_PROCEDUR = async data => {
+  return await adminCollection.doc('PROSEDUR').update({steps: data});
+};

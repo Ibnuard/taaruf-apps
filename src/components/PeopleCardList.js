@@ -11,6 +11,7 @@ const PeopleCardList = ({
   showCount = true,
   blur = false,
   showBadgePremium = false,
+  showName,
 }) => {
   return (
     <Card useShadow={false} style={styles.container} onPress={onPress}>
@@ -37,7 +38,7 @@ const PeopleCardList = ({
       <View style={{padding: 8, flexDirection: 'row', alignItems: 'center'}}>
         <View style={{flex: 1, marginHorizontal: 4}}>
           <Text style={styles.textTitle}>
-            {data?.id}, {data?.umur} th
+            {data[showName ? 'nama' : 'id']}, {data?.umur} th
           </Text>
           <Text style={styles.textDesc}>
             {data?.status}, {data?.pekerjaan}, {data?.kota}

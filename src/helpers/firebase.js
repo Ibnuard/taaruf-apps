@@ -916,6 +916,13 @@ const GET_POKE_NOTIF = async () => {
     });
 };
 
+const GET_PROCEDUR = async () => {
+  const pd = await adminCollection.doc('PROSEDUR').get();
+  const data = pd.data();
+
+  return data.steps;
+};
+
 export {
   USER_REGISTER,
   USER_UPDATE,
@@ -950,4 +957,5 @@ export {
   USER_CHECK_STATUS,
   USER_REQUEST_PREMIUM,
   USER_GET_ADMIN_INFO,
+  GET_PROCEDUR,
 };

@@ -38,6 +38,9 @@ import AdminPokeScreen from '../screens/adminpoke';
 import AdminPremiumScreen from '../screens/adminpremium';
 import SettingScreen from '../screens/setting';
 import MenuScreen from '../screens/menu';
+import ProsedurScreen from '../screens/prosedur';
+import AdminBannerScreen from '../screens/adminbanner';
+import AdminProsedurScreen from '../screens/adminprosedur';
 
 //create stack screen
 const Stack = createNativeStackNavigator();
@@ -388,6 +391,19 @@ export const HomeStack = () => {
         }}
       />
       <Stack.Screen
+        name="Prosedur"
+        component={ProsedurScreen}
+        options={{
+          title: 'Prosedur',
+          headerTitleStyle: {
+            color: Colors.COLOR_WHITE,
+          },
+          headerStyle: {
+            backgroundColor: Colors.COLOR_STATUSBAR,
+          },
+        }}
+      />
+      <Stack.Screen
         name="Menu"
         component={MenuScreen}
         options={{
@@ -468,6 +484,20 @@ export const AdminStack = () => {
         component={AdminPokeScreen}
         options={{
           title: 'Poke',
+        }}
+      />
+      <Stack.Screen
+        name="AdminBanner"
+        component={AdminBannerScreen}
+        options={{
+          title: 'Banner',
+        }}
+      />
+      <Stack.Screen
+        name="AdminProsedur"
+        component={AdminProsedurScreen}
+        options={{
+          title: 'Prosedur',
         }}
       />
       <Stack.Screen

@@ -3,7 +3,11 @@ import {View, Text, StyleSheet, FlatList, SectionList} from 'react-native';
 import PeopleCardList from '../../components/PeopleCardList';
 import {FloatingAction} from 'react-native-floating-action';
 import {IMAGES_RES} from '../../helpers/images';
-import {GET_SENDED_CV, GET_USER_LIST} from '../../helpers/firebase';
+import {
+  GET_SENDED_CV,
+  GET_USER_LIST,
+  USER_IS_PREMIUM,
+} from '../../helpers/firebase';
 import {retrieveUserSession} from '../../helpers/storage';
 import NoItemScreen from '../../components/NoItem';
 import {splitByMonth} from '../../utils/utils';
@@ -12,6 +16,7 @@ import {Colors, Typo} from '../../styles';
 const CVTerkirimScreen = ({navigation, route}) => {
   const [users, setUsers] = React.useState([]);
   const [isLoading, setIsLoading] = React.useState(false);
+  const [isPremium, setIsPremium] = React.useState(false);
 
   const USER = route?.params?.user;
 
@@ -30,6 +35,7 @@ const CVTerkirimScreen = ({navigation, route}) => {
   const getSendedCV = async () => {
     setIsLoading(true);
     const data = await GET_SENDED_CV();
+    const isPremium = await USER_IS_PREMIUM();
 
     const filtered = data.filter((item, index) => {
       return item?.id !== USER?.id;
@@ -38,6 +44,7 @@ const CVTerkirimScreen = ({navigation, route}) => {
     const dataSplitted = splitByMonth(filtered);
 
     setUsers(dataSplitted);
+    setIsPremium(isPremium);
     setIsLoading(false);
   };
 
@@ -57,11 +64,14 @@ const CVTerkirimScreen = ({navigation, route}) => {
           renderItem={({item, index}) => (
             <PeopleCardList
               data={item}
+              blur={!isPremium}
+              showName={isPremium}
               onPress={
                 () =>
                   navigation.navigate('ProfileDetail', {
                     key: 'kirimtaaruf',
                     data: item,
+                    isPremium: isPremium,
                   })
                 // navigation.navigate('Upgrade')
               }

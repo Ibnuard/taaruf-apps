@@ -177,28 +177,23 @@ const KirimTaarufScreen = ({navigation, route}) => {
   }
 
   async function onCardPress(item) {
-    setModalVisible(true);
-    if (isPremium) {
-      const isMatch = await CHECK_IS_MATCH(item);
+    const isMatch = await CHECK_IS_MATCH(item);
 
-      if (isMatch) {
-        setModalVisible(false);
-        Alert.alert(
-          'Pesan!',
-          'User ini telah mengajukan taaruf ke anda, silahkan cek di Menerima CV!',
-          [{text: 'OK', onPress: () => navigation.navigate('TerimaTaaruf')}],
-        );
-      } else {
-        setModalVisible(false);
-        navigation.navigate('ProfileDetail', {
-          key: 'kirimtaaruf',
-          data: item,
-          available: available,
-        });
-      }
+    if (isMatch) {
+      setModalVisible(false);
+      Alert.alert(
+        'Pesan!',
+        'User ini telah mengajukan taaruf ke anda, silahkan cek di Menerima CV!',
+        [{text: 'OK', onPress: () => navigation.navigate('TerimaTaaruf')}],
+      );
     } else {
-      await setModalVisible(false);
-      navigation.navigate('Upgrade', {user: USER});
+      setModalVisible(false);
+      navigation.navigate('ProfileDetail', {
+        key: 'kirimtaaruf',
+        data: item,
+        available: available,
+        isPremium: isPremium,
+      });
     }
   }
 
@@ -212,6 +207,7 @@ const KirimTaarufScreen = ({navigation, route}) => {
             <PeopleCardList
               data={item}
               blur={!isPremium}
+              showName={isPremium}
               onPress={
                 () => onCardPress(item)
                 // navigation.navigate('Upgrade')

@@ -38,6 +38,7 @@ const FavoriteScreen = ({navigation}) => {
     setIsPremium(isPremium);
 
     setFavList(data);
+    setIsPremium(isPremium);
     setIsLoading(false);
   };
 
@@ -58,6 +59,7 @@ const FavoriteScreen = ({navigation}) => {
         key: 'kirimtaaruf',
         data: item,
         available: available,
+        isPremium: isPremium,
       });
     }
   }
@@ -71,7 +73,8 @@ const FavoriteScreen = ({navigation}) => {
           renderItem={({item, index}) => (
             <PeopleCardList
               data={item}
-              showCount={false}
+              blur={!isPremium}
+              showName={isPremium}
               onPress={() => onCardPress(item)}
             />
           )}

@@ -7,6 +7,7 @@ import {
   GET_ACCEPT_TAARUF_COUNT,
   GET_RECEIVED_CV,
   GET_USER_LIST,
+  USER_IS_PREMIUM,
 } from '../../helpers/firebase';
 import {retrieveUserSession} from '../../helpers/storage';
 import NoItemScreen from '../../components/NoItem';
@@ -15,6 +16,7 @@ const TerimaTaarufScreen = ({navigation, route}) => {
   const [users, setUsers] = React.useState([]);
   const [isLoading, setIsLoading] = React.useState(false);
   const [canTaaruf, setCanTaaruf] = React.useState(false);
+  const [isPremium, setIsPremium] = React.useState(false);
 
   const USER = route?.params?.user;
 
@@ -33,6 +35,7 @@ const TerimaTaarufScreen = ({navigation, route}) => {
   const getReceivedTaaruf = async () => {
     setIsLoading(true);
     const users = await GET_RECEIVED_CV();
+    const isPremium = await USER_IS_PREMIUM();
 
     const filtered = users.filter((item, index) => {
       return item?.id !== USER?.id;
@@ -45,6 +48,7 @@ const TerimaTaarufScreen = ({navigation, route}) => {
     setCanTaaruf(isCanTaaruf);
 
     setUsers(filtered);
+    setIsPremium(isPremium);
     setIsLoading(false);
   };
 
@@ -57,12 +61,15 @@ const TerimaTaarufScreen = ({navigation, route}) => {
           renderItem={({item, index}) => (
             <PeopleCardList
               data={item}
+              blur={!isPremium}
+              showName={isPremium}
               onPress={
                 () =>
                   navigation.navigate('ProfileDetail', {
                     key: 'terimataaruf',
                     data: item,
                     canTaaruf: canTaaruf,
+                    isPremium: isPremium,
                   })
                 // navigation.navigate('Upgrade')
               }
