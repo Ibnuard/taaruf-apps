@@ -52,10 +52,15 @@ const AdminDetailScreen = ({navigation, route}) => {
 
   async function onAdminAcc() {
     setIsLoading(true);
-    await ADMIN_UPGRADE_PREMIUM(USER_DATA?.nomorwa)
+    await ADMIN_UPGRADE_PREMIUM(USER_DATA?.nomorwa, USER_DATA)
       .then(() => {
         setIsLoading(false);
-        Alert.alert('Sukses', 'User berhasil upgrade ke premium!');
+        Alert.alert('Sukses', 'User berhasil upgrade ke premium!', [
+          {
+            text: 'OK',
+            onPress: () => navigation.goBack(),
+          },
+        ]);
       })
       .catch(() => {
         setIsLoading(false);
@@ -65,10 +70,15 @@ const AdminDetailScreen = ({navigation, route}) => {
 
   async function onAdminReject() {
     setIsLoading(true);
-    await ADMIN_REJECT_PREMIUM(USER_DATA?.nomorwa)
+    await ADMIN_REJECT_PREMIUM(USER_DATA?.nomorwa, USER_DATA)
       .then(() => {
         setIsLoading(false);
-        Alert.alert('Sukses', 'Permintaan premium berhasil ditolak!');
+        Alert.alert('Sukses', 'Permintaan premium berhasil ditolak!', [
+          {
+            text: 'OK',
+            onPress: () => navigation.goBack(),
+          },
+        ]);
       })
       .catch(() => {
         setIsLoading(false);
@@ -162,13 +172,20 @@ const AdminDetailScreen = ({navigation, route}) => {
         resizeMode={'stretch'}
       />
       <View style={{paddingHorizontal: 14}}>
-        <Card style={{marginBottom: 36, marginTop: -32}}>
+        <Card style={{marginBottom: 18, marginTop: -32}}>
           <Button
             isLoading={isLoading}
             title="Chat User"
             onPress={() =>
               Linking.openURL(`whatsapp://send?phone=${USER_DATA?.nomorwa}}`)
             }
+          />
+        </Card>
+        <Card style={{marginBottom: 36}}>
+          <Image
+            source={{uri: `data:image/png;base64,${user?.fotoid}`}}
+            style={{height: 200, width: '100%'}}
+            resizeMode={'contain'}
           />
         </Card>
         <View style={styles.card}>

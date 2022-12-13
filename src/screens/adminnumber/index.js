@@ -76,11 +76,10 @@ const AdminNumberScreen = ({navigation}) => {
   return (
     <ScrollView style={styles.container} contentContainerStyle={{flexGrow: 1}}>
       <View style={{padding: 24}}>
-        <Text style={styles.textTitle}>
-          Nomor Login Admin, login 000 + nomor yang anda buat
-        </Text>
+        <Text style={styles.textTitle}>Nomor Login Admin</Text>
         <Input
           placeholder={'Masukan nomor admin'}
+          keyboardType={'phone-pad'}
           containerStyle={{marginTop: 14, marginBottom: 24}}
           onChangeText={text => setLoginPhone(text)}
           value={loginPhone}

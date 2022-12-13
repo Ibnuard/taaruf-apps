@@ -55,10 +55,22 @@ const NotificationCard = data => {
           desc: 'Anda telah di favoritkan.',
         };
         break;
+      case 'fail':
+        return {
+          title: `Nadzor dengan ${DATA?.senderId} telah berhasil dibatalkan`,
+          desc: 'Nadzor Taaruf telah dibatalkan',
+        };
+        break;
+      case 'failed':
+        return {
+          title: `${DATA?.senderId} telah membatalkan nadzor`,
+          desc: 'Nadzor Taaruf telah dibatalkan',
+        };
+        break;
 
       default:
         return {
-          title: `...`,
+          title: `... ${DATA?.type}`,
           desc: '...',
         };
         break;

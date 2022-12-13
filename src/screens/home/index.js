@@ -18,6 +18,7 @@ import {retrieveUserSession} from '../../helpers/storage';
 import Carousel from 'react-native-reanimated-carousel';
 import {GET_BANNER} from '../../helpers/admin';
 import {USER_IS_PREMIUM} from '../../helpers/firebase';
+import {GestureHandlerRootView} from 'react-native-gesture-handler';
 
 const HomeScreen = ({navigation}) => {
   const [user, setUser] = React.useState();
@@ -91,6 +92,7 @@ const HomeScreen = ({navigation}) => {
     <ScrollView
       showsVerticalScrollIndicator={false}
       style={styles.container}
+      nestedScrollEnabled
       contentContainerStyle={{paddingBottom: 60}}>
       <StatusBar backgroundColor={Colors.COLOR_STATUSBAR} />
       <Image
@@ -127,40 +129,43 @@ const HomeScreen = ({navigation}) => {
           <Icon name="heart" color={Colors.COLOR_WHITE} size={20} />
         </Touchable>
       </View>
-      <Carousel
-        loop={true}
-        autoPlay={true}
-        style={{
-          width: width,
-          height: 200,
-          marginTop: -14,
-        }}
-        width={width}
-        data={banners}
-        panGestureHandlerProps={{
-          activeOffsetX: [-10, 10],
-        }}
-        mode="parallax"
-        modeConfig={{
-          parallaxScrollingScale: 0.9,
-          parallaxScrollingOffset: 50,
-        }}
-        renderItem={({item, index}) => {
-          return (
-            <Image
-              style={{
-                height: 200,
-                width: width,
-                backgroundColor: Colors.COLOR_LIGHT_GRAY,
-                borderRadius: 8,
-              }}
-              source={{uri: `data:image/png;base64,${item}`}}
-            />
-          );
-        }}
-        scrollAnimationDuration={1500}
-        autoPlayInterval={5000}
-      />
+      <GestureHandlerRootView>
+        <Carousel
+          loop={true}
+          autoPlay={true}
+          style={{
+            width: width,
+            height: 200,
+            marginTop: -14,
+          }}
+          width={width}
+          data={banners}
+          panGestureHandlerProps={{
+            activeOffsetX: [-10, 10],
+          }}
+          mode="parallax"
+          modeConfig={{
+            parallaxScrollingScale: 0.9,
+            parallaxScrollingOffset: 50,
+          }}
+          renderItem={({item, index}) => {
+            return (
+              <Image
+                style={{
+                  height: 200,
+                  width: '100%',
+                  backgroundColor: Colors.COLOR_LIGHT_GRAY,
+                  borderRadius: 8,
+                }}
+                source={{uri: `data:image/png;base64,${item}`}}
+              />
+            );
+          }}
+          scrollAnimationDuration={1500}
+          autoPlayInterval={5000}
+        />
+      </GestureHandlerRootView>
+
       <View style={{paddingHorizontal: 14}}>
         {MENU.map((item, index) => {
           return (

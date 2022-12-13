@@ -1,5 +1,7 @@
 import firestore from '@react-native-firebase/firestore';
+import {sendNotification} from '../api/api';
 import {CHECK_IS_VALID, GET_CURRENT_DATE, PARSE_DATE} from '../utils/moment';
+import {retrieveData} from '../utils/store';
 import {generateMonthData, generateUID, getRandomNumber} from '../utils/utils';
 import {retrieveUserSession} from './storage';
 
@@ -127,9 +129,19 @@ const USER_LOGIN = async data => {
     const user = userData.data();
 
     if (user?.password == data.password) {
-      return user;
+      return updateFCM(user);
     } else {
       return 'PASSWORD_INVALID';
+    }
+
+    async function updateFCM(user) {
+      const token = await retrieveData('fcmToken');
+      return await usersCollection
+        .doc(data?.nomor)
+        .update({token: token})
+        .then(() => {
+          return user;
+        });
     }
   }
 };
@@ -277,6 +289,7 @@ const ADD_TO_FAVORITE = async data => {
 
   async function _createNotifOther() {
     console.log('add favorite notif');
+    await sendNotification(data?.token, 'favorited');
     return await CREATE_NOTIFICATION(parsed.id, 'favorite', data?.nomorwa);
   }
 };
@@ -372,6 +385,8 @@ const SEND_TAARUF = async (data, answers) => {
     async function createNotification() {
       console.log('creating notification');
 
+      await sendNotification(data?.token, 'receivetaaruf');
+
       async function _notifSelf() {
         console.log('notif self');
         return await CREATE_NOTIFICATION(data?.id, 'send');
@@ -420,6 +435,7 @@ const CANCEL_TAARUF = async data => {
     }
 
     async function _updateNotifOther() {
+      await sendNotification(data?.token, 'cvcanceled');
       return await UPDATE_NOTIFICATION(
         parsed?.id,
         'receive',
@@ -635,7 +651,7 @@ const GET_CV_COUNT_BY_MONTH = async () => {
 };
 
 //ACCEPT TAARUF
-const ACCEPT_TAARUF = async id => {
+const ACCEPT_TAARUF = async (id, data) => {
   const user = await retrieveUserSession();
   const parsed = JSON.parse(user);
 
@@ -665,13 +681,14 @@ const ACCEPT_TAARUF = async id => {
 
     async function _updateNotifOther() {
       console.log('updating read notif');
+      await sendNotification(data?.token, 'taarufaccepted');
       return await UPDATE_NOTIFICATION(parsed?.id, 'read', id, 'accept');
     }
   }
 };
 
 //TOLAK TAARUF
-const REJECT_TAARUF = async id => {
+const REJECT_TAARUF = async (id, data) => {
   const user = await retrieveUserSession();
   const parsed = JSON.parse(user);
 
@@ -679,9 +696,7 @@ const REJECT_TAARUF = async id => {
     .doc(parsed.nomorwa)
     .collection('Taaruf')
     .doc(id)
-    .update({
-      rejected: true,
-    })
+    .delete()
     .then(() => {
       return _updateStatusOther();
     });
@@ -692,9 +707,7 @@ const REJECT_TAARUF = async id => {
       .doc(id)
       .collection('LIST')
       .doc(parsed?.nomorwa)
-      .update({
-        rejected: true,
-      })
+      .delete()
       .then(() => {
         return _updateNotifOther();
       });
@@ -702,6 +715,7 @@ const REJECT_TAARUF = async id => {
 
   async function _updateNotifOther() {
     console.log('updating read notif');
+    await sendNotification(data?.token, 'taarufrejected');
     return await UPDATE_NOTIFICATION(parsed?.id, 'read', id, 'reject');
   }
 };
@@ -732,6 +746,60 @@ const GET_ACCEPT_TAARUF_COUNT = async () => {
   }
 };
 
+//CHECK IS ACCEPTED
+const CANCEL_NADZOR = async (id, data) => {
+  const user = await retrieveUserSession();
+  const parsed = JSON.parse(user);
+
+  return await usersCollection
+    .doc(parsed.nomorwa)
+    .collection('Taaruf')
+    .doc(id)
+    .delete()
+    .then(() => {
+      return _updateStatusOther();
+    });
+
+  async function _updateStatusOther() {
+    console.log('updating other...');
+    return await taarufCollection
+      .doc(id)
+      .collection('LIST')
+      .doc(parsed?.nomorwa)
+      .delete()
+      .then(() => {
+        return _updateSended();
+      });
+  }
+
+  async function _updateSended() {
+    console.log('updating sended...');
+    return await taarufCollection
+      .doc(parsed?.nomorwa)
+      .collection('LIST')
+      .doc(id)
+      .delete()
+      .then(() => {
+        return _updateNotif();
+      });
+  }
+
+  async function _updateNotif() {
+    await sendNotification(data?.token, 'nadzorcanceled');
+
+    async function _notifSelf() {
+      console.log('notif self');
+      return await CREATE_NOTIFICATION(data?.id, 'fail');
+    }
+
+    async function _notifOther() {
+      console.log('notif other');
+      return await CREATE_NOTIFICATION(parsed?.id, 'failed', id);
+    }
+
+    return Promise.all([_notifSelf(), _notifOther()]);
+  }
+};
 // ====================================
 //
 //
@@ -958,4 +1026,5 @@ export {
   USER_REQUEST_PREMIUM,
   USER_GET_ADMIN_INFO,
   GET_PROCEDUR,
+  CANCEL_NADZOR,
 };

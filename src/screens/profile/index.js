@@ -19,6 +19,7 @@ import {retrieveUserSession} from '../../helpers/storage';
 import {
   ACCEPT_TAARUF,
   ADD_TO_FAVORITE,
+  CANCEL_NADZOR,
   CANCEL_TAARUF,
   CHECK_IS_MATCH,
   CHECK_IS_TAARUFED,
@@ -139,6 +140,9 @@ const ProfileScreen = ({navigation, route}) => {
     console.log('is prem : ' + isPremium);
     setUser(parse);
 
+    const token = parse.token;
+    console.log('token : ' + token);
+
     const isPremium = await USER_IS_PREMIUM();
     setIsPremium(isPremium);
   }
@@ -174,56 +178,99 @@ const ProfileScreen = ({navigation, route}) => {
       setIsLoading(true);
       if (taarufed) {
         console.log('cancel');
-        await CANCEL_TAARUF(USER_DATA)
-          .then(() => {
-            setIsLoading(false);
-            setTaarufed(false);
-            Alert.alert('Sukses!', 'Permintaan taaruf telah dibatalkan!', [
-              {
-                text: 'OK',
-                onPress: () => navigation.goBack(),
+        Alert.alert(
+          'Konfirmasi',
+          'Apakah anda yakin ingin membatalkan pengajuan CV anda?',
+          [
+            {
+              text: 'Batalkan',
+              onPress: () => setIsLoading(false),
+              style: 'cancel',
+            },
+            {
+              text: 'Ok',
+              onPress: async () => {
+                await CANCEL_TAARUF(USER_DATA)
+                  .then(() => {
+                    setIsLoading(false);
+                    setTaarufed(false);
+                    Alert.alert(
+                      'Sukses!',
+                      'Permintaan taaruf telah dibatalkan!',
+                      [
+                        {
+                          text: 'OK',
+                          onPress: () => navigation.goBack(),
+                        },
+                      ],
+                    );
+                  })
+                  .catch(err => {
+                    console.log('errors: ' + err);
+                    setIsLoading(false);
+                    Alert.alert(
+                      'Gagal!',
+                      'Permintaan taaruf gagal dibatalkan, mohon coba lagi!',
+                    );
+                  });
               },
-            ]);
-          })
-          .catch(err => {
-            console.log('errors: ' + err);
-            setIsLoading(false);
-            Alert.alert(
-              'Gagal!',
-              'Permintaan taaruf gagal dibatalkan, mohon coba lagi!',
-            );
-          });
+            },
+          ],
+        );
       } else {
         console.log('send');
-        const answers = {
-          q1: firstQ,
-          q2: secondQ,
-          q3: thirdQ,
-        };
+        Alert.alert(
+          'Konfirmasi',
+          'Apakah anda yakin ingin mengajukan CV taaruf anda?',
+          [
+            {
+              text: 'Batalkan',
+              onPress: () => setIsLoading(false),
+              style: 'cancel',
+            },
+            {
+              text: 'Ok',
+              onPress: async () => {
+                const answers = {
+                  q1: firstQ,
+                  q2: secondQ,
+                  q3: thirdQ,
+                };
 
-        if (AVAILABLE) {
-          await SEND_TAARUF(USER_DATA, answers)
-            .then(() => {
-              setIsLoading(false);
-              Alert.alert('Sukses!', 'Pengajuan taaruf telah terkirim!', [
-                {text: 'OK', onPress: () => navigation.navigate('CVTerkirim')},
-              ]);
-            })
-            .catch(err => {
-              console.log('fail : ' + err);
-              setIsLoading(false);
-              Alert.alert(
-                'Gagal!',
-                'Permintaan taaruf gagal dikirim, mohon coba lagi!',
-              );
-            });
-        } else {
-          setIsLoading(false);
-          Alert.alert(
-            'Gagal!',
-            'Anda telah mencapai batas maksimum pengajuan CV bulan ini!',
-          );
-        }
+                if (AVAILABLE) {
+                  await SEND_TAARUF(USER_DATA, answers)
+                    .then(() => {
+                      setIsLoading(false);
+                      Alert.alert(
+                        'Sukses!',
+                        'Pengajuan taaruf telah terkirim!',
+                        [
+                          {
+                            text: 'OK',
+                            onPress: () => navigation.navigate('CVTerkirim'),
+                          },
+                        ],
+                      );
+                    })
+                    .catch(err => {
+                      console.log('fail : ' + err);
+                      setIsLoading(false);
+                      Alert.alert(
+                        'Gagal!',
+                        'Permintaan taaruf gagal dikirim, mohon coba lagi!',
+                      );
+                    });
+                } else {
+                  setIsLoading(false);
+                  Alert.alert(
+                    'Gagal!',
+                    'Anda telah mencapai batas maksimum pengajuan CV bulan ini!',
+                  );
+                }
+              },
+            },
+          ],
+        );
       }
     } else {
       navigation.navigate('Upgrade', {user: USER_DATA});
@@ -233,27 +280,47 @@ const ProfileScreen = ({navigation, route}) => {
   //MENERIMA TAARUF
   const onAcceptTaarufPressed = async () => {
     if (CAN_TAARUF) {
-      setIsLoading(true);
-      await ACCEPT_TAARUF(user?.nomorwa)
-        .then(() => {
-          setIsLoading(false);
-          setAccepted(true);
-          Alert.alert(
-            'Sukses',
-            'Taaruf Diterima, silahkan hubungi admin untuk proses selanjutnya!',
-            [
-              {
-                text: 'OK',
-                onPress: () =>
-                  scrollRef.current.scrollTo({x: 0, y: 0, animated: true}),
-              },
-            ],
-          );
-        })
-        .catch(err => {
-          setIsLoading(false);
-          Alert.alert('Gagal', 'Ada kesalahan mohon coba lagi!');
-        });
+      Alert.alert(
+        'Konfirmasi',
+        'Apakah anda yakin ingin menerima pengajuan CV taaruf ini?',
+        [
+          {
+            text: 'Batalkan',
+            onPress: () => console.log('cancel'),
+            style: 'cancel',
+          },
+          {
+            text: 'Ok',
+            onPress: async () => {
+              setIsLoading(true);
+              await ACCEPT_TAARUF(user?.nomorwa, user)
+                .then(() => {
+                  setIsLoading(false);
+                  setAccepted(true);
+                  Alert.alert(
+                    'Sukses',
+                    'Taaruf Diterima, silahkan hubungi admin untuk proses selanjutnya!',
+                    [
+                      {
+                        text: 'OK',
+                        onPress: () =>
+                          scrollRef.current.scrollTo({
+                            x: 0,
+                            y: 0,
+                            animated: true,
+                          }),
+                      },
+                    ],
+                  );
+                })
+                .catch(err => {
+                  setIsLoading(false);
+                  Alert.alert('Gagal', 'Ada kesalahan mohon coba lagi!');
+                });
+            },
+          },
+        ],
+      );
     } else {
       Alert.alert(
         'Gagal',
@@ -263,17 +330,33 @@ const ProfileScreen = ({navigation, route}) => {
   };
 
   const onRejectTaarufPressed = async () => {
-    setIsLoading(true);
-    await REJECT_TAARUF(user?.nomorwa)
-      .then(() => {
-        setIsLoading(false);
-        setRejected(true);
-        Alert.alert('Berhasil', 'Taaruf berhasil ditolak!');
-      })
-      .catch(err => {
-        setIsLoading(false);
-        Alert.alert('Gagal', 'Ada kesalahan mohon coba lagi!');
-      });
+    Alert.alert(
+      'Konfirmasi',
+      'Apakah anda yakin ingin menolak pengajuan CV ini?',
+      [
+        {
+          text: 'Batalkan',
+          onPress: () => console.log('cancel'),
+          style: 'cancel',
+        },
+        {
+          text: 'Ok',
+          onPress: async () => {
+            setIsLoading(true);
+            await REJECT_TAARUF(user?.nomorwa, user)
+              .then(() => {
+                setIsLoading(false);
+                setRejected(true);
+                Alert.alert('Berhasil', 'Taaruf berhasil ditolak!');
+              })
+              .catch(err => {
+                setIsLoading(false);
+                Alert.alert('Gagal', 'Ada kesalahan mohon coba lagi!');
+              });
+          },
+        },
+      ],
+    );
   };
 
   const onPokeButtonPressed = () => {
@@ -293,6 +376,40 @@ const ProfileScreen = ({navigation, route}) => {
       );
     }
     setIsLoading(false);
+  }
+
+  async function onCancelTaaruf() {
+    Alert.alert('Konfirmasi', 'Apakah anda yakin ingin membatalkan nadzor?', [
+      {
+        text: 'Batalkan',
+        onPress: () => console.log('cancel'),
+        style: 'cancel',
+      },
+      {
+        text: 'Ok',
+        onPress: async () => {
+          setIsLoading(true);
+          await CANCEL_NADZOR(user?.nomorwa, user)
+            .then(() => {
+              setIsLoading(false);
+              Alert.alert(
+                'Sukses',
+                'Pembatalan Nadzor sukses dan daftar permintaan akan dihapus!',
+                [
+                  {
+                    text: 'Ok',
+                    onPress: () => navigation.goBack(),
+                  },
+                ],
+              );
+            })
+            .catch(() => {
+              setIsLoading(false);
+              Alert.alert('Gagal', 'Ada masalah, silahkan coba lagi!');
+            });
+        },
+      },
+    ]);
   }
 
   const PROFILE_DATA = [
@@ -415,23 +532,33 @@ const ProfileScreen = ({navigation, route}) => {
                     }}
                     renderItem={({item, index}) => {
                       return (
-                        <Image
-                          style={{
-                            height: 128,
-                            width: 96,
-                            backgroundColor: Colors.COLOR_LIGHT_GRAY,
-                            borderRadius: 8,
-                          }}
-                          blurRadius={!KEY ? 0 : IS_PREMIUM ? 0 : 20}
-                          source={{uri: `data:image/png;base64,${item}`}}
-                        />
+                        <Touchable
+                          onPress={() =>
+                            navigation.navigate(
+                              route?.name == 'ProfileInit'
+                                ? 'Foto'
+                                : 'FotoDetail',
+                              {foto: IMAGE_PIC},
+                            )
+                          }>
+                          <Image
+                            style={{
+                              height: 128,
+                              width: 96,
+                              backgroundColor: Colors.COLOR_LIGHT_GRAY,
+                              borderRadius: 8,
+                            }}
+                            blurRadius={!KEY ? 0 : IS_PREMIUM ? 0 : 20}
+                            source={{uri: `data:image/png;base64,${item}`}}
+                          />
+                        </Touchable>
                       );
                     }}
                     scrollAnimationDuration={1200}
                   />
                 </GestureHandlerRootView>
                 <Text style={styles.textName}>
-                  {IS_PREMIUM ? user?.nama : user?.id}
+                  {KEY ? (IS_PREMIUM ? user?.nama : user?.id) : user?.nama}
                 </Text>
                 <Text style={styles.textUmur}>{user?.umur} tahun</Text>
                 {isPremium && (
@@ -657,7 +784,7 @@ const ProfileScreen = ({navigation, route}) => {
                       <Button
                         title="Terima Taaruf"
                         isLoading={isLoading}
-                        buttonStyle={{flex: 1}}
+                        buttonStyle={{flex: 1, marginBottom: 14}}
                         onPress={() => onAcceptTaarufPressed()}
                       />
                       <Button
@@ -692,6 +819,7 @@ const ProfileScreen = ({navigation, route}) => {
                       {taarufed && (
                         //TIDAK DIRESPON
                         <Button
+                          buttonStyle={{marginTop: 14}}
                           invert
                           title="Kirim Poke"
                           onPress={() => onPokeButtonPressed()}
@@ -716,30 +844,39 @@ const ProfileScreen = ({navigation, route}) => {
               />
             </View>
           )}
+          {accepted && (
+            <Button
+              isLoading={isLoading}
+              title="Batalkan Nadzor"
+              onPress={() => onCancelTaaruf()}
+            />
+          )}
         </View>
         <Modal type={'loading'} visible={modalVisible} />
       </ScrollView>
-      <View style={{position: 'absolute', bottom: 20, right: 20}}>
-        <Touchable
-          style={{
-            height: 54,
-            width: 54,
-            borderRadius: 27,
-            borderWidth: 2,
-            borderColor: Colors.COLOR_ACCENT,
-            backgroundColor: Colors.COLOR_ACCENT,
-            alignItems: 'center',
-            justifyContent: 'center',
-            marginRight: 8,
-          }}
-          onPress={() => onFavoriteButtonPress()}>
-          <Icon
-            name="heart"
-            color={favorited ? Colors.COLOR_RED : Colors.COLOR_WHITE}
-            size={24}
-          />
-        </Touchable>
-      </View>
+      {KEY && (
+        <View style={{position: 'absolute', bottom: 20, right: 20}}>
+          <Touchable
+            style={{
+              height: 54,
+              width: 54,
+              borderRadius: 27,
+              borderWidth: 2,
+              borderColor: Colors.COLOR_ACCENT,
+              backgroundColor: Colors.COLOR_ACCENT,
+              alignItems: 'center',
+              justifyContent: 'center',
+              marginRight: 8,
+            }}
+            onPress={() => onFavoriteButtonPress()}>
+            <Icon
+              name="heart"
+              color={favorited ? Colors.COLOR_RED : Colors.COLOR_WHITE}
+              size={24}
+            />
+          </Touchable>
+        </View>
+      )}
     </View>
   );
 };

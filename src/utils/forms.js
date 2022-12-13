@@ -8,18 +8,20 @@ export const MushForm = (config = []) => {
   function _setErrorMessage(key, data) {
     switch (key) {
       case 'REQUIRED_ERROR':
-        return data?.requiredErrorMessage ?? `Data tidak boleh kosong!`;
+        return (
+          data?.requiredErrorMessage ?? `${data?.caption} tidak boleh kosong!`
+        );
         break;
       case 'MIN_CHAR_ERROR':
         return (
           data?.minCharErrorMessage ??
-          `Minimal terdiri dari ${data?.minMaxChar[0]} karakter`
+          `${data.caption} minimal terdiri dari ${data?.minMaxChar[0]} karakter`
         );
         break;
       case 'MAX_CHAR_ERROR':
         return (
           data?.maxCharErrorMessage ??
-          `Maksimal terdiri dari ${data?.minMaxChar[1]} karakter`
+          `${data.caption} maksimal terdiri dari ${data?.minMaxChar[1]} karakter`
         );
         break;
       case 'EMAIL_VALIDATION_ERROR':

@@ -1,4 +1,5 @@
 import firestore from '@react-native-firebase/firestore';
+import {sendNotification} from '../api/api';
 
 const usersCollection = firestore().collection('Users');
 const adminCollection = firestore().collection('ADMIN');
@@ -66,7 +67,7 @@ export const DELETE_POKE = async id => {
   return await pokeCollection.doc(id).delete();
 };
 
-export const ADMIN_UPGRADE_PREMIUM = async id => {
+export const ADMIN_UPGRADE_PREMIUM = async (id, data) => {
   return await usersCollection
     .doc(id)
     .update({
@@ -81,20 +82,28 @@ export const ADMIN_UPGRADE_PREMIUM = async id => {
       .doc('PREMIUM')
       .collection('Users')
       .doc(id)
-      .update({
-        premiumStatus: 'success',
+      .delete()
+      .then(async () => {
+        await sendNotification(data?.token, 'upgradeaccept');
       });
+    // .update({
+    //   premiumStatus: 'success',
+    // });
   }
 };
 
-export const ADMIN_REJECT_PREMIUM = async id => {
+export const ADMIN_REJECT_PREMIUM = async (id, data) => {
   return await adminCollection
     .doc('PREMIUM')
     .collection('Users')
     .doc(id)
-    .update({
-      premiumStatus: 'reject',
+    .delete()
+    .then(async () => {
+      await sendNotification(data?.token, 'upgradereject');
     });
+  // .update({
+  //   premiumStatus: 'reject',
+  // });
 };
 
 export const GET_BANNER = async () => {

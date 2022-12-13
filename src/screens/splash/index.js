@@ -1,10 +1,12 @@
 import * as React from 'react';
-import {View, Text} from 'react-native';
+import {View, Image} from 'react-native';
 import {AuthContext} from '../../context';
 import {retrieveUserSession} from '../../helpers/storage';
-import {retrieveData} from '../../utils/store';
+import {retrieveData, storeData} from '../../utils/store';
 import {wait} from '../../utils/utils';
 import styles from './styles';
+import messaging from '@react-native-firebase/messaging';
+import {IMAGES_RES} from '../../helpers/images';
 
 const SplashScreen = () => {
   const {restoreToken} = React.useContext(AuthContext);
@@ -13,6 +15,9 @@ const SplashScreen = () => {
     // Fetch the token from storage then navigate to our appropriate place
     const bootstrapAsync = async () => {
       let userToken;
+
+      const token = await messaging().getToken();
+      await storeData('fcmToken', token, false);
 
       try {
         userToken = await retrieveUserSession();
@@ -31,7 +36,11 @@ const SplashScreen = () => {
 
   return (
     <View style={styles.container}>
-      <Text>SplashScreen</Text>
+      <Image
+        source={IMAGES_RES.logo}
+        style={{width: 100, height: 100}}
+        resizeMode={'contain'}
+      />
     </View>
   );
 };

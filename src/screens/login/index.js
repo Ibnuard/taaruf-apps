@@ -11,6 +11,7 @@ import {
 import {IMAGES_RES} from '../../helpers/images';
 import {storeUserSession} from '../../helpers/storage';
 import {Colors, Typo} from '../../styles';
+import {retrieveData} from '../../utils/store';
 
 const LoginScreen = ({navigation}) => {
   const [nomor, setNomor] = React.useState('');
@@ -66,7 +67,8 @@ const LoginScreen = ({navigation}) => {
         Alert.alert('Gagal Masuk', 'Kata Sandi salah!');
       } else {
         setIsLoading(false);
-        await storeUserSession(login);
+        const token = await retrieveData('fcmToken');
+        await storeUserSession({token: token, ...login});
 
         signIn();
       }

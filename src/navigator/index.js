@@ -41,6 +41,7 @@ import MenuScreen from '../screens/menu';
 import ProsedurScreen from '../screens/prosedur';
 import AdminBannerScreen from '../screens/adminbanner';
 import AdminProsedurScreen from '../screens/adminprosedur';
+import FotoScreen from '../screens/foto';
 
 //create stack screen
 const Stack = createNativeStackNavigator();
@@ -416,6 +417,13 @@ export const HomeStack = () => {
           },
         }}
       />
+      <Stack.Screen
+        name="FotoDetail"
+        component={FotoScreen}
+        options={{
+          title: 'Foto',
+        }}
+      />
     </Stack.Navigator>
   );
 };
@@ -442,6 +450,13 @@ const ProfileStack = () => {
         component={DetailCVScreen}
         options={{
           title: 'Edit CV',
+        }}
+      />
+      <Stack.Screen
+        name="Foto"
+        component={FotoScreen}
+        options={{
+          title: 'Foto',
         }}
       />
     </Stack.Navigator>

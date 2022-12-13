@@ -20,6 +20,7 @@ import {storeUserSession, updateUserSession} from '../../helpers/storage';
 import Touchable from '../../components/touchable';
 import DatePicker from 'react-native-date-picker';
 import {PARSE_DATE} from '../../utils/moment';
+import {retrieveData} from '../../utils/store';
 
 const DetailCVScreen = ({navigation, route}) => {
   const KEY = route?.params?.key;
@@ -150,106 +151,179 @@ const DetailCVScreen = ({navigation, route}) => {
 
   const input_config = [
     {
+      key: 'fotowajah',
+      required: true,
+      minMaxChar: [3, 64],
+      value: faceImage ?? '',
+      caption: 'Foto Wajah',
+    },
+    {
+      key: 'fotofull',
+      required: true,
+      minMaxChar: [3, 64],
+      value: bodyImage ?? '',
+      caption: 'Foto Full',
+    },
+    {
+      key: 'fotoktp',
+      required: true,
+      minMaxChar: [3, 64],
+      value: ktpImage ?? '',
+      caption: 'Foto KTP',
+    },
+    {
+      key: 'selPekerjaan',
+      required: true,
+      minMaxChar: [3, 64],
+      value: selectedPekerjaan ?? '',
+      caption: 'Pekerjaan',
+    },
+    {
+      key: 'selPendidikan',
+      required: true,
+      minMaxChar: [3, 64],
+      value: selectedPendidikan ?? '',
+      caption: 'Pendidikan terakhir',
+    },
+    {
       key: 'riwayat',
       required: true,
       minMaxChar: [3, 128],
       value: riwayatPendidikan,
+      caption: 'Riwayat pendidikan',
+    },
+    {
+      key: 'selStatus',
+      required: true,
+      minMaxChar: [3, 64],
+      value: selectedStatus ?? '',
+      caption: 'Status',
     },
     {
       key: 'tinggi',
       required: true,
       minMaxChar: [1, 3],
       value: tinggiBadan,
+      caption: 'Tinggi badan',
     },
     {
       key: 'berat',
       required: true,
       minMaxChar: [1, 3],
       value: beratBadan,
+      caption: 'Berat badan',
+    },
+    {
+      key: 'selIbadah',
+      required: true,
+      minMaxChar: [3, 64],
+      value: selectedIbadah ?? '',
+      caption: 'Melakukan ibadah',
     },
     {
       key: 'kriteria',
       required: true,
       minMaxChar: [3, 128],
       value: kriteria,
+      caption: 'Kriteria yang diinginkan',
     },
     {
       key: 'deskripsi',
       required: true,
-      minMaxChar: [100, 1000], //100
+      minMaxChar: [50, 1000], //100
       value: deskripsi,
+      caption: 'Deskripsi singkat diri',
     },
     {
       key: 'hobi',
       required: true,
       minMaxChar: [3, 512],
       value: hobi,
+      caption: 'Hobi',
     },
     {
       key: 'anak',
       required: true,
       minMaxChar: [1, 2],
       value: anak,
+      caption: 'Anak ke',
+    },
+    {
+      key: 'selSuku',
+      required: true,
+      minMaxChar: [3, 64],
+      value: selectedSuku ?? '',
+      caption: 'Suku',
+    },
+    {
+      key: 'selKulit',
+      required: true,
+      minMaxChar: [3, 64],
+      value: selectedWarnaKulit ?? '',
+      caption: 'Warna kulit',
     },
     {
       key: 'penyakit',
       required: true,
-      minMaxChar: [3, 128],
+      minMaxChar: [1, 128],
       value: penyakit,
-    },
-    {
-      key: 'penyakit',
-      required: true,
-      minMaxChar: [3, 128],
-      value: penyakit,
+      caption: 'Riwayat penyakit',
     },
     {
       key: 'organisasi',
       required: true,
-      minMaxChar: [3, 128],
+      minMaxChar: [1, 128],
       value: organisasi,
+      caption: 'Organisasi atau komunitas yang diikuti',
     },
     {
       key: 'kelebihan',
       required: true,
       minMaxChar: [3, 128],
       value: kelebihan,
+      caption: 'Kelebihan diri',
     },
     {
       key: 'kekurangan',
       required: true,
       minMaxChar: [3, 128],
       value: kekurangan,
+      caption: 'Kekurangan diri',
     },
     {
       key: 'aktivitas',
       required: true,
       minMaxChar: [3, 150],
       value: aktivitasHarian,
+      caption: 'Aktivitas harian',
     },
     {
       key: 'visimisi',
       required: true,
       minMaxChar: [3, 150],
       value: visimisi,
+      caption: 'Visi misi pernikahan',
     },
     {
       key: 'q1',
       required: true,
       minMaxChar: [3, 150],
       value: firstQA,
+      caption: 'Pertanyaan pertama',
     },
     {
       key: 'q2',
       required: true,
       minMaxChar: [3, 150],
       value: secondQA,
+      caption: 'Pertanyaan kedua',
     },
     {
       key: 'q3',
       required: true,
       minMaxChar: [3, 150],
       value: thirdQA,
+      caption: 'Pertanyaan ketiga',
     },
   ];
 
@@ -259,18 +333,21 @@ const DetailCVScreen = ({navigation, route}) => {
       required: true,
       minMaxChar: [3, 64],
       value: name,
+      caption: 'Nama',
     },
     {
       key: 'olddomisili',
       required: true,
       minMaxChar: [3, 128],
       value: domisiliOrangTua,
+      caption: 'Domisili orang tua',
     },
     {
       key: 'alamat',
       required: true,
       minMaxChar: [3, 128],
       value: alamat,
+      caption: 'Alamat',
     },
   ];
 
@@ -386,12 +463,16 @@ const DetailCVScreen = ({navigation, route}) => {
       //setIsLoading(false);
       KEY == 'edit' ? _updateUser(data) : _registerUser(data);
     } else {
+      const errorData = Object.keys(errors).map(key => [key, errors[key]]);
+      Alert.alert('Gagal!', errorData[0][1]);
       setIsLoading(false);
     }
   };
 
   const _registerUser = async data => {
-    USER_REGISTER(data)
+    const token = await retrieveData('fcmToken');
+    const addFCM = {fcmToken: token, ...data};
+    USER_REGISTER(addFCM)
       .then(() => {
         setIsLoading(false);
         navigation.navigate('DoneCV');
@@ -664,7 +745,6 @@ const DetailCVScreen = ({navigation, route}) => {
         <Input
           caption={'Anak ke ( contoh 1 dari 3 )'}
           containerStyle={styles.input}
-          keyboardType={'phone-pad'}
           placeholder={'Anak ke ( contoh 1 dari 3 )'}
           errorMessage={inputError['anak']}
           onChangeText={text => setAnak(text)}
@@ -803,7 +883,7 @@ const DetailCVScreen = ({navigation, route}) => {
       <Text style={styles.textInfo}>Kosongi jika tidak punya</Text> */}
       <View style={{marginTop: 48}}>
         <Button
-          disabled={isButtonDisabled()}
+          disabled={/*isButtonDisabled()*/ false}
           isLoading={isLoading}
           title={KEY == 'edit' ? 'Update CV' : 'Buat CV'}
           onPress={() => _onDoneButtonPressed()}

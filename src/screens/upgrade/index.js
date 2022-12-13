@@ -6,6 +6,7 @@ import {
   USER_GET_ADMIN_INFO,
   USER_REQUEST_PREMIUM,
 } from '../../helpers/firebase';
+import {retrieveUserSession} from '../../helpers/storage';
 import {Colors, Typo} from '../../styles';
 
 const UpgradeScreen = ({navigation, route}) => {
@@ -34,17 +35,23 @@ const UpgradeScreen = ({navigation, route}) => {
   }
 
   async function getUserStatus() {
-    const status = await USER_CHECK_STATUS(USER?.nomorwa);
+    const session = await retrieveUserSession();
+    const parsed = JSON.parse(session);
+
+    const status = await USER_CHECK_STATUS(parsed?.nomorwa);
 
     if (status) {
-      console.log('status : ' + status);
+      console.log(`status : ${parsed?.nomorwa}` + status);
       setStatus(status);
     }
   }
 
   async function onTransferPress() {
+    const session = await retrieveUserSession();
+    const parsed = JSON.parse(session);
+
     setIsLoading(true);
-    const data = {premiumStatus: 'pending', ...USER};
+    const data = {premiumStatus: 'pending', ...parsed};
     await USER_REQUEST_PREMIUM(data)
       .then(() => {
         setIsLoading(false);

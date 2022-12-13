@@ -14,4 +14,5 @@ export const IMAGES_RES = {
   gear: require('../../assets/images/gear.png'),
   premium: require('../../assets/images/premium.png'),
   sended: require('../../assets/images/sended.png'),
+  logo: require('../../assets/images/logo.png'),
 };
