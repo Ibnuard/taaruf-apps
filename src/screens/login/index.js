@@ -3,7 +3,11 @@ import {View, Text, Image, StyleSheet, StatusBar, Alert} from 'react-native';
 import {Button, Card, Modal, Input, Row} from '../../components';
 import Touchable from '../../components/touchable';
 import {AuthContext} from '../../context';
-import {USER_LOGIN, USER_REGISTER} from '../../helpers/firebase';
+import {
+  USER_GET_ADMIN_INFO,
+  USER_LOGIN,
+  USER_REGISTER,
+} from '../../helpers/firebase';
 import {IMAGES_RES} from '../../helpers/images';
 import {storeUserSession} from '../../helpers/storage';
 import {Colors, Typo} from '../../styles';
@@ -11,10 +15,29 @@ import {Colors, Typo} from '../../styles';
 const LoginScreen = ({navigation}) => {
   const [nomor, setNomor] = React.useState('');
   const [pw, setPW] = React.useState('');
+  const [adminData, setAdminData] = React.useState({no: '', pw: ''});
 
   const [isLoading, setIsLoading] = React.useState(false);
 
   const {signIn, admin} = React.useContext(AuthContext);
+
+  React.useEffect(() => {
+    const unsubscribe = navigation.addListener('focus', () => {
+      getAdminInfo();
+    });
+
+    return unsubscribe;
+  }, [navigation]);
+
+  async function getAdminInfo() {
+    const data = await USER_GET_ADMIN_INFO();
+
+    if (data) {
+      setAdminData({no: data?.loginNumber, pw: data?.loginPassword});
+    }
+  }
+
+  console.log('admin : ' + JSON.stringify(adminData));
 
   const ADMIN = {
     no: '000000',
@@ -28,7 +51,7 @@ const LoginScreen = ({navigation}) => {
       password: pw,
     };
 
-    if (nomor == ADMIN.no && pw == ADMIN.pw) {
+    if (nomor == adminData.no && pw == adminData.pw) {
       console.log('login admin');
       admin();
     } else {

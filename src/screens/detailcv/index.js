@@ -118,7 +118,7 @@ const DetailCVScreen = ({navigation, route}) => {
     'S2',
     'S3',
   ];
-  const status = ['Single', 'Duda', 'Menikah'];
+  const status = ['Single', 'Duda', 'Janda'];
   const ibadah_rate = [
     'Kurang Ibadah',
     'Belajar Ibadah',

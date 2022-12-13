@@ -21,8 +21,14 @@ const Input = props => {
           secureTextEntry={!isShowPassword && props.type == 'password'}
           placeholderTextColor={Colors.COLOR_GRAY}
           style={[props?.inputStyle, styles.input]}
-          onFocus={() => setIsFocus(true)}
-          onBlur={() => setIsFocus(false)}
+          onFocus={() => {
+            setIsFocus(true);
+            props?.onFocus ? props?.onFocus() : null;
+          }}
+          onBlur={() => {
+            setIsFocus(false);
+            props?.onBlur ? props?.onBlur() : null;
+          }}
         />
         {props?.showEye && (
           <Touchable
@@ -35,6 +41,11 @@ const Input = props => {
             />
           </Touchable>
         )}
+        {props.showClearButton ? (
+          <Touchable onPress={() => props?.onClear()}>
+            <Icon name="closecircleo" size={18} color={Colors.COLOR_GRAY} />
+          </Touchable>
+        ) : null}
       </View>
       {props?.errorMessage && (
         <Text style={styles.textErrorMessage}>

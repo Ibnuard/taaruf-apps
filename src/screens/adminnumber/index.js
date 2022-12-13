@@ -16,6 +16,8 @@ const AdminNumberScreen = ({navigation}) => {
   const [email, setEmail] = React.useState('');
   const [alamat, setAlamat] = React.useState('');
   const [instagram, setInstagram] = React.useState('');
+  const [loginPhone, setLoginPhone] = React.useState('');
+  const [loginPassword, setLoginPassword] = React.useState('');
 
   React.useLayoutEffect(() => {
     getAdminNumber();
@@ -33,6 +35,8 @@ const AdminNumberScreen = ({navigation}) => {
       setEmail(data?.email);
       setAlamat(data?.alamat);
       setInstagram(data?.instagram);
+      setLoginPhone(data?.loginNumber);
+      setLoginPassword(data?.loginPassword);
     }
 
     setIsLoading(false);
@@ -49,6 +53,8 @@ const AdminNumberScreen = ({navigation}) => {
       email: email,
       alamat: alamat,
       instagram: instagram,
+      loginNumber: loginPhone,
+      loginPassword: loginPassword,
     };
 
     await SAVE_ADMIN_NUMBER(data)
@@ -70,6 +76,22 @@ const AdminNumberScreen = ({navigation}) => {
   return (
     <ScrollView style={styles.container} contentContainerStyle={{flexGrow: 1}}>
       <View style={{padding: 24}}>
+        <Text style={styles.textTitle}>
+          Nomor Login Admin, login 000 + nomor yang anda buat
+        </Text>
+        <Input
+          placeholder={'Masukan nomor admin'}
+          containerStyle={{marginTop: 14, marginBottom: 24}}
+          onChangeText={text => setLoginPhone(text)}
+          value={loginPhone}
+        />
+        <Text style={styles.textTitle}>Password Login Admin</Text>
+        <Input
+          placeholder={'Masukan password admin'}
+          containerStyle={{marginTop: 14, marginBottom: 24}}
+          onChangeText={text => setLoginPassword(text)}
+          value={loginPassword}
+        />
         <Text style={styles.textTitle}>Nomor Admin Harus Diawali 628</Text>
         <Input
           placeholder={'Masukan nomor wa admin'}
@@ -123,7 +145,14 @@ const AdminNumberScreen = ({navigation}) => {
       <View style={{flex: 1, justifyContent: 'flex-end', padding: 24}}>
         <Button
           isLoading={isLoading}
-          disabled={!number || !bankHolder || !bankName || !bankNumber}
+          disabled={
+            !number ||
+            !bankHolder ||
+            !bankName ||
+            !bankNumber ||
+            !loginPhone ||
+            !loginPassword
+          }
           title={'Simpan'}
           onPress={() => onSavePress()}
         />

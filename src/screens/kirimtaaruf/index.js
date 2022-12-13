@@ -11,7 +11,7 @@ import {
 } from '../../helpers/firebase';
 import {retrieveUserSession} from '../../helpers/storage';
 import NoItemScreen from '../../components/NoItem';
-import {Modal} from '../../components';
+import {Input, Modal} from '../../components';
 
 const KirimTaarufScreen = ({navigation, route}) => {
   const [users, setUsers] = React.useState([]);
@@ -19,6 +19,8 @@ const KirimTaarufScreen = ({navigation, route}) => {
   const [isPremium, setIsPremium] = React.useState(false);
   const [isLoading, setIsLoading] = React.useState(false);
   const [modalVisible, setModalVisible] = React.useState(false);
+  const [inputActive, setInputActive] = React.useState(false);
+  const [keyword, setKeyword] = React.useState('');
 
   const USER = route?.params?.user;
   const FILTER = route?.params?.filter;
@@ -106,6 +108,20 @@ const KirimTaarufScreen = ({navigation, route}) => {
       }
     } else {
       return data;
+    }
+  };
+
+  const onSearch = (arr = []) => {
+    console.log('active : ' + inputActive);
+    if (keyword !== '' && !inputActive) {
+      return arr.filter((item, index) => {
+        return (
+          item?.id.toLowerCase()?.includes(keyword.toLowerCase()) ||
+          item?.nama?.toLowerCase()?.includes(keyword.toLowerCase())
+        );
+      });
+    } else {
+      return arr;
     }
   };
 
@@ -199,23 +215,35 @@ const KirimTaarufScreen = ({navigation, route}) => {
 
   return (
     <View style={styles.container}>
-      {_handleFilter(users).length ? (
-        <FlatList
-          data={_handleFilter(users)}
-          contentContainerStyle={{paddingBottom: 64}}
-          renderItem={({item, index}) => (
-            <PeopleCardList
-              data={item}
-              blur={!isPremium}
-              showName={isPremium}
-              onPress={
-                () => onCardPress(item)
-                // navigation.navigate('Upgrade')
-              }
-            />
-          )}
-          numColumns={2}
-        />
+      <Input
+        placeholder={'Cari'}
+        containerStyle={{marginBottom: 14}}
+        onFocus={() => setInputActive(true)}
+        onBlur={() => setInputActive(false)}
+        onChangeText={text => setKeyword(text)}
+        showClearButton={keyword}
+        onClear={() => setKeyword('')}
+        value={keyword}
+      />
+      {_handleFilter(onSearch(users)).length ? (
+        <>
+          <FlatList
+            data={_handleFilter(onSearch(users))}
+            contentContainerStyle={{paddingBottom: 64}}
+            renderItem={({item, index}) => (
+              <PeopleCardList
+                data={item}
+                blur={!isPremium}
+                showName={isPremium}
+                onPress={
+                  () => onCardPress(item)
+                  // navigation.navigate('Upgrade')
+                }
+              />
+            )}
+            numColumns={2}
+          />
+        </>
       ) : (
         <NoItemScreen isLoading={isLoading} />
       )}
