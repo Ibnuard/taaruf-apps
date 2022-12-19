@@ -181,6 +181,7 @@ const AdminDetailScreen = ({navigation, route}) => {
             }
           />
         </Card>
+        <Text style={styles.textName}>KTP USER</Text>
         <Card style={{marginBottom: 36}}>
           <Image
             source={{uri: `data:image/png;base64,${user?.fotoid}`}}
@@ -188,6 +189,18 @@ const AdminDetailScreen = ({navigation, route}) => {
             resizeMode={'contain'}
           />
         </Card>
+        {KEY && (
+          <>
+            <Text style={styles.textName}>BUKTI TRANSFER</Text>
+            <Card style={{marginBottom: 36}}>
+              <Image
+                source={{uri: `data:image/png;base64,${user?.bukti}`}}
+                style={{height: 200, width: '100%'}}
+                resizeMode={'contain'}
+              />
+            </Card>
+          </>
+        )}
         <View style={styles.card}>
           <View style={{flexDirection: 'row'}}>
             <View style={{marginRight: 24}}>

@@ -1,6 +1,15 @@
 import * as React from 'react';
-import {View, Text, StyleSheet, Image, Alert, ScrollView} from 'react-native';
-import {Button, Card} from '../../components';
+import {
+  View,
+  Text,
+  StyleSheet,
+  Image,
+  Alert,
+  ScrollView,
+  Linking,
+} from 'react-native';
+import {Button, Card, Modal} from '../../components';
+import {ADMIN_USER_PREMIUM} from '../../helpers/admin';
 import {
   USER_CHECK_STATUS,
   USER_GET_ADMIN_INFO,
@@ -8,12 +17,15 @@ import {
 } from '../../helpers/firebase';
 import {retrieveUserSession} from '../../helpers/storage';
 import {Colors, Typo} from '../../styles';
+import {LaunchCamera, LaunchGallery} from '../../utils/imagePicker';
 import {formatRupiah} from '../../utils/utils';
 
 const UpgradeScreen = ({navigation, route}) => {
   const [status, setStatus] = React.useState('idle');
   const [isLoading, setIsLoading] = React.useState(false);
   const [admin, setAdmin] = React.useState();
+  const [imagePickerVisible, setImagePickerVisible] = React.useState(false);
+  const [bukti, setBukti] = React.useState('');
 
   const USER = route?.params?.user;
 
@@ -28,6 +40,17 @@ const UpgradeScreen = ({navigation, route}) => {
   async function getAdminInfo() {
     setIsLoading(true);
     const info = await USER_GET_ADMIN_INFO();
+    const adminList = await ADMIN_USER_PREMIUM();
+
+    if (adminList) {
+      const find = adminList.filter((item, index) => {
+        return item.nomorwa == USER.nomorwa;
+      });
+
+      if (find.length > 0) {
+        setBukti(find[0].bukti);
+      }
+    }
 
     if (info) {
       setIsLoading(false);
@@ -53,7 +76,7 @@ const UpgradeScreen = ({navigation, route}) => {
     const parsed = JSON.parse(session);
 
     setIsLoading(true);
-    const data = {premiumStatus: 'pending', ...parsed};
+    const data = {premiumStatus: 'pending', bukti: bukti, ...parsed};
     await USER_REQUEST_PREMIUM(data)
       .then(() => {
         setIsLoading(false);
@@ -67,6 +90,24 @@ const UpgradeScreen = ({navigation, route}) => {
         Alert.alert('Gagal', 'Ada kesalahan mohon coba lagi!');
       });
   }
+
+  const loadFromGallery = async () => {
+    setImagePickerVisible(false);
+    const selectedImage = await LaunchGallery();
+
+    if (selectedImage) {
+      setBukti(selectedImage);
+    }
+  };
+
+  const loadFromCamera = async () => {
+    setImagePickerVisible(false);
+    const selectedImage = await LaunchCamera();
+
+    if (selectedImage) {
+      setBukti(selectedImage);
+    }
+  };
 
   return (
     <ScrollView
@@ -116,6 +157,26 @@ const UpgradeScreen = ({navigation, route}) => {
       <Text style={styles.textDesc}>
         Pilih sudah transfer jika anda sudah melakukan transfer
       </Text>
+      <Card
+        onPress={() => {
+          setImagePickerVisible(true);
+        }}
+        style={{
+          height: 148,
+          alignItems: 'center',
+          justifyContent: 'center',
+          marginVertical: 14,
+        }}>
+        {!bukti ? (
+          <Text style={styles.textPhotoInfo}>Upload Bukti Transfer</Text>
+        ) : (
+          <Image
+            source={{uri: `data:image/png;base64,${bukti}`}}
+            style={{height: 148, margin: 4, borderRadius: 4, width: '100%'}}
+            resizeMode={'contain'}
+          />
+        )}
+      </Card>
       {status == 'reject' && (
         <Text style={styles.textDescRed}>
           Permintaan upgrade akun sebelumnya telah ditolak, Mohon periksa data
@@ -124,7 +185,7 @@ const UpgradeScreen = ({navigation, route}) => {
       )}
       <View style={{marginTop: 24}}>
         <Button
-          disabled={status == 'pending' || isLoading}
+          disabled={status == 'pending' || isLoading || !bukti}
           isLoading={isLoading}
           title={
             status == 'pending'
@@ -133,7 +194,25 @@ const UpgradeScreen = ({navigation, route}) => {
           }
           onPress={() => onTransferPress()}
         />
+        {status == 'pending' && (
+          <Button
+            buttonStyle={{marginTop: 18}}
+            isLoading={isLoading}
+            title="Chat Admin"
+            onPress={() =>
+              Linking.openURL(`whatsapp://send?phone=${admin?.wa}}`)
+            }
+          />
+        )}
       </View>
+      <Modal
+        type={'popup3b'}
+        visible={imagePickerVisible}
+        onPress={() => setImagePickerVisible(false)}
+        onOptionButtonPress={type =>
+          type == 'first' ? loadFromGallery() : loadFromCamera()
+        }
+      />
     </ScrollView>
   );
 };
@@ -174,6 +253,12 @@ const styles = StyleSheet.create({
 
   textA: {
     ...Typo.TextNormalRegular,
+  },
+
+  textPhotoInfo: {
+    ...Typo.TextNormalBold,
+    color: Colors.COLOR_BLACK,
+    marginTop: 4,
   },
 });
 
