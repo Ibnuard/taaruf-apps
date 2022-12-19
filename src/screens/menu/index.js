@@ -49,7 +49,7 @@ const MenuScreen = ({navigation, route}) => {
   function renderFAQ() {
     const faq = [
       {
-        q: 'Saya berada diluar Kota yang tersedia dari Mencari Cinta Sejati apakah bisa daftar?',
+        q: 'Saya berada diluar kota apakah bisa daftar?',
         answer:
           'Bisa mendaftar dan akan kami approve, tapi jika ada akhwat yang cocok dan akan nadzor (bertemu calon pasangan) silahkan ke Kota Akhwat.',
       },

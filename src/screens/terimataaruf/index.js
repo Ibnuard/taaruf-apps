@@ -63,6 +63,7 @@ const TerimaTaarufScreen = ({navigation, route}) => {
               data={item}
               blur={!isPremium}
               showName={isPremium}
+              user={USER}
               onPress={
                 () =>
                   navigation.navigate('ProfileDetail', {

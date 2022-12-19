@@ -18,6 +18,7 @@ const AdminNumberScreen = ({navigation}) => {
   const [instagram, setInstagram] = React.useState('');
   const [loginPhone, setLoginPhone] = React.useState('');
   const [loginPassword, setLoginPassword] = React.useState('');
+  const [biaya, setBiaya] = React.useState('');
 
   React.useLayoutEffect(() => {
     getAdminNumber();
@@ -37,6 +38,7 @@ const AdminNumberScreen = ({navigation}) => {
       setInstagram(data?.instagram);
       setLoginPhone(data?.loginNumber);
       setLoginPassword(data?.loginPassword);
+      setBiaya(data?.biaya);
     }
 
     setIsLoading(false);
@@ -55,6 +57,7 @@ const AdminNumberScreen = ({navigation}) => {
       instagram: instagram,
       loginNumber: loginPhone,
       loginPassword: loginPassword,
+      biaya: biaya,
     };
 
     await SAVE_ADMIN_NUMBER(data)
@@ -118,6 +121,13 @@ const AdminNumberScreen = ({navigation}) => {
           containerStyle={{marginTop: 14, marginBottom: 24}}
           onChangeText={text => setBankNumber(text)}
           value={bankNumber}
+        />
+        <Text style={styles.textTitle}>Biaya Premium</Text>
+        <Input
+          placeholder={'Biaya Premium'}
+          containerStyle={{marginTop: 14, marginBottom: 24}}
+          onChangeText={text => setBiaya(text)}
+          value={biaya}
         />
         <Text style={styles.textTitle}>Email</Text>
         <Input

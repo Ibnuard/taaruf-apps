@@ -59,6 +59,9 @@ const KirimTaarufScreen = ({navigation, route}) => {
           let pendidikanFiltered;
           let statusFiltered;
           let ibadahFiltered;
+          let sukuFiltered;
+          let kulitFiltered;
+          let domisiliFiltered;
 
           const umurFiltered =
             item?.umur >= filterUmur[0] && item?.umur <= filterUmur[1];
@@ -94,13 +97,37 @@ const KirimTaarufScreen = ({navigation, route}) => {
             ibadahFiltered = item?.ibadah == item?.ibadah;
           }
 
+          if (FILTER?.suku?.length) {
+            console.log('suku filter : ' + FILTER?.suku);
+            sukuFiltered = item?.suku == FILTER?.suku;
+          } else {
+            sukuFiltered = item?.suku == item?.suku;
+          }
+
+          if (FILTER?.kulit?.length) {
+            console.log('kulit filter : ' + FILTER?.kulit);
+            kulitFiltered = item?.kulit == FILTER?.kulit;
+          } else {
+            kulitFiltered = item?.kulit == item?.kulit;
+          }
+
+          if (FILTER?.domisili?.length) {
+            console.log('domisili filter : ' + FILTER?.domisili);
+            domisiliFiltered = item?.kota == FILTER?.domisili;
+          } else {
+            domisiliFiltered = item?.kota == item?.kota;
+          }
+
           return (
             umurFiltered &&
             tinggiFiltered &&
             pekerjaanFiltered &&
             pendidikanFiltered &&
             statusFiltered &&
-            ibadahFiltered
+            ibadahFiltered &&
+            sukuFiltered &&
+            kulitFiltered &&
+            domisiliFiltered
           );
         });
 
@@ -230,11 +257,13 @@ const KirimTaarufScreen = ({navigation, route}) => {
           <FlatList
             data={_handleFilter(onSearch(users))}
             contentContainerStyle={{paddingBottom: 64}}
+            extraData={isLoading}
             renderItem={({item, index}) => (
               <PeopleCardList
                 data={item}
                 blur={!isPremium}
                 showName={isPremium}
+                user={USER}
                 onPress={
                   () => onCardPress(item)
                   // navigation.navigate('Upgrade')

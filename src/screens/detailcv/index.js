@@ -153,21 +153,18 @@ const DetailCVScreen = ({navigation, route}) => {
     {
       key: 'fotowajah',
       required: true,
-      minMaxChar: [3, 64],
       value: faceImage ?? '',
       caption: 'Foto Wajah',
     },
     {
       key: 'fotofull',
       required: true,
-      minMaxChar: [3, 64],
       value: bodyImage ?? '',
       caption: 'Foto Full',
     },
     {
       key: 'fotoktp',
       required: true,
-      minMaxChar: [3, 64],
       value: ktpImage ?? '',
       caption: 'Foto KTP',
     },
@@ -557,7 +554,7 @@ const DetailCVScreen = ({navigation, route}) => {
                 : IMAGES_RES.girl_head
             }
             style={{height: 152, margin: 4, borderRadius: 4, width: 152}}
-            resizeMode={'contain'}
+            resizeMode={'cover'}
           />
           <Text style={styles.textPhotoInfo}>Upload Foto Wajah</Text>
         </Card>
@@ -954,7 +951,7 @@ const styles = StyleSheet.create({
   textInfo: {
     ...Typo.TextSmallRegular,
     color: Colors.COLOR_ACCENT,
-    marginTop: 4,
+    marginTop: 12,
   },
 
   textPhotoInfo: {

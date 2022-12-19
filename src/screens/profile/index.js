@@ -175,7 +175,6 @@ const ProfileScreen = ({navigation, route}) => {
   const onSendTaarufButtonPressed = async () => {
     if (IS_PREMIUM) {
       setButtonId('taaruf');
-      setIsLoading(true);
       if (taarufed) {
         console.log('cancel');
         Alert.alert(
@@ -190,6 +189,7 @@ const ProfileScreen = ({navigation, route}) => {
             {
               text: 'Ok',
               onPress: async () => {
+                setIsLoading(true);
                 await CANCEL_TAARUF(USER_DATA)
                   .then(() => {
                     setIsLoading(false);
@@ -231,6 +231,7 @@ const ProfileScreen = ({navigation, route}) => {
             {
               text: 'Ok',
               onPress: async () => {
+                setIsLoading(true);
                 const answers = {
                   q1: firstQ,
                   q2: secondQ,

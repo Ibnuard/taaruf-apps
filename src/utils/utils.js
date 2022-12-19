@@ -62,3 +62,31 @@ export const splitByMonth = (arr = []) => {
 
   return temp;
 };
+
+//Rupiah currency formater
+export function formatRupiah(number) {
+  if (number == null) return;
+
+  let str = Math.floor(number)?.toString();
+
+  if (str.charAt(0) === '0') {
+    if (str.length > 0) {
+      return 'Rp ' + String(Number(str));
+    }
+  }
+
+  let strNumber = str.replace(/[^,\d]/g, '').toString();
+  let split = strNumber.split(',');
+  let lost = split[0].length % 3;
+  let rupiah = split[0].substr(0, lost);
+  let thousand = split[0].substr(lost).match(/\d{3}/gi);
+
+  if (thousand) {
+    let separator = lost ? '.' : '';
+    rupiah += separator + thousand.join('.');
+  }
+
+  rupiah = split[1] != null ? rupiah + ',' + split[1] : rupiah;
+
+  return 'Rp ' + rupiah;
+}

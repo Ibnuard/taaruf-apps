@@ -8,6 +8,7 @@ import {
 } from './navigator';
 import {AuthContext} from './context';
 import {removeUserSession} from './helpers/storage';
+import {removeData} from './utils/store';
 
 const App = () => {
   //handle auth flow
@@ -39,6 +40,7 @@ const App = () => {
           return {
             ...prevState,
             isSignout: true,
+            admin: false,
             userToken: null,
           };
       }
@@ -87,11 +89,13 @@ const App = () => {
         // We will also need to handle errors if sign in failed
         // After getting token, we need to persist the token using `SecureStore`
         // In the example, we'll use a dummy token
+        console.log('ADMIN');
 
         dispatch({type: 'ADMIN', token: 'dummy-auth-token'});
       },
       signOut: async () => {
         await removeUserSession();
+        await removeData('isAdmin');
         dispatch({type: 'SIGN_OUT'});
       },
       signUp: async data => {
@@ -109,6 +113,10 @@ const App = () => {
         // In the example, we'll use a dummy token
 
         dispatch({type: 'RESTORE_TOKEN', token: data});
+
+        // parseData.token == 'ADMIN'
+        //   ? dispatch({type: 'ADMIN', token: 'ADMIN'})
+        //   : dispatch({type: 'RESTORE_TOKEN', token: data});
       },
     }),
     [],
@@ -117,7 +125,22 @@ const App = () => {
   return (
     <NavigationContainer>
       <AuthContext.Provider value={authContext}>
-        {state.isLoading ? (
+        {state.admin == true ? (
+          <AdminStack />
+        ) : state.isLoading ? (
+          <SplashStack />
+        ) : state.userToken ? (
+          <MainScreen />
+        ) : (
+          <AuthStackScreen />
+        )}
+      </AuthContext.Provider>
+    </NavigationContainer>
+  );
+};
+
+/**
+ {state.isLoading ? (
           <SplashStack />
         ) : state.userToken == null ? (
           <AuthStackScreen />
@@ -126,9 +149,6 @@ const App = () => {
         ) : (
           <MainScreen />
         )}
-      </AuthContext.Provider>
-    </NavigationContainer>
-  );
-};
+ */
 
 export default App;

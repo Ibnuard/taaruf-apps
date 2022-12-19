@@ -9,7 +9,7 @@ import messaging from '@react-native-firebase/messaging';
 import {IMAGES_RES} from '../../helpers/images';
 
 const SplashScreen = () => {
-  const {restoreToken} = React.useContext(AuthContext);
+  const {restoreToken, admin} = React.useContext(AuthContext);
 
   React.useEffect(() => {
     // Fetch the token from storage then navigate to our appropriate place
@@ -28,7 +28,23 @@ const SplashScreen = () => {
       // After restoring token, we may need to validate it in production apps
 
       // This will switch to the App screen or Auth screen and this loading
-      // screen will be unmounted and thrown away.
+      // screen will be unmounted and thrown away
+
+      // const parseToken = JSON.parse(userToken);
+
+      // admin();
+
+      // if (parseToken.token == 'ADMIN') {
+      //   admin();
+      // } else {
+      //   restoreToken(userToken);
+      // }
+      const isAdmin = await retrieveData('isAdmin', false);
+
+      if (isAdmin) {
+        return admin();
+      }
+
       restoreToken(userToken);
     };
     wait(2500).then(() => bootstrapAsync());

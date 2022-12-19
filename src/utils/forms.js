@@ -80,10 +80,14 @@ export const MushForm = (config = []) => {
             };
           }
         } else {
-          if (data?.value?.length < data?.minMaxChar[0]) {
-            return {[data?.key]: _setErrorMessage('MIN_CHAR_ERROR', data)};
-          } else if (data?.value?.length > data?.minMaxChar[1]) {
-            return {[data?.key]: _setErrorMessage('MAX_CHAR_ERROR', data)};
+          if (data.minMaxChar) {
+            if (data?.value?.length < data?.minMaxChar[0]) {
+              return {[data?.key]: _setErrorMessage('MIN_CHAR_ERROR', data)};
+            } else if (data?.value?.length > data?.minMaxChar[1]) {
+              return {[data?.key]: _setErrorMessage('MAX_CHAR_ERROR', data)};
+            } else {
+              return null;
+            }
           } else {
             return null;
           }

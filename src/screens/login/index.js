@@ -11,7 +11,7 @@ import {
 import {IMAGES_RES} from '../../helpers/images';
 import {storeUserSession} from '../../helpers/storage';
 import {Colors, Typo} from '../../styles';
-import {retrieveData} from '../../utils/store';
+import {retrieveData, storeData} from '../../utils/store';
 
 const LoginScreen = ({navigation}) => {
   const [nomor, setNomor] = React.useState('');
@@ -22,6 +22,10 @@ const LoginScreen = ({navigation}) => {
 
   const {signIn, admin} = React.useContext(AuthContext);
 
+  // React.useLayoutEffect(() => {
+  //   checkIsAdmin();
+  // }, []);
+
   React.useEffect(() => {
     const unsubscribe = navigation.addListener('focus', () => {
       getAdminInfo();
@@ -30,6 +34,14 @@ const LoginScreen = ({navigation}) => {
     return unsubscribe;
   }, [navigation]);
 
+  // async function checkIsAdmin() {
+  //   const isAdmin = await retrieveData('isAdmin', false);
+
+  //   if (isAdmin) {
+  //     admin();
+  //   }
+  // }
+
   async function getAdminInfo() {
     const data = await USER_GET_ADMIN_INFO();
 
@@ -37,13 +49,6 @@ const LoginScreen = ({navigation}) => {
       setAdminData({no: data?.loginNumber, pw: data?.loginPassword});
     }
   }
-
-  console.log('admin : ' + JSON.stringify(adminData));
-
-  const ADMIN = {
-    no: '000000',
-    pw: 'ADMIN0123',
-  };
 
   const _userLogin = async () => {
     setIsLoading(true);
@@ -54,6 +59,7 @@ const LoginScreen = ({navigation}) => {
 
     if (nomor == adminData.no && pw == adminData.pw) {
       console.log('login admin');
+      await storeData('isAdmin', 'true', false);
       admin();
     } else {
       console.log('Login user!');

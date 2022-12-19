@@ -424,6 +424,13 @@ export const HomeStack = () => {
           title: 'Foto',
         }}
       />
+      <Stack.Screen
+        name="Domisili"
+        component={DomisiliScreen}
+        options={{
+          title: 'Pilih Domisili',
+        }}
+      />
     </Stack.Navigator>
   );
 };

@@ -1,5 +1,5 @@
 import * as React from 'react';
-import {View, Text, StyleSheet, Image, Alert} from 'react-native';
+import {View, Text, StyleSheet, Image, Alert, ScrollView} from 'react-native';
 import {Button, Card} from '../../components';
 import {
   USER_CHECK_STATUS,
@@ -8,6 +8,7 @@ import {
 } from '../../helpers/firebase';
 import {retrieveUserSession} from '../../helpers/storage';
 import {Colors, Typo} from '../../styles';
+import {formatRupiah} from '../../utils/utils';
 
 const UpgradeScreen = ({navigation, route}) => {
   const [status, setStatus] = React.useState('idle');
@@ -41,10 +42,11 @@ const UpgradeScreen = ({navigation, route}) => {
     const status = await USER_CHECK_STATUS(parsed?.nomorwa);
 
     if (status) {
-      console.log(`status : ${parsed?.nomorwa}` + status);
       setStatus(status);
     }
   }
+
+  console.log('ADMIN INFO : ' + JSON.stringify(admin));
 
   async function onTransferPress() {
     const session = await retrieveUserSession();
@@ -67,7 +69,39 @@ const UpgradeScreen = ({navigation, route}) => {
   }
 
   return (
-    <View style={styles.container}>
+    <ScrollView
+      style={styles.container}
+      contentContainerStyle={{paddingBottom: 62}}>
+      <Card style={{marginBottom: 14}}>
+        <Text style={styles.textQ}>Kenapa sih berbayar?</Text>
+        <Text style={styles.textA}>
+          Untuk menjaga komitemen dan keseriusan proses taaruf agar aplikasi
+          tidak di gunakan untuk permainan
+        </Text>
+      </Card>
+      <Card style={{marginBottom: 14}}>
+        <Text style={styles.textQ}>Berapa sih biayanya ?</Text>
+        <Text style={styles.textA}>
+          Biayanya adalah {formatRupiah(admin?.biaya)}
+        </Text>
+      </Card>
+      <Card style={{marginBottom: 14}}>
+        <Text style={styles.textQ}>Dapat apa saja ?</Text>
+        <Text style={styles.textA}>
+          - bisa mengajukan 5 cv setiap bulan {'\n'}- cv yang du ajukan tidak
+          hilang selama 3 bulan {'\n'}- unlimited menerima pengajuan cv {'\n'}-
+          tidak du kenakan infaq pembayaran di bulan berikutnya - akun premium
+          akan hangus setelah nadzor {'\n'}- dapat melihat cv yang memfavoritkan
+          {'\n'}- pendampingan admin taaruf secara online saat taaruf
+        </Text>
+      </Card>
+      <Card style={{marginBottom: 14}}>
+        <Text style={styles.textQ}>Untuk apa biayanya ?</Text>
+        <Text style={styles.textA}>
+          - akomodasi admin selama proses taaruf {'\n'}- maintenance server dan
+          pengembangan aplikasi {'\n'}- operasional tim
+        </Text>
+      </Card>
       <Text style={styles.textDesc}>
         Silahkan lakukan tranfer ke rekening berikut untuk dapat meningkatkan
         akun anda, sehingga anda dapat menggunakan semua fitur aplikasi ini.
@@ -100,7 +134,7 @@ const UpgradeScreen = ({navigation, route}) => {
           onPress={() => onTransferPress()}
         />
       </View>
-    </View>
+    </ScrollView>
   );
 };
 
@@ -131,6 +165,15 @@ const styles = StyleSheet.create({
     ...Typo.TextNormalRegular,
     color: Colors.COLOR_RED,
     marginTop: 8,
+  },
+
+  textQ: {
+    ...Typo.TextMediumBold,
+    marginBottom: 8,
+  },
+
+  textA: {
+    ...Typo.TextNormalRegular,
   },
 });
 
