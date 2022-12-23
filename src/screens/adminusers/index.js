@@ -54,6 +54,7 @@ const AdminUsersScreen = ({navigation}) => {
             <PeopleCardList
               data={item}
               showBadgePremium
+              isAdmin={true}
               onPress={
                 () =>
                   navigation.navigate('AdminDetail', {

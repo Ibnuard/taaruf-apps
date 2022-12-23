@@ -18,6 +18,7 @@ const PeopleCardList = ({
   showBadgePremium = false,
   showBadgeUser = true,
   user,
+  isAdmin,
 }) => {
   const [userStatus, setUserStatus] = React.useState('loading');
 
@@ -73,7 +74,7 @@ const PeopleCardList = ({
   return (
     <Card useShadow={false} style={styles.container} onPress={onPress}>
       <Image
-        blurRadius={userStatus !== 'taaruf' ? 24 : 0}
+        blurRadius={isAdmin ? 0 : userStatus !== 'taaruf' ? 24 : 0}
         source={{uri: `data:image/png;base64,${data?.fotowajah}`}}
         resizeMode={'contain'}
         style={styles.image}

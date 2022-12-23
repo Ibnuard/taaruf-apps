@@ -15,16 +15,23 @@ import Icon from 'react-native-vector-icons/AntDesign';
 import {LaunchCamera, LaunchGallery} from '../../utils/imagePicker';
 import _ from 'lodash';
 import {MushForm} from '../../utils/forms';
-import {USER_REGISTER, USER_UPDATE} from '../../helpers/firebase';
-import {storeUserSession, updateUserSession} from '../../helpers/storage';
+import {DELETE_ACC, USER_REGISTER, USER_UPDATE} from '../../helpers/firebase';
+import {
+  removeUserSession,
+  storeUserSession,
+  updateUserSession,
+} from '../../helpers/storage';
 import Touchable from '../../components/touchable';
 import DatePicker from 'react-native-date-picker';
 import {PARSE_DATE} from '../../utils/moment';
 import {retrieveData} from '../../utils/store';
+import {AuthContext} from '../../context';
 
 const DetailCVScreen = ({navigation, route}) => {
   const KEY = route?.params?.key;
   const USER = route?.params?.user;
+
+  const {signOut} = React.useContext(AuthContext);
 
   const [mode, setMode] = React.useState('pria'); //pria || wanita
   const [imagePickerVisible, setImagePickerVisible] = React.useState(false);
@@ -186,6 +193,7 @@ const DetailCVScreen = ({navigation, route}) => {
       minMaxChar: [1, 10000],
       value: riwayatPendidikan,
       caption: 'Riwayat pendidikan',
+      preventNumber: true,
     },
     {
       key: 'selStatus',
@@ -219,6 +227,7 @@ const DetailCVScreen = ({navigation, route}) => {
       minMaxChar: [1, 10000],
       value: kriteria,
       caption: 'Kriteria yang diinginkan',
+      preventNumber: true,
     },
     {
       key: 'deskripsi',
@@ -226,6 +235,7 @@ const DetailCVScreen = ({navigation, route}) => {
       minMaxChar: [50, 10000], //100
       value: deskripsi,
       caption: 'Deskripsi singkat diri',
+      preventNumber: true,
     },
     {
       key: 'hobi',
@@ -233,6 +243,7 @@ const DetailCVScreen = ({navigation, route}) => {
       minMaxChar: [1, 10000],
       value: hobi,
       caption: 'Hobi',
+      preventNumber: true,
     },
     {
       key: 'anak',
@@ -240,6 +251,7 @@ const DetailCVScreen = ({navigation, route}) => {
       minMaxChar: [1, 128],
       value: anak,
       caption: 'Anak ke',
+      preventNumber: true,
     },
     {
       key: 'selSuku',
@@ -259,6 +271,7 @@ const DetailCVScreen = ({navigation, route}) => {
       minMaxChar: [1, 10000],
       value: penyakit,
       caption: 'Riwayat penyakit',
+      preventNumber: true,
     },
     {
       key: 'organisasi',
@@ -266,6 +279,7 @@ const DetailCVScreen = ({navigation, route}) => {
       minMaxChar: [1, 10000],
       value: organisasi,
       caption: 'Organisasi atau komunitas yang diikuti',
+      preventNumber: true,
     },
     {
       key: 'kelebihan',
@@ -273,6 +287,7 @@ const DetailCVScreen = ({navigation, route}) => {
       minMaxChar: [1, 10000],
       value: kelebihan,
       caption: 'Kelebihan diri',
+      preventNumber: true,
     },
     {
       key: 'kekurangan',
@@ -280,6 +295,7 @@ const DetailCVScreen = ({navigation, route}) => {
       minMaxChar: [1, 10000],
       value: kekurangan,
       caption: 'Kekurangan diri',
+      preventNumber: true,
     },
     {
       key: 'aktivitas',
@@ -287,6 +303,7 @@ const DetailCVScreen = ({navigation, route}) => {
       minMaxChar: [1, 10000],
       value: aktivitasHarian,
       caption: 'Aktivitas harian',
+      preventNumber: true,
     },
     {
       key: 'visimisi',
@@ -294,6 +311,7 @@ const DetailCVScreen = ({navigation, route}) => {
       minMaxChar: [1, 10000],
       value: visimisi,
       caption: 'Visi misi pernikahan',
+      preventNumber: true,
     },
     {
       key: 'q1',
@@ -301,6 +319,7 @@ const DetailCVScreen = ({navigation, route}) => {
       minMaxChar: [1, 1500],
       value: firstQA,
       caption: 'Pertanyaan pertama',
+      preventNumber: true,
     },
     {
       key: 'q2',
@@ -308,6 +327,7 @@ const DetailCVScreen = ({navigation, route}) => {
       minMaxChar: [1, 1500],
       value: secondQA,
       caption: 'Pertanyaan kedua',
+      preventNumber: true,
     },
     {
       key: 'q3',
@@ -315,6 +335,7 @@ const DetailCVScreen = ({navigation, route}) => {
       minMaxChar: [1, 1500],
       value: thirdQA,
       caption: 'Pertanyaan ketiga',
+      preventNumber: true,
     },
   ];
 
@@ -325,6 +346,7 @@ const DetailCVScreen = ({navigation, route}) => {
       minMaxChar: [1, 300],
       value: name,
       caption: 'Nama',
+      preventNumber: true,
     },
     {
       key: 'olddomisili',
@@ -332,6 +354,7 @@ const DetailCVScreen = ({navigation, route}) => {
       minMaxChar: [1, 300],
       value: domisiliOrangTua,
       caption: 'Domisili orang tua',
+      preventNumber: true,
     },
     {
       key: 'alamat',
@@ -505,6 +528,45 @@ const DetailCVScreen = ({navigation, route}) => {
         Alert.alert('Gagal!', 'Ada kesalahan data, mohon di cek kembali!');
       });
   };
+
+  function _onDeleteButtonPress() {
+    //await DELETE_ACC(PREV_DATA.nomorwa)
+    Alert.alert('Konfirmasi', 'Apakah anda yakin ingin menghapus akun ini?', [
+      {
+        text: 'Ok',
+        onPress: () => deleteAccount(),
+      },
+      {
+        text: 'Batalkan',
+        onPress: () => null,
+      },
+    ]);
+  }
+
+  async function deleteAccount() {
+    setIsLoading(true);
+    await DELETE_ACC(USER?.nomorwa)
+      .then(() => {
+        Alert.alert(
+          'Akun berhasil di hapus!',
+          'Kamu akan diarahkan kembali ke menu utama!',
+          [
+            {
+              text: 'Ok',
+              onPress: () => onAccountDeleted(),
+            },
+          ],
+        );
+      })
+      .catch(e => {
+        Alert.alert('Gagal!', 'Ada masalah tidak diketahui, mohon coba lagi!');
+      });
+  }
+
+  async function onAccountDeleted() {
+    await removeUserSession();
+    signOut();
+  }
 
   // React.useEffect(() => {
   //   console.log(faceImage?.length, bodyImage?.length, ktpImage?.length);
@@ -879,6 +941,17 @@ const DetailCVScreen = ({navigation, route}) => {
           title={KEY == 'edit' ? 'Update CV' : 'Buat CV'}
           onPress={() => _onDoneButtonPressed()}
         />
+
+        {KEY == 'edit' && (
+          <Button
+            disabled={/*isButtonDisabled()*/ false}
+            isLoading={isLoading}
+            buttonStyle={{marginTop: 14}}
+            invert
+            title={'Hapus Akun'}
+            onPress={() => _onDeleteButtonPress()}
+          />
+        )}
       </View>
       <Modal
         type={'popup3b'}

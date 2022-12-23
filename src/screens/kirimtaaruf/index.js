@@ -6,6 +6,7 @@ import {IMAGES_RES} from '../../helpers/images';
 import {
   CHECK_IS_MATCH,
   GET_CV_COUNT_BY_MONTH,
+  GET_IS_ON_TAARUF,
   GET_USER_LIST,
   USER_IS_PREMIUM,
 } from '../../helpers/firebase';
@@ -31,7 +32,7 @@ const KirimTaarufScreen = ({navigation, route}) => {
 
   React.useEffect(() => {
     const unsubscribe = navigation.addListener('focus', () => {
-      getAllUsers();
+      getIsOnTaaruf();
       if (FILTER) {
         _handleFilter();
       }
@@ -49,6 +50,25 @@ const KirimTaarufScreen = ({navigation, route}) => {
 
   //   return unsubscribe;
   // }, [navigation, FILTER]);
+
+  async function getIsOnTaaruf() {
+    setIsLoading(true);
+    //getAllUsers();
+    const data = await GET_IS_ON_TAARUF();
+
+    const completeData = {taaruf: true, ...data[0]};
+
+    if (data.length > 0) {
+      navigation.replace('ProfileDetail', {
+        key: 'ontaaruf',
+        data: completeData,
+        available: available,
+        isPremium: isPremium,
+      });
+    } else {
+      getAllUsers();
+    }
+  }
 
   const _handleFilter = (data = []) => {
     if (FILTER) {
@@ -220,28 +240,52 @@ const KirimTaarufScreen = ({navigation, route}) => {
   }
 
   async function onCardPress(item) {
-    const isMatch = await CHECK_IS_MATCH(item);
+    const data = await GET_IS_ON_TAARUF();
 
-    if (isMatch) {
-      setModalVisible(false);
+    const completeData = {taaruf: true, ...data[0]};
+
+    if (data.length > 0) {
       Alert.alert(
-        'Pesan!',
-        'User ini telah mengajukan taaruf ke anda, silahkan cek di Menerima CV!',
+        'Pemberitahuan',
+        `Anda sedang ada di sesi taaruf dengan ${data[0].name}, Anda akan diarahkan ke detail sesi taaruf yang sedang berlangsung!`,
         [
           {
-            text: 'OK',
-            onPress: () => navigation.navigate('TerimaTaaruf', {user: USER}),
+            text: 'Ok',
+            onPress: () => {
+              navigation.replace('ProfileDetail', {
+                key: 'ontaaruf',
+                data: completeData,
+                available: available,
+                isPremium: isPremium,
+              });
+            },
           },
         ],
       );
     } else {
-      setModalVisible(false);
-      navigation.navigate('ProfileDetail', {
-        key: 'kirimtaaruf',
-        data: item,
-        available: available,
-        isPremium: isPremium,
-      });
+      const isMatch = await CHECK_IS_MATCH(item);
+
+      if (isMatch) {
+        setModalVisible(false);
+        Alert.alert(
+          'Pesan!',
+          'User ini telah mengajukan taaruf ke anda, silahkan cek di Menerima CV!',
+          [
+            {
+              text: 'OK',
+              onPress: () => navigation.navigate('TerimaTaaruf', {user: USER}),
+            },
+          ],
+        );
+      } else {
+        setModalVisible(false);
+        navigation.navigate('ProfileDetail', {
+          key: 'kirimtaaruf',
+          data: item,
+          available: available,
+          isPremium: isPremium,
+        });
+      }
     }
   }
 

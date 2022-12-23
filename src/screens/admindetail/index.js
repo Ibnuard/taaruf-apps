@@ -17,7 +17,7 @@ import {IMAGES_RES} from '../../helpers/images';
 import {Colors, Typo} from '../../styles';
 import Icon from 'react-native-vector-icons/AntDesign';
 import {ADMIN_REJECT_PREMIUM, ADMIN_UPGRADE_PREMIUM} from '../../helpers/admin';
-import {USER_CHECK_STATUS} from '../../helpers/firebase';
+import {DELETE_ACC, USER_CHECK_STATUS} from '../../helpers/firebase';
 
 const AdminDetailScreen = ({navigation, route}) => {
   const [user, setUser] = React.useState('');
@@ -179,6 +179,44 @@ const AdminDetailScreen = ({navigation, route}) => {
             onPress={() =>
               Linking.openURL(`whatsapp://send?phone=${USER_DATA?.nomorwa}}`)
             }
+          />
+
+          <Button
+            isLoading={isLoading}
+            buttonStyle={{marginTop: 24}}
+            title="Hapus User"
+            onPress={() => {
+              Alert.alert(
+                'Konformasi',
+                'Apakah anda yakin ingin menghapus akun ini?',
+                [
+                  {
+                    text: 'Ok',
+                    onPress: async () => {
+                      await DELETE_ACC(user?.nomorwa)
+                        .then(() => {
+                          Alert.alert('Sukses', 'Akun berhasil dihapus', [
+                            {
+                              text: 'Ok',
+                              onPress: () => navigation.goBack(),
+                            },
+                          ]);
+                        })
+                        .catch(e => {
+                          Alert.alert(
+                            'Gagal',
+                            'Ada kesalahan mohon coba lagi!',
+                          );
+                        });
+                    },
+                  },
+                  {
+                    text: 'Batalkan',
+                    onPress: () => null,
+                  },
+                ],
+              );
+            }}
           />
         </Card>
         <Text style={styles.textName}>KTP USER</Text>

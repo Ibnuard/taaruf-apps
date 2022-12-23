@@ -1,6 +1,11 @@
 import firestore from '@react-native-firebase/firestore';
 import {sendNotification} from '../api/api';
-import {CHECK_IS_VALID, GET_CURRENT_DATE, PARSE_DATE} from '../utils/moment';
+import {
+  CHECK_IS_VALID,
+  CHECK_MOMENT_DIFF,
+  GET_CURRENT_DATE,
+  PARSE_DATE,
+} from '../utils/moment';
 import {retrieveData} from '../utils/store';
 import {generateMonthData, generateUID, getRandomNumber} from '../utils/utils';
 import {retrieveUserSession} from './storage';
@@ -55,6 +60,7 @@ const USER_REGISTER = data => {
     premium: false,
     favoritCount: 0,
     poke: 40,
+    isOnTaaruf: false,
   };
   return usersCollection.doc(data.nomorwa).set(user);
 };
@@ -252,6 +258,31 @@ const GET_USER_LIST = async () => {
       return [];
     }
   });
+};
+
+const GET_IS_ON_TAARUF = async () => {
+  const session = await retrieveUserSession();
+  const parsed = JSON.parse(session);
+
+  return await usersCollection
+    .doc(parsed.nomorwa)
+    .collection('ROOM')
+    .get()
+    .then(snapshot => {
+      if (snapshot.size > 0) {
+        console.log('ADA');
+        let temp = [];
+
+        snapshot.forEach(doc => {
+          temp.push({id: doc.id, ...doc.data()});
+        });
+
+        return temp;
+      } else {
+        console.log('NO');
+        return [];
+      }
+    });
 };
 
 const ADD_TO_FAVORITE = async data => {
@@ -686,8 +717,34 @@ const ACCEPT_TAARUF = async (id, data) => {
         taaruf: true,
       })
       .then(() => {
+        // return _updateNotifOther();
+        return createTaarufRoom();
+      });
+
+    async function createTaarufRoom() {
+      const duedate = GET_CURRENT_DATE();
+
+      function selfRoom() {
+        return usersCollection
+          .doc(parsed.nomorwa)
+          .collection('ROOM')
+          .doc(id)
+          .set({due: duedate, ...data});
+      }
+
+      function otherRoom() {
+        return usersCollection
+          .doc(id)
+          .collection('ROOM')
+          .doc(parsed.nomorwa)
+          .set({due: duedate, ...parsed});
+      }
+
+      Promise.all([selfRoom(), otherRoom()]).then(() => {
+        console.log('create room success!');
         return _updateNotifOther();
       });
+    }
 
     async function _updateNotifOther() {
       console.log('updating read notif');
@@ -734,25 +791,18 @@ const REJECT_TAARUF = async (id, data, reason) => {
 const GET_ACCEPT_TAARUF_COUNT = async () => {
   const receivedCVList = await GET_RECEIVED_CV();
 
-  const isPremium = await USER_IS_PREMIUM();
+  if (receivedCVList.length) {
+    const filtered = receivedCVList.filter((item, index) => {
+      return item?.taaruf == true;
+    });
 
-  if (isPremium) {
-    console.log('user premium');
-    return true;
-  } else {
-    if (receivedCVList.length) {
-      const filtered = receivedCVList.filter((item, index) => {
-        return item?.taaruf == true;
-      });
-
-      if (filtered.length < 5) {
-        return true;
-      } else {
-        return false;
-      }
-    } else {
+    if (filtered.length < 5) {
       return true;
+    } else {
+      return false;
     }
+  } else {
+    return true;
   }
 };
 
@@ -761,53 +811,91 @@ const CANCEL_NADZOR = async (id, data, reason) => {
   const user = await retrieveUserSession();
   const parsed = JSON.parse(user);
 
-  return await usersCollection
+  const room = await usersCollection
     .doc(parsed.nomorwa)
-    .collection('Taaruf')
+    .collection('ROOM')
     .doc(id)
-    .delete()
-    .then(() => {
-      return _updateStatusOther();
-    });
+    .get();
+  const roomData = room.data();
 
-  async function _updateStatusOther() {
-    console.log('updating other...');
-    return await taarufCollection
-      .doc(id)
-      .collection('LIST')
-      .doc(parsed?.nomorwa)
-      .delete()
-      .then(() => {
-        return _updateSended();
-      });
-  }
+  const dueDate = roomData.due;
 
-  async function _updateSended() {
-    console.log('updating sended...');
-    return await taarufCollection
-      .doc(parsed?.nomorwa)
-      .collection('LIST')
+  const getDiff = CHECK_MOMENT_DIFF(dueDate);
+
+  if (getDiff < 23) {
+    return 'FAILED';
+  } else {
+    return await usersCollection
+      .doc(parsed.nomorwa)
+      .collection('Taaruf')
       .doc(id)
       .delete()
       .then(() => {
-        return _updateNotif();
+        return deleteROOM();
       });
-  }
 
-  async function _updateNotif() {
-    await sendNotification(data?.token, 'nadzorcanceled');
+    async function deleteROOM() {
+      async function selfRoom() {
+        return await usersCollection
+          .doc(parsed.nomorwa)
+          .collection('ROOM')
+          .doc(id)
+          .delete();
+      }
 
-    async function _notifSelf() {
-      console.log('notif self');
-      return await CREATE_NOTIFICATION(data?.id, 'fail');
+      async function otherRoom() {
+        return await usersCollection
+          .doc(id)
+          .collection('ROOM')
+          .doc(parsed.nomorwa)
+          .delete();
+      }
+
+      Promise.all([selfRoom(), otherRoom()]).then(() => {
+        console.log('success deleting room!');
+        return _updateStatusOther();
+      });
     }
 
-    async function _notifOther() {
-      console.log('notif other');
-      return await CREATE_NOTIFICATION(parsed?.id, 'failed', id, reason);
+    async function _updateStatusOther() {
+      console.log('updating other...');
+      return await taarufCollection
+        .doc(id)
+        .collection('LIST')
+        .doc(parsed?.nomorwa)
+        .delete()
+        .then(() => {
+          return _updateSended();
+        });
     }
 
-    return Promise.all([_notifSelf(), _notifOther()]);
+    async function _updateSended() {
+      console.log('updating sended...');
+      return await taarufCollection
+        .doc(parsed?.nomorwa)
+        .collection('LIST')
+        .doc(id)
+        .delete()
+        .then(() => {
+          return _updateNotif();
+        });
+    }
+
+    async function _updateNotif() {
+      await sendNotification(data?.token, 'nadzorcanceled');
+
+      async function _notifSelf() {
+        console.log('notif self');
+        return await CREATE_NOTIFICATION(data?.id, 'fail');
+      }
+
+      async function _notifOther() {
+        console.log('notif other');
+        return await CREATE_NOTIFICATION(parsed?.id, 'failed', id, reason);
+      }
+
+      return Promise.all([_notifSelf(), _notifOther()]);
+    }
   }
 };
 // ====================================
@@ -1003,6 +1091,10 @@ const GET_PROCEDUR = async () => {
   return data.steps;
 };
 
+const DELETE_ACC = async id => {
+  return await usersCollection.doc(id).delete();
+};
+
 export {
   USER_REGISTER,
   USER_UPDATE,
@@ -1040,4 +1132,6 @@ export {
   GET_PROCEDUR,
   CANCEL_NADZOR,
   CHECK_TAARUF_STATUS_RECEIVE,
+  DELETE_ACC,
+  GET_IS_ON_TAARUF,
 };

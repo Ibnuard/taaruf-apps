@@ -8,6 +8,7 @@ import {
   ScrollView,
   Alert,
   Linking,
+  BackHandler,
 } from 'react-native';
 import {Button, Card, Modal, Input, Row} from '../../components';
 import {IMAGES_RES} from '../../helpers/images';
@@ -35,6 +36,7 @@ import {
 } from '../../helpers/firebase';
 import Carousel from 'react-native-reanimated-carousel';
 import {GestureHandlerRootView} from 'react-native-gesture-handler';
+import {useFocusEffect} from '@react-navigation/native';
 
 const ProfileScreen = ({navigation, route}) => {
   const [firstQ, setFirstQ] = React.useState('');
@@ -87,6 +89,26 @@ const ProfileScreen = ({navigation, route}) => {
     return unsubscribe;
   }, [navigation]);
 
+  useFocusEffect(
+    React.useCallback(() => {
+      const onBackPress = () => {
+        if (accepted || KEY == 'ontaaruf') {
+          navigation.navigate('HomeInit');
+          return true;
+        } else {
+          return false;
+        }
+      };
+
+      const subscription = BackHandler.addEventListener(
+        'hardwareBackPress',
+        onBackPress,
+      );
+
+      return () => subscription.remove();
+    }, [accepted, KEY]),
+  );
+
   React.useLayoutEffect(() => {
     if (KEY) {
       setUser(USER_DATA);
@@ -131,8 +153,6 @@ const ProfileScreen = ({navigation, route}) => {
     const result = await CHECK_IS_TAARUFED(USER_DATA);
     const status = await CHECK_TAARUF_STATUS(USER_DATA?.nomorwa);
 
-    console.log('STATUS : ' + status);
-
     if (result) {
       console.log('is taarufed : ' + result);
 
@@ -144,7 +164,14 @@ const ProfileScreen = ({navigation, route}) => {
 
       setTaarufed(result);
     }
+
+    if (KEY == 'ontaaruf') {
+      setAccepted(true);
+      setTaarufed(true);
+    }
   };
+
+  console.log('is accepted : ' + true);
 
   async function getOwnProfile() {
     console.log('Get user session!!!');
@@ -296,10 +323,67 @@ const ProfileScreen = ({navigation, route}) => {
 
   //MENERIMA TAARUF
   const onAcceptTaarufPressed = async () => {
-    if (CAN_TAARUF) {
+    if (!IS_PREMIUM) {
+      navigation.navigate('Upgrade', {user: USER_DATA});
+    } else {
+      if (CAN_TAARUF) {
+        Alert.alert(
+          'Konfirmasi',
+          'Apakah anda yakin ingin menerima pengajuan CV taaruf ini?',
+          [
+            {
+              text: 'Batalkan',
+              onPress: () => console.log('cancel'),
+              style: 'cancel',
+            },
+            {
+              text: 'Ok',
+              onPress: async () => {
+                setIsLoading(true);
+                await ACCEPT_TAARUF(user?.nomorwa, user)
+                  .then(() => {
+                    setIsLoading(false);
+                    setAccepted(true);
+                    Alert.alert(
+                      'Sukses',
+                      'Taaruf Diterima, silahkan hubungi admin untuk proses selanjutnya!',
+                      [
+                        {
+                          text: 'OK',
+                          onPress: () =>
+                            scrollRef.current.scrollTo({
+                              x: 0,
+                              y: 0,
+                              animated: true,
+                            }),
+                        },
+                      ],
+                    );
+                  })
+                  .catch(err => {
+                    setIsLoading(false);
+                    Alert.alert('Gagal', 'Ada kesalahan mohon coba lagi!');
+                  });
+              },
+            },
+          ],
+        );
+      } else {
+        Alert.alert(
+          'Gagal',
+          'Kesempatan menerima taaruf anda telah habis, silahkan upgrade akun anda untuk menerima taaruf tanpa batas!',
+        );
+      }
+    }
+  };
+
+  const onRejectTaarufPressed = async () => {
+    if (!IS_PREMIUM) {
+      navigation.navigate('Upgrade', {user: USER_DATA});
+    } else {
       Alert.alert(
         'Konfirmasi',
-        'Apakah anda yakin ingin menerima pengajuan CV taaruf ini?',
+        'Apakah anda yakin ingin menolak pengajuan CV ini?',
         [
           {
             text: 'Batalkan',
@@ -308,60 +392,11 @@ const ProfileScreen = ({navigation, route}) => {
           },
           {
             text: 'Ok',
-            onPress: async () => {
-              setIsLoading(true);
-              await ACCEPT_TAARUF(user?.nomorwa, user)
-                .then(() => {
-                  setIsLoading(false);
-                  setAccepted(true);
-                  Alert.alert(
-                    'Sukses',
-                    'Taaruf Diterima, silahkan hubungi admin untuk proses selanjutnya!',
-                    [
-                      {
-                        text: 'OK',
-                        onPress: () =>
-                          scrollRef.current.scrollTo({
-                            x: 0,
-                            y: 0,
-                            animated: true,
-                          }),
-                      },
-                    ],
-                  );
-                })
-                .catch(err => {
-                  setIsLoading(false);
-                  Alert.alert('Gagal', 'Ada kesalahan mohon coba lagi!');
-                });
-            },
+            onPress: async () => setRejectPressed(true),
           },
         ],
       );
-    } else {
-      Alert.alert(
-        'Gagal',
-        'Kesempatan menerima taaruf anda telah habis, silahkan upgrade akun anda untuk menerima taaruf tanpa batas!',
-      );
     }
-  };
-
-  const onRejectTaarufPressed = async () => {
-    Alert.alert(
-      'Konfirmasi',
-      'Apakah anda yakin ingin menolak pengajuan CV ini?',
-      [
-        {
-          text: 'Batalkan',
-          onPress: () => console.log('cancel'),
-          style: 'cancel',
-        },
-        {
-          text: 'Ok',
-          onPress: async () => setRejectPressed(true),
-        },
-      ],
-    );
   };
 
   const rejectingTaaruf = async () => {
@@ -416,18 +451,32 @@ const ProfileScreen = ({navigation, route}) => {
   const cancelNadzor = async () => {
     setIsLoading(true);
     await CANCEL_NADZOR(user?.nomorwa, user, rejectReason)
-      .then(() => {
+      .then(result => {
+        console.log('nadzor res : ' + result);
         setIsLoading(false);
-        Alert.alert(
-          'Sukses',
-          'Pembatalan Nadzor sukses dan daftar permintaan akan dihapus!',
-          [
-            {
-              text: 'Ok',
-              onPress: () => navigation.goBack(),
-            },
-          ],
-        );
+        if (result == 'FAILED') {
+          Alert.alert(
+            'Gagal',
+            'Anda tidak dapat membatalkan nadzor sebelum 24 jam!',
+            [
+              {
+                text: 'Ok',
+                onPress: () => setRejectPressed(false),
+              },
+            ],
+          );
+        } else {
+          Alert.alert(
+            'Sukses',
+            'Pembatalan Nadzor sukses dan daftar permintaan akan dihapus!',
+            [
+              {
+                text: 'Ok',
+                onPress: () => navigation.goBack(),
+              },
+            ],
+          );
+        }
       })
       .catch(() => {
         setIsLoading(false);

@@ -14,6 +14,14 @@ export const CHECK_IS_VALID = date => {
   return diff;
 };
 
+export const CHECK_MOMENT_DIFF = date => {
+  const currentDate = moment(new Date());
+  const selectedDate = moment(date);
+  const diff = currentDate.diff(selectedDate, 'hours');
+
+  return diff;
+};
+
 export const PARSE_DATE = (date, format = 'll') => {
   return moment(date).format(format);
 };

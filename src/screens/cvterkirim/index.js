@@ -4,6 +4,7 @@ import PeopleCardList from '../../components/PeopleCardList';
 import {FloatingAction} from 'react-native-floating-action';
 import {IMAGES_RES} from '../../helpers/images';
 import {
+  GET_IS_ON_TAARUF,
   GET_SENDED_CV,
   GET_USER_LIST,
   USER_IS_PREMIUM,
@@ -26,11 +27,28 @@ const CVTerkirimScreen = ({navigation, route}) => {
 
   React.useEffect(() => {
     const unsubscribe = navigation.addListener('focus', () => {
-      getSendedCV();
+      getIsOnTaaruf();
     });
 
     return unsubscribe;
   }, [navigation]);
+
+  async function getIsOnTaaruf() {
+    setIsLoading(true);
+    const data = await GET_IS_ON_TAARUF();
+
+    if (data.length > 0) {
+      const completeData = {taaruf: true, ...data[0]};
+
+      navigation.replace('ProfileDetail', {
+        key: 'ontaaruf',
+        data: completeData,
+        isPremium: isPremium,
+      });
+    } else {
+      getSendedCV();
+    }
+  }
 
   const getSendedCV = async () => {
     setIsLoading(true);
@@ -48,6 +66,38 @@ const CVTerkirimScreen = ({navigation, route}) => {
     setIsLoading(false);
   };
 
+  const onCardPress = async item => {
+    const data = await GET_IS_ON_TAARUF();
+
+    const completeData = {taaruf: true, ...data[0]};
+
+    if (data.length > 0) {
+      Alert.alert(
+        'Pemberitahuan',
+        `Anda sedang ada di sesi taaruf dengan ${data[0].name}, Anda akan diarahkan ke detail sesi taaruf yang sedang berlangsung!`,
+        [
+          {
+            text: 'Ok',
+            onPress: () => {
+              navigation.replace('ProfileDetail', {
+                key: 'ontaaruf',
+                data: completeData,
+                available: available,
+                isPremium: isPremium,
+              });
+            },
+          },
+        ],
+      );
+    } else {
+      navigation.navigate('ProfileDetail', {
+        key: 'kirimtaaruf',
+        data: item,
+        isPremium: isPremium,
+      });
+    }
+  };
+
   return (
     <View style={styles.container}>
       {users?.length ? (
@@ -62,18 +112,7 @@ const CVTerkirimScreen = ({navigation, route}) => {
             </Text>
           )}
           renderItem={({item, index}) => (
-            <PeopleCardList
-              data={item}
-              onPress={
-                () =>
-                  navigation.navigate('ProfileDetail', {
-                    key: 'kirimtaaruf',
-                    data: item,
-                    isPremium: isPremium,
-                  })
-                // navigation.navigate('Upgrade')
-              }
-            />
+            <PeopleCardList data={item} onPress={() => onCardPress(item)} />
           )}
         />
       ) : (

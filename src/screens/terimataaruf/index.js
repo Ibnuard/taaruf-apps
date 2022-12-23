@@ -5,6 +5,7 @@ import {FloatingAction} from 'react-native-floating-action';
 import {IMAGES_RES} from '../../helpers/images';
 import {
   GET_ACCEPT_TAARUF_COUNT,
+  GET_IS_ON_TAARUF,
   GET_RECEIVED_CV,
   GET_USER_LIST,
   USER_IS_PREMIUM,
@@ -26,11 +27,28 @@ const TerimaTaarufScreen = ({navigation, route}) => {
 
   React.useEffect(() => {
     const unsubscribe = navigation.addListener('focus', () => {
-      getReceivedTaaruf();
+      getIsOnTaaruf();
     });
 
     return unsubscribe;
   }, [navigation]);
+
+  async function getIsOnTaaruf() {
+    setIsLoading(true);
+    const data = await GET_IS_ON_TAARUF();
+
+    if (data.length > 0) {
+      const completeData = {taaruf: true, ...data[0]};
+      navigation.replace('ProfileDetail', {
+        key: 'ontaaruf',
+        data: completeData,
+        canTaaruf: canTaaruf,
+        isPremium: isPremium,
+      });
+    } else {
+      getReceivedTaaruf();
+    }
+  }
 
   const getReceivedTaaruf = async () => {
     setIsLoading(true);
@@ -43,13 +61,46 @@ const TerimaTaarufScreen = ({navigation, route}) => {
 
     const isCanTaaruf = await GET_ACCEPT_TAARUF_COUNT();
 
-    console.log('can taaruf : ' + isCanTaaruf);
+    console.log('is premium -> ' + isPremium);
 
     setCanTaaruf(isCanTaaruf);
 
     setUsers(filtered);
     setIsPremium(isPremium);
     setIsLoading(false);
+  };
+
+  const onCardPress = async item => {
+    const data = await GET_IS_ON_TAARUF();
+
+    const completeData = {taaruf: true, ...data[0]};
+
+    if (data.length > 0) {
+      Alert.alert(
+        'Pemberitahuan',
+        `Anda sedang ada di sesi taaruf dengan ${data[0].name}, Anda akan diarahkan ke detail sesi taaruf yang sedang berlangsung!`,
+        [
+          {
+            text: 'Ok',
+            onPress: () => {
+              navigation.replace('ProfileDetail', {
+                key: 'ontaaruf',
+                data: completeData,
+                available: available,
+                isPremium: isPremium,
+              });
+            },
+          },
+        ],
+      );
+    } else {
+      navigation.navigate('ProfileDetail', {
+        key: 'terimataaruf',
+        data: item,
+        canTaaruf: canTaaruf,
+        isPremium: isPremium,
+      });
+    }
   };
 
   return (
@@ -63,16 +114,7 @@ const TerimaTaarufScreen = ({navigation, route}) => {
               data={item}
               user={USER}
               showBadgeUser
-              onPress={
-                () =>
-                  navigation.navigate('ProfileDetail', {
-                    key: 'terimataaruf',
-                    data: item,
-                    canTaaruf: canTaaruf,
-                    isPremium: isPremium,
-                  })
-                // navigation.navigate('Upgrade')
-              }
+              onPress={() => onCardPress(item)}
             />
           )}
           numColumns={2}
