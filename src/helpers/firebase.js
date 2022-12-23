@@ -20,7 +20,7 @@ const USER_REGISTER = data => {
     gender: data.gender ?? 'kosong',
     nama: data?.nama ?? 'kosong',
     ttl: data?.ttl ?? 'kosong',
-    umur: CHECK_IS_VALID(data?.ttl) ?? 'kosong',
+    umur: data.umur ?? 'kosong',
     kota: data?.kota ?? 'kosong',
     orangtuadom: data?.orangtuadom ?? 'kosong',
     alamatdom: data?.alamatdom ?? 'kosong',
@@ -290,7 +290,12 @@ const ADD_TO_FAVORITE = async data => {
   async function _createNotifOther() {
     console.log('add favorite notif');
     await sendNotification(data?.token, 'favorited');
-    return await CREATE_NOTIFICATION(parsed.id, 'favorite', data?.nomorwa);
+    return await CREATE_NOTIFICATION(
+      parsed.id,
+      'favorite',
+      data?.nomorwa,
+      parsed,
+    );
   }
 };
 
@@ -508,7 +513,7 @@ const CHECK_IS_MATCH = async data => {
     });
 };
 
-//CHECK IS ACCEPTED
+//CHECK IS ACCEPTED IF SEND CV
 const CHECK_TAARUF_STATUS = async id => {
   const user = await retrieveUserSession();
   const parsed = JSON.parse(user);
@@ -533,27 +538,32 @@ const CHECK_TAARUF_STATUS = async id => {
         return 'NO TAARUFED';
       }
     });
+};
 
-  // return await usersCollection
-  //   .doc(parsed.nomorwa)
-  //   .collection('Taaruf')
-  //   .doc(id)
-  //   .get()
-  //   .then(snapshot => {
-  //     if (snapshot.exists) {
-  //       const data = snapshot.data();
+const CHECK_TAARUF_STATUS_RECEIVE = async id => {
+  const user = await retrieveUserSession();
+  const parsed = JSON.parse(user);
 
-  //       if (data.taaruf) {
-  //         return 'ACCEPTED';
-  //       } else if (data.rejected) {
-  //         return 'REJECTED';
-  //       } else {
-  //         return 'IDLE';
-  //       }
-  //     } else {
-  //       return 'NO TAARUFED';
-  //     }
-  //   });
+  return await taarufCollection
+    .doc(id)
+    .collection('LIST')
+    .doc(parsed.nomorwa)
+    .get()
+    .then(snapshot => {
+      if (snapshot.exists) {
+        const data = snapshot.data();
+
+        if (data.taaruf) {
+          return 'ACCEPTED';
+        } else if (data.rejected) {
+          return 'REJECTED';
+        } else {
+          return 'IDLE';
+        }
+      } else {
+        return 'NO TAARUFED';
+      }
+    });
 };
 
 //GET SENDED CV
@@ -688,7 +698,7 @@ const ACCEPT_TAARUF = async (id, data) => {
 };
 
 //TOLAK TAARUF
-const REJECT_TAARUF = async (id, data) => {
+const REJECT_TAARUF = async (id, data, reason) => {
   const user = await retrieveUserSession();
   const parsed = JSON.parse(user);
 
@@ -716,7 +726,7 @@ const REJECT_TAARUF = async (id, data) => {
   async function _updateNotifOther() {
     console.log('updating read notif');
     await sendNotification(data?.token, 'taarufrejected');
-    return await UPDATE_NOTIFICATION(parsed?.id, 'read', id, 'reject');
+    return await UPDATE_NOTIFICATION(parsed?.id, 'read', id, 'reject', reason);
   }
 };
 
@@ -747,7 +757,7 @@ const GET_ACCEPT_TAARUF_COUNT = async () => {
 };
 
 //CHECK IS ACCEPTED
-const CANCEL_NADZOR = async (id, data) => {
+const CANCEL_NADZOR = async (id, data, reason) => {
   const user = await retrieveUserSession();
   const parsed = JSON.parse(user);
 
@@ -794,7 +804,7 @@ const CANCEL_NADZOR = async (id, data) => {
 
     async function _notifOther() {
       console.log('notif other');
-      return await CREATE_NOTIFICATION(parsed?.id, 'failed', id);
+      return await CREATE_NOTIFICATION(parsed?.id, 'failed', id, reason);
     }
 
     return Promise.all([_notifSelf(), _notifOther()]);
@@ -813,7 +823,7 @@ const CANCEL_NADZOR = async (id, data) => {
 //
 // ===================================
 
-const CREATE_NOTIFICATION = async (id, type, senderId) => {
+const CREATE_NOTIFICATION = async (id, type, senderId, opt) => {
   // Terkirim -> 'sended'
   // Dibaca -> 'read'
   // Mengajukan -> 'receive'
@@ -837,13 +847,14 @@ const CREATE_NOTIFICATION = async (id, type, senderId) => {
       type: type,
       senderId: id,
       timestamp: timestamp,
+      opt: opt ?? '',
     })
     .then(() => {
       return notificationId;
     });
 };
 
-const UPDATE_NOTIFICATION = async (senderId, type, target, typeTarget) => {
+const UPDATE_NOTIFICATION = async (senderId, type, target, typeTarget, opt) => {
   /**
    *
    * senderId -> siapa id pengirim notif
@@ -871,6 +882,7 @@ const UPDATE_NOTIFICATION = async (senderId, type, target, typeTarget) => {
       .doc(dataId)
       .update({
         type: typeTarget,
+        opt: opt ?? '',
         timestamp: timestamp,
       });
   } else {
@@ -1027,4 +1039,5 @@ export {
   USER_GET_ADMIN_INFO,
   GET_PROCEDUR,
   CANCEL_NADZOR,
+  CHECK_TAARUF_STATUS_RECEIVE,
 };

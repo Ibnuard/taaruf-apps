@@ -237,7 +237,7 @@ const DetailCVScreen = ({navigation, route}) => {
     {
       key: 'anak',
       required: true,
-      minMaxChar: [1, 2],
+      minMaxChar: [1, 128],
       value: anak,
       caption: 'Anak ke',
     },
@@ -454,9 +454,9 @@ const DetailCVScreen = ({navigation, route}) => {
       //setIsLoading(false);
       KEY == 'edit' ? _updateUser(data) : _registerUser(data);
     } else {
+      setIsLoading(false);
       const errorData = Object.keys(errors).map(key => [key, errors[key]]);
       Alert.alert('Gagal!', errorData[0][1]);
-      setIsLoading(false);
     }
   };
 
@@ -472,7 +472,7 @@ const DetailCVScreen = ({navigation, route}) => {
         setIsLoading(false);
         Alert.alert(
           'Pendaftaran Gagal',
-          'Ada kesalahan data, mohon di cek kembali',
+          'Ukuran foto terlalu besar, silahkan pilih foto lain atau compress terlebih dahulu!',
         );
       });
   };
@@ -901,6 +901,7 @@ const DetailCVScreen = ({navigation, route}) => {
           setShowDatePicker(false);
         }}
       />
+      <Modal type={'loading'} visible={isLoading} />
     </ScrollView>
   );
 };

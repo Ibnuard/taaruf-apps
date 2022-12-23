@@ -4,20 +4,22 @@ import Card from './card';
 import Pic from '../../assets/images/pic.jpeg';
 import Icon from 'react-native-vector-icons/AntDesign';
 import {Colors, Typo} from '../styles';
-import {CHECK_IS_MATCH, GET_SENDED_CV} from '../helpers/firebase';
+import {
+  CHECK_IS_MATCH,
+  CHECK_TAARUF_STATUS,
+  CHECK_TAARUF_STATUS_RECEIVE,
+  GET_SENDED_CV,
+} from '../helpers/firebase';
 
 const PeopleCardList = ({
   onPress,
   data,
   showCount = true,
-  blur = false,
   showBadgePremium = false,
   showBadgeUser = true,
   user,
-  navigation,
-  showName,
 }) => {
-  const [userStatus, setUserStatus] = React.useState('idle');
+  const [userStatus, setUserStatus] = React.useState('loading');
 
   if (user) {
     checkUserStatus();
@@ -26,16 +28,26 @@ const PeopleCardList = ({
   async function checkUserStatus() {
     const sendedCV = await GET_SENDED_CV();
     const isMatch = await CHECK_IS_MATCH(data);
+    const status = await CHECK_TAARUF_STATUS(data?.nomorwa);
+    const statusReceive = await CHECK_TAARUF_STATUS_RECEIVE(data?.nomorwa);
 
     const findUser = sendedCV.filter((item, index) => {
       return item.id == data?.id;
     });
 
     if (isMatch) {
-      setUserStatus('taaruf');
+      if (statusReceive == 'ACCEPTED') {
+        setUserStatus('taaruf');
+      } else {
+        setUserStatus('process');
+      }
     } else {
       if (findUser[0]?.id == data.id) {
-        setUserStatus('process');
+        if (status == 'ACCEPTED') {
+          setUserStatus('taaruf');
+        } else {
+          setUserStatus('process');
+        }
       } else {
         setUserStatus('idle');
       }
@@ -43,10 +55,12 @@ const PeopleCardList = ({
   }
 
   function renderBadge() {
-    if (userStatus == 'idle') {
+    if (userStatus == 'loading') {
+      return <Text style={styles.textPremium}>...</Text>;
+    } else if (userStatus == 'idle') {
       return (
         <Text style={styles.textPremium}>
-          {data?.premium ? 'Siap Taaruf' : 'Ada'}
+          {data?.premium ? 'Siap Taaruf' : 'Belum Premium'}
         </Text>
       );
     } else if (userStatus == 'process') {
@@ -59,7 +73,7 @@ const PeopleCardList = ({
   return (
     <Card useShadow={false} style={styles.container} onPress={onPress}>
       <Image
-        blurRadius={blur ? 24 : 0}
+        blurRadius={userStatus !== 'taaruf' ? 24 : 0}
         source={{uri: `data:image/png;base64,${data?.fotowajah}`}}
         resizeMode={'contain'}
         style={styles.image}
@@ -100,7 +114,7 @@ const PeopleCardList = ({
       <View style={{padding: 8, flexDirection: 'row', alignItems: 'center'}}>
         <View style={{flex: 1, marginHorizontal: 4}}>
           <Text style={styles.textTitle}>
-            {data[showName ? 'nama' : 'id']}, {data?.umur} th
+            {data[userStatus == 'taaruf' ? 'nama' : 'id']}, {data?.umur} th
           </Text>
           <Text style={styles.textDesc}>
             {data?.status}, {data?.pekerjaan}, {data?.kota}

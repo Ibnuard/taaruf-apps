@@ -71,12 +71,7 @@ const FavoriteScreen = ({navigation}) => {
           data={favList}
           contentContainerStyle={{paddingBottom: 64}}
           renderItem={({item, index}) => (
-            <PeopleCardList
-              data={item}
-              blur={!isPremium}
-              showName={isPremium}
-              onPress={() => onCardPress(item)}
-            />
+            <PeopleCardList data={item} onPress={() => onCardPress(item)} />
           )}
           numColumns={2}
         />

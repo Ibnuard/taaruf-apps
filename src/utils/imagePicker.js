@@ -1,10 +1,10 @@
 import {launchCamera, launchImageLibrary} from 'react-native-image-picker';
 
 const options = {
-  width: 400,
-  height: 400,
+  maxWidth: 480,
+  maxHeight: 720,
   mediaType: 'photo',
-  quality: 0.8,
+  quality: 0.7,
   includeBase64: true,
 };
 

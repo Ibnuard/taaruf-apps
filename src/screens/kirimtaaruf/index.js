@@ -227,7 +227,12 @@ const KirimTaarufScreen = ({navigation, route}) => {
       Alert.alert(
         'Pesan!',
         'User ini telah mengajukan taaruf ke anda, silahkan cek di Menerima CV!',
-        [{text: 'OK', onPress: () => navigation.navigate('TerimaTaaruf')}],
+        [
+          {
+            text: 'OK',
+            onPress: () => navigation.navigate('TerimaTaaruf', {user: USER}),
+          },
+        ],
       );
     } else {
       setModalVisible(false);
@@ -261,8 +266,6 @@ const KirimTaarufScreen = ({navigation, route}) => {
             renderItem={({item, index}) => (
               <PeopleCardList
                 data={item}
-                blur={!isPremium}
-                showName={isPremium}
                 user={USER}
                 onPress={
                   () => onCardPress(item)

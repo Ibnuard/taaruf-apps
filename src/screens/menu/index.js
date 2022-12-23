@@ -71,7 +71,7 @@ const MenuScreen = ({navigation, route}) => {
       {
         q: 'Apakah ada pembayaran?',
         answer:
-          'Ada, Kenapa sih berbayar? Untuk menjaga komitemen dan keseriusan proses taaruf agar aplikasi tidak di gunakan untuk perminan. \ndapat apa saja ?\n bisa mengajukan 5 cv setiap bulan\n cv yang du ajukan tidak hilang selama 3 bulan\n unlimited menerima pengajuan cv\n tidak du kenakan infaq pembayaran di bulan berikutnya\n akun premium akan hangus setelah nadzor\n dapat melihat cv yang memfavoritkan\n pendampingan admin taaruf secara online saat taaruf\nUntuk apa biayanya ?\n akomodasi admin selama proses taaruf\n maintenance server dan pengembangan aplikasi\n operasional tim',
+          'Ada, Kenapa sih berbayar? Untuk menjaga komitemen dan keseriusan proses taaruf agar aplikasi tidak di gunakan untuk perminan. \ndapat apa saja ?\n bisa mengajukan 5 cv setiap bulan\n cv yang di ajukan tidak hilang selama 3 bulan\n unlimited menerima pengajuan cv\n tidak dikenakan infaq pembayaran di bulan berikutnya\n akun premium akan hangus setelah nadzor\n dapat melihat cv yang memfavoritkan\n pendampingan admin taaruf secara online saat taaruf\nUntuk apa biayanya ?\n akomodasi admin selama proses taaruf\n maintenance server dan pengembangan aplikasi\n operasional tim',
       },
       {
         q: 'Apakah Data saya aman?',

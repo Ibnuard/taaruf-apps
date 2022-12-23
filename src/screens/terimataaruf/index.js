@@ -61,9 +61,8 @@ const TerimaTaarufScreen = ({navigation, route}) => {
           renderItem={({item, index}) => (
             <PeopleCardList
               data={item}
-              blur={!isPremium}
-              showName={isPremium}
               user={USER}
+              showBadgeUser
               onPress={
                 () =>
                   navigation.navigate('ProfileDetail', {

@@ -64,8 +64,6 @@ const CVTerkirimScreen = ({navigation, route}) => {
           renderItem={({item, index}) => (
             <PeopleCardList
               data={item}
-              blur={!isPremium}
-              showName={isPremium}
               onPress={
                 () =>
                   navigation.navigate('ProfileDetail', {

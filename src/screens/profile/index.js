@@ -50,6 +50,8 @@ const ProfileScreen = ({navigation, route}) => {
 
   const [buttonId, setButtonId] = React.useState('idle');
 
+  const [isMatch, setIsMatch] = React.useState(false);
+
   const scrollRef = React.useRef(null);
 
   const KEY = route?.params?.key;
@@ -64,6 +66,9 @@ const ProfileScreen = ({navigation, route}) => {
   const [rejected, setRejected] = React.useState(USER_DATA?.rejected ?? false);
 
   const [modalVisible, setModalVisible] = React.useState(false);
+
+  const [rejectPressed, setRejectPressed] = React.useState(false);
+  const [rejectReason, setRejectReason] = React.useState('');
 
   const {signOut} = React.useContext(AuthContext);
 
@@ -87,6 +92,7 @@ const ProfileScreen = ({navigation, route}) => {
       setUser(USER_DATA);
       checkIsFavorited();
       checkIsTaarufed();
+      checkIsMatch();
     }
 
     return () => null;
@@ -97,6 +103,14 @@ const ProfileScreen = ({navigation, route}) => {
       sendNotification();
     }
   }, []);
+
+  async function checkIsMatch() {
+    const match = await CHECK_IS_MATCH(USER_DATA);
+
+    if (match) {
+      setIsMatch(match);
+    }
+  }
 
   async function sendNotification() {
     const user = await retrieveUserSession();
@@ -159,11 +173,13 @@ const ProfileScreen = ({navigation, route}) => {
     setIsLoading(true);
 
     if (favorited) {
+      Alert.alert('Sukses', 'Berhasil dihapus dari daftar favorit!');
       await REMOVE_FROM_FAVORITE(user).then(() => {
         console.log('remove succes');
         setIsLoading(false);
       });
     } else {
+      Alert.alert('Sukses', 'Berhasil ditambahkan ke daftar favorit!');
       await ADD_TO_FAVORITE(user).then(() => {
         console.log('add succes');
         setIsLoading(false);
@@ -342,22 +358,24 @@ const ProfileScreen = ({navigation, route}) => {
         },
         {
           text: 'Ok',
-          onPress: async () => {
-            setIsLoading(true);
-            await REJECT_TAARUF(user?.nomorwa, user)
-              .then(() => {
-                setIsLoading(false);
-                setRejected(true);
-                Alert.alert('Berhasil', 'Taaruf berhasil ditolak!');
-              })
-              .catch(err => {
-                setIsLoading(false);
-                Alert.alert('Gagal', 'Ada kesalahan mohon coba lagi!');
-              });
-          },
+          onPress: async () => setRejectPressed(true),
         },
       ],
     );
+  };
+
+  const rejectingTaaruf = async () => {
+    setIsLoading(true);
+    await REJECT_TAARUF(user?.nomorwa, user, rejectReason)
+      .then(() => {
+        setIsLoading(false);
+        setRejected(true);
+        Alert.alert('Berhasil', 'Taaruf berhasil ditolak!');
+      })
+      .catch(err => {
+        setIsLoading(false);
+        Alert.alert('Gagal', 'Ada kesalahan mohon coba lagi!');
+      });
   };
 
   const onPokeButtonPressed = () => {
@@ -369,9 +387,9 @@ const ProfileScreen = ({navigation, route}) => {
 
     const adminData = await USER_GET_ADMIN_INFO();
 
-    if (adminData?.wa) {
+    if (adminData?.waTaaruf) {
       Linking.openURL(
-        `whatsapp://send?phone=${adminData?.wa}&text=${TAARUF_MESSAGES(
+        `whatsapp://send?phone=${adminData?.waTaaruf}&text=${TAARUF_MESSAGES(
           user?.id,
         )}`,
       );
@@ -389,29 +407,33 @@ const ProfileScreen = ({navigation, route}) => {
       {
         text: 'Ok',
         onPress: async () => {
-          setIsLoading(true);
-          await CANCEL_NADZOR(user?.nomorwa, user)
-            .then(() => {
-              setIsLoading(false);
-              Alert.alert(
-                'Sukses',
-                'Pembatalan Nadzor sukses dan daftar permintaan akan dihapus!',
-                [
-                  {
-                    text: 'Ok',
-                    onPress: () => navigation.goBack(),
-                  },
-                ],
-              );
-            })
-            .catch(() => {
-              setIsLoading(false);
-              Alert.alert('Gagal', 'Ada masalah, silahkan coba lagi!');
-            });
+          setRejectPressed(true);
         },
       },
     ]);
   }
+
+  const cancelNadzor = async () => {
+    setIsLoading(true);
+    await CANCEL_NADZOR(user?.nomorwa, user, rejectReason)
+      .then(() => {
+        setIsLoading(false);
+        Alert.alert(
+          'Sukses',
+          'Pembatalan Nadzor sukses dan daftar permintaan akan dihapus!',
+          [
+            {
+              text: 'Ok',
+              onPress: () => navigation.goBack(),
+            },
+          ],
+        );
+      })
+      .catch(() => {
+        setIsLoading(false);
+        Alert.alert('Gagal', 'Ada masalah, silahkan coba lagi!');
+      });
+  };
 
   const PROFILE_DATA = [
     {
@@ -535,12 +557,14 @@ const ProfileScreen = ({navigation, route}) => {
                       return (
                         <Touchable
                           onPress={() =>
-                            navigation.navigate(
-                              route?.name == 'ProfileInit'
-                                ? 'Foto'
-                                : 'FotoDetail',
-                              {foto: IMAGE_PIC},
-                            )
+                            KEY && !accepted
+                              ? null
+                              : navigation.navigate(
+                                  route?.name == 'ProfileInit'
+                                    ? 'Foto'
+                                    : 'FotoDetail',
+                                  {foto: IMAGE_PIC},
+                                )
                           }>
                           <Image
                             style={{
@@ -549,7 +573,7 @@ const ProfileScreen = ({navigation, route}) => {
                               backgroundColor: Colors.COLOR_LIGHT_GRAY,
                               borderRadius: 8,
                             }}
-                            blurRadius={!KEY ? 0 : IS_PREMIUM ? 0 : 20}
+                            blurRadius={!KEY ? 0 : accepted ? 0 : 20}
                             source={{uri: `data:image/png;base64,${item}`}}
                           />
                         </Touchable>
@@ -723,8 +747,9 @@ const ProfileScreen = ({navigation, route}) => {
               </View>
             </Card>
           ) : (
-            !taarufed && (
-              //MENGAJUKAN TAARUF
+            !taarufed &&
+            //MENGAJUKAN TAARUF
+            (KEY == 'favorite' ? null : (
               <Card style={{marginTop: 14}}>
                 <View>
                   <Text style={styles.textQuestion}>Pertanyaan 1</Text>
@@ -769,32 +794,56 @@ const ProfileScreen = ({navigation, route}) => {
                   />
                 </View>
               </Card>
-            )
+            ))
           )}
 
           {KEY ? (
             //TERIMA / AJUKAN TAARUF
             <View style={{marginTop: 14}}>
-              {KEY == 'terimataaruf'
+              {KEY == 'favorite'
+                ? null
+                : KEY == 'terimataaruf'
                 ? //TERIMA TAARUF
                   !accepted &&
                   //TIDAK DALAM TAARUF
                   (!rejected ? (
                     //TIDAK DI TOLAK
-                    <>
-                      <Button
-                        title="Terima Taaruf"
-                        isLoading={isLoading}
-                        buttonStyle={{flex: 1, marginBottom: 14}}
-                        onPress={() => onAcceptTaarufPressed()}
-                      />
-                      <Button
-                        isLoading={isLoading}
-                        title="Tolak Taaruf"
-                        invert
-                        onPress={() => onRejectTaarufPressed()}
-                      />
-                    </>
+                    !rejectPressed ? (
+                      <>
+                        <Button
+                          title="Terima Taaruf"
+                          isLoading={isLoading}
+                          buttonStyle={{flex: 1, marginBottom: 14}}
+                          onPress={() => onAcceptTaarufPressed()}
+                        />
+                        <Button
+                          isLoading={isLoading}
+                          title="Tolak Taaruf"
+                          invert
+                          onPress={() => onRejectTaarufPressed()}
+                        />
+                      </>
+                    ) : (
+                      <>
+                        <Input
+                          placeholder={'Masukan alasan menolak taaruf ini'}
+                          onChangeText={text => setRejectReason(text)}
+                          value={rejectReason}
+                        />
+                        <Button
+                          title="Kirim Alasan Tolak Taaruf"
+                          isLoading={isLoading}
+                          buttonStyle={{flex: 1, marginVertical: 14}}
+                          onPress={() => rejectingTaaruf()}
+                        />
+                        <Button
+                          isLoading={isLoading}
+                          title="Batalkan"
+                          invert
+                          onPress={() => setRejectPressed(false)}
+                        />
+                      </>
+                    )
                   ) : (
                     <Button disabled title="Taaruf Ditolak" invert />
                   ))
@@ -834,7 +883,13 @@ const ProfileScreen = ({navigation, route}) => {
           ) : (
             //USER PROFILE
             <View style={{marginVertical: 24}}>
-              <Button title="Keluar" onPress={() => signOut()} />
+              <Button
+                title="Keluar"
+                onPress={async () => {
+                  await navigation.jumpTo('Home');
+                  signOut();
+                }}
+              />
               <View style={{marginTop: 14}} />
               <Button
                 invert
@@ -845,17 +900,38 @@ const ProfileScreen = ({navigation, route}) => {
               />
             </View>
           )}
-          {accepted && (
-            <Button
-              isLoading={isLoading}
-              title="Batalkan Nadzor"
-              onPress={() => onCancelTaaruf()}
-            />
-          )}
+          {accepted &&
+            (rejectPressed ? (
+              <>
+                <Input
+                  placeholder={'Masukan alasan membatalkan nadzor'}
+                  onChangeText={text => setRejectReason(text)}
+                  value={rejectReason}
+                />
+                <Button
+                  title="Kirim Alasan Tolak Taaruf"
+                  isLoading={isLoading}
+                  buttonStyle={{flex: 1, marginVertical: 14}}
+                  onPress={() => cancelNadzor()}
+                />
+                <Button
+                  isLoading={isLoading}
+                  title="Batalkan"
+                  invert
+                  onPress={() => setRejectPressed(false)}
+                />
+              </>
+            ) : (
+              <Button
+                isLoading={isLoading}
+                title="Batalkan Nadzor"
+                onPress={() => onCancelTaaruf()}
+              />
+            ))}
         </View>
         <Modal type={'loading'} visible={modalVisible} />
       </ScrollView>
-      {KEY && (
+      {KEY && KEY !== 'favorite' && (
         <View style={{position: 'absolute', bottom: 20, right: 20}}>
           <Touchable
             style={{

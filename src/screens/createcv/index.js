@@ -105,7 +105,8 @@ const CreateCVScreen = ({navigation, route}) => {
     const data = {
       gender: mode,
       nama: name,
-      ttl: String(selectedDate),
+      ttl: PARSE_DATE(selectedDate),
+      umur: CHECK_IS_VALID(selectedDate),
       kota: SELECTED_DOMISILI,
       orangtuadom: domisiliOrangTua,
       alamatdom: alamat,

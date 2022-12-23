@@ -3,8 +3,8 @@ import {View, Text, StyleSheet} from 'react-native';
 import {Colors, Typo} from '../styles';
 import Card from './card';
 
-const NotificationCard = data => {
-  const DATA = data?.data;
+const NotificationCard = ({data, onPress}) => {
+  const DATA = data;
   const generateData = () => {
     switch (DATA?.type) {
       case 'send':
@@ -46,7 +46,9 @@ const NotificationCard = data => {
       case 'reject':
         return {
           title: `${DATA?.senderId} Telah Menolak CV Taaruf Anda`,
-          desc: 'Mohon bersabar, mungkin belum jodohnya.',
+          desc: DATA?.opt
+            ? `Alasan menolak : ${DATA?.opt}`
+            : 'Mohon bersabar, mungkin belum jodohnya.',
         };
         break;
       case 'favorite':
@@ -64,7 +66,9 @@ const NotificationCard = data => {
       case 'failed':
         return {
           title: `${DATA?.senderId} telah membatalkan nadzor`,
-          desc: 'Nadzor Taaruf telah dibatalkan',
+          desc: DATA?.opt
+            ? `Nadzor telah dibatalkan dengan alasan ${DATA?.opt}`
+            : 'Nadzor telah dibatalkan',
         };
         break;
 
@@ -78,7 +82,7 @@ const NotificationCard = data => {
   };
 
   return (
-    <Card style={styles.container}>
+    <Card style={styles.container} onPress={onPress}>
       <Text style={styles.textTitle}>{generateData().title}</Text>
       <Text style={styles.textDesc}>{generateData().desc}</Text>
       <Text style={styles.textTime}>{DATA?.timestamp}</Text>

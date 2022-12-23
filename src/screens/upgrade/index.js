@@ -129,9 +129,9 @@ const UpgradeScreen = ({navigation, route}) => {
       <Card style={{marginBottom: 14}}>
         <Text style={styles.textQ}>Dapat apa saja ?</Text>
         <Text style={styles.textA}>
-          - bisa mengajukan 5 cv setiap bulan {'\n'}- cv yang du ajukan tidak
+          - bisa mengajukan 5 cv setiap bulan {'\n'}- cv yang di ajukan tidak
           hilang selama 3 bulan {'\n'}- unlimited menerima pengajuan cv {'\n'}-
-          tidak du kenakan infaq pembayaran di bulan berikutnya - akun premium
+          tidak di kenakan infaq pembayaran di bulan berikutnya - akun premium
           akan hangus setelah nadzor {'\n'}- dapat melihat cv yang memfavoritkan
           {'\n'}- pendampingan admin taaruf secara online saat taaruf
         </Text>
@@ -155,7 +155,8 @@ const UpgradeScreen = ({navigation, route}) => {
         </Text>
       </Card>
       <Text style={styles.textDesc}>
-        Pilih sudah transfer jika anda sudah melakukan transfer
+        Silahkan kirimkan bukti transfer dengan cara upload bukti transfernya
+        lalu chat admin untuk meminta approval
       </Text>
       <Card
         onPress={() => {
@@ -200,7 +201,9 @@ const UpgradeScreen = ({navigation, route}) => {
             isLoading={isLoading}
             title="Chat Admin"
             onPress={() =>
-              Linking.openURL(`whatsapp://send?phone=${admin?.wa}}`)
+              Linking.openURL(
+                `whatsapp://send?phone=${admin?.wa}&text=Assalamualaikum admin saya sudah transfer untuk daftar premium tolong di approve.`,
+              )
             }
           />
         )}

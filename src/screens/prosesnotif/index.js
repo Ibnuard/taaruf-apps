@@ -3,6 +3,7 @@ import {View, Text, StyleSheet, FlatList} from 'react-native';
 import NoItemScreen from '../../components/NoItem';
 import NotificationCard from '../../components/NotificationCard';
 import {GET_NOTIFICATION} from '../../helpers/firebase';
+import {DECODE_MOMENT} from '../../utils/moment';
 
 const ProsesNotifScreen = ({navigation, route}) => {
   const [notification, setNotification] = React.useState();
@@ -25,9 +26,19 @@ const ProsesNotifScreen = ({navigation, route}) => {
         return item?.type !== 'favorite';
       });
 
-      console.log(JSON.stringify(filtered));
+      const _parseDate = date => {
+        const result = DECODE_MOMENT(date, 'LLL');
 
-      setNotification(filtered);
+        const getTime = new Date(result).getTime();
+
+        return getTime;
+      };
+
+      const sort = filtered.sort(function (a, b) {
+        return _parseDate(b.timestamp) - _parseDate(a.timestamp);
+      });
+
+      setNotification(sort);
       setIsLoading(false);
     }
   }

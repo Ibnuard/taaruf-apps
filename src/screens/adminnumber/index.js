@@ -9,6 +9,7 @@ import {Colors, Typo} from '../../styles';
 
 const AdminNumberScreen = ({navigation}) => {
   const [number, setNumber] = React.useState('');
+  const [numberTaaruf, setNumberTaaruf] = React.useState('');
   const [bankName, setBankName] = React.useState('');
   const [bankHolder, setBankHolder] = React.useState('');
   const [bankNumber, setBankNumber] = React.useState('');
@@ -30,6 +31,7 @@ const AdminNumberScreen = ({navigation}) => {
 
     if (data) {
       setNumber(data?.wa);
+      setNumberTaaruf(data?.waTaaruf);
       setBankHolder(data?.bankHolder);
       setBankName(data?.bankName);
       setBankNumber(data?.bankNumber);
@@ -49,6 +51,7 @@ const AdminNumberScreen = ({navigation}) => {
 
     const data = {
       wa: number,
+      waTaaruf: numberTaaruf,
       bankHolder: bankHolder,
       bankName: bankName,
       bankNumber: bankNumber,
@@ -79,9 +82,9 @@ const AdminNumberScreen = ({navigation}) => {
   return (
     <ScrollView style={styles.container} contentContainerStyle={{flexGrow: 1}}>
       <View style={{padding: 24}}>
-        <Text style={styles.textTitle}>Nomor Login Admin</Text>
+        <Text style={styles.textTitle}>Nomor Login Admin Pendaftaran</Text>
         <Input
-          placeholder={'Masukan nomor admin'}
+          placeholder={'Masukan nomor admin pendaftaran'}
           keyboardType={'phone-pad'}
           containerStyle={{marginTop: 14, marginBottom: 24}}
           onChangeText={text => setLoginPhone(text)}
@@ -94,12 +97,24 @@ const AdminNumberScreen = ({navigation}) => {
           onChangeText={text => setLoginPassword(text)}
           value={loginPassword}
         />
-        <Text style={styles.textTitle}>Nomor Admin Harus Diawali 628</Text>
+        <Text style={styles.textTitle}>
+          Nomor Admin Pendaftaran Harus Diawali 628
+        </Text>
         <Input
           placeholder={'Masukan nomor wa admin'}
           containerStyle={{marginTop: 14, marginBottom: 24}}
           onChangeText={text => setNumber(text)}
           value={number}
+        />
+        <Text style={styles.textTitle}>
+          Nomor Admin Taaruf Harus Diawali 628
+        </Text>
+        <Input
+          placeholder={'Masukan nomor admin taaruf'}
+          keyboardType={'phone-pad'}
+          containerStyle={{marginTop: 14, marginBottom: 24}}
+          onChangeText={text => setNumberTaaruf(text)}
+          value={numberTaaruf}
         />
         <Text style={styles.textTitle}>Bank Admin ( BCA, MANDIRI, DLL )</Text>
         <Input
