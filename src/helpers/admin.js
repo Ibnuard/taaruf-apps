@@ -120,3 +120,36 @@ export const UPDATE_BANNER = async banners => {
 export const UPDATE_PROCEDUR = async data => {
   return await adminCollection.doc('PROSEDUR').update({steps: data});
 };
+
+export const SAVE_ADMIN_FCM = async token => {
+  const slice = token.slice(0, 10);
+
+  return await adminCollection
+    .doc('DATA')
+    .collection('FCM')
+    .doc(slice)
+    .set({token: token});
+};
+
+export const GET_ADMIN_TOKENS = async () => {
+  return await adminCollection
+    .doc('DATA')
+    .collection('FCM')
+    .get()
+    .then(snapshot => {
+      if (snapshot.size > 0) {
+        console.log('ADA');
+        let temp = [];
+
+        snapshot.forEach(doc => {
+          const data = doc.data();
+          temp.push(data.token);
+        });
+
+        return temp;
+      } else {
+        console.log('NO');
+        return [];
+      }
+    });
+};

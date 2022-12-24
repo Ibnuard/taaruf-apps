@@ -492,6 +492,7 @@ const DetailCVScreen = ({navigation, route}) => {
         navigation.navigate('DoneCV');
       })
       .catch(err => {
+        console.log(err);
         setIsLoading(false);
         Alert.alert(
           'Pendaftaran Gagal',

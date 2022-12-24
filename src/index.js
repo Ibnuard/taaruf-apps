@@ -9,6 +9,7 @@ import {
 import {AuthContext} from './context';
 import {removeUserSession} from './helpers/storage';
 import {removeData} from './utils/store';
+import {SAVE_ADMIN_FCM} from './helpers/admin';
 
 const App = () => {
   //handle auth flow
@@ -89,7 +90,11 @@ const App = () => {
         // We will also need to handle errors if sign in failed
         // After getting token, we need to persist the token using `SecureStore`
         // In the example, we'll use a dummy token
-        console.log('ADMIN');
+        console.log('ADMIN FCM : ' + data);
+
+        await SAVE_ADMIN_FCM(data).then(() => {
+          console.log('SUCCESS UPDATE ADMIN FCM!');
+        });
 
         dispatch({type: 'ADMIN', token: 'dummy-auth-token'});
       },

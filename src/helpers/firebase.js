@@ -8,6 +8,7 @@ import {
 } from '../utils/moment';
 import {retrieveData} from '../utils/store';
 import {generateMonthData, generateUID, getRandomNumber} from '../utils/utils';
+import {GET_ADMIN_TOKENS} from './admin';
 import {retrieveUserSession} from './storage';
 
 //COLLECTIONS
@@ -62,7 +63,24 @@ const USER_REGISTER = data => {
     poke: 40,
     isOnTaaruf: false,
   };
-  return usersCollection.doc(data.nomorwa).set(user);
+
+  return usersCollection
+    .doc(data.nomorwa)
+    .set(user)
+    .then(async () => {
+      await sendNotificationToAdmin();
+    });
+
+  async function sendNotificationToAdmin() {
+    const data = await GET_ADMIN_TOKENS();
+
+    if (data.length) {
+      console.log('Send notif success to : ' + JSON.stringify(data));
+      await sendNotification(data, 'adminregister', true);
+    } else {
+      console.log('Send notif failed : ' + JSON.stringify(data));
+    }
+  }
 };
 
 const USER_UPDATE = (id, data) => {

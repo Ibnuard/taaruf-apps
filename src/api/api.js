@@ -1,4 +1,4 @@
-export async function sendNotification(token, type) {
+export async function sendNotification(token, type, multiple) {
   console.log('sending push notification to : ' + token);
   const getData = () => {
     switch (type) {
@@ -50,11 +50,24 @@ export async function sendNotification(token, type) {
           desc: 'Permintaan upgrade premium anda telah diterima oleh admin',
         };
         break;
+      case 'adminregister':
+        return {
+          title: 'Ada pengguna baru',
+          desc: 'Ada pengguna baru telah melakukan registrasi!',
+        };
+        break;
+      case 'adminpremium':
+        return {
+          title: 'Ada pengajuan premium',
+          desc: 'Ada pengguna telah mengajukan premium!',
+        };
+        break;
 
       default:
         break;
     }
   };
+
   await fetch('https://fcm.googleapis.com/fcm/send', {
     method: 'POST',
     headers: {
@@ -63,7 +76,7 @@ export async function sendNotification(token, type) {
       'Content-Type': 'application/json',
     },
     body: JSON.stringify({
-      registration_ids: [token],
+      registration_ids: multiple ? token : [token],
       notification: {
         title: getData().title,
         body: getData().desc,

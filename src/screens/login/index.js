@@ -12,6 +12,7 @@ import {IMAGES_RES} from '../../helpers/images';
 import {storeUserSession} from '../../helpers/storage';
 import {Colors, Typo} from '../../styles';
 import {retrieveData, storeData} from '../../utils/store';
+import messaging from '@react-native-firebase/messaging';
 
 const LoginScreen = ({navigation}) => {
   const [nomor, setNomor] = React.useState('');
@@ -60,7 +61,8 @@ const LoginScreen = ({navigation}) => {
     if (nomor == adminData.no && pw == adminData.pw) {
       console.log('login admin');
       await storeData('isAdmin', 'true', false);
-      admin();
+      const token = await messaging().getToken();
+      admin(token);
     } else {
       console.log('Login user!');
       const login = await USER_LOGIN(data);

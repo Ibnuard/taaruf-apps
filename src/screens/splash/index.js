@@ -42,7 +42,7 @@ const SplashScreen = () => {
       const isAdmin = await retrieveData('isAdmin', false);
 
       if (isAdmin) {
-        return admin();
+        return admin(token);
       }
 
       restoreToken(userToken);

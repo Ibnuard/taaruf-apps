@@ -74,6 +74,8 @@ const ProfileScreen = ({navigation, route}) => {
 
   const {signOut} = React.useContext(AuthContext);
 
+  const [selfQuestion, setSelfQuestion] = React.useState();
+
   const TAARUF_MESSAGES = id => {
     return `Assalamualaikum, Saya dari aplikasi Mencari Cinta Sejati, Partner taaruf saya ${id}`;
   };
@@ -115,10 +117,18 @@ const ProfileScreen = ({navigation, route}) => {
       checkIsFavorited();
       checkIsTaarufed();
       checkIsMatch();
+      getSelfData();
     }
 
     return () => null;
   }, [favorited, isLoading]);
+
+  async function getSelfData() {
+    const data = await retrieveUserSession();
+    const parsed = JSON.parse(data);
+
+    setSelfQuestion(parsed);
+  }
 
   React.useLayoutEffect(() => {
     if (KEY == 'terimataaruf') {
@@ -781,17 +791,23 @@ const ProfileScreen = ({navigation, route}) => {
             <Card style={{marginTop: 14}}>
               <View>
                 <Text style={styles.textQuestion}>Pertanyaan 1</Text>
-                <Text style={styles.textCaption}>{user?.pertanyaansatu}</Text>
+                <Text style={styles.textCaption}>
+                  {selfQuestion?.pertanyaansatu}
+                </Text>
                 <Text style={styles.textNormalValue}>{user?.answer?.q1}</Text>
               </View>
               <View>
                 <Text style={styles.textQuestion}>Pertanyaan 2</Text>
-                <Text style={styles.textCaption}>{user?.pertanyaandua}</Text>
+                <Text style={styles.textCaption}>
+                  {selfQuestion?.pertanyaandua}
+                </Text>
                 <Text style={styles.textNormalValue}>{user?.answer?.q2}</Text>
               </View>
               <View>
                 <Text style={styles.textQuestion}>Pertanyaan 3</Text>
-                <Text style={styles.textCaption}>{user?.pertanyaantiga}</Text>
+                <Text style={styles.textCaption}>
+                  {selfQuestion?.pertanyaantiga}
+                </Text>
                 <Text style={styles.textNormalValue}>{user?.answer?.q3}</Text>
               </View>
             </Card>
