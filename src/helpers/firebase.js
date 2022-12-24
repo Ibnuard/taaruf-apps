@@ -240,7 +240,19 @@ const USER_REQUEST_PREMIUM = async user => {
     .doc('PREMIUM')
     .collection('Users')
     .doc(user?.nomorwa)
-    .set(user);
+    .set(user)
+    .then(async () => {
+      await sendAdminNotif();
+    });
+
+  async function sendAdminNotif() {
+    const data = await GET_ADMIN_TOKENS();
+
+    if (data.length) {
+      console.log('Send notif succes to :' + JSON.stringify(data));
+      await sendNotification(data, 'adminpremium', true);
+    }
+  }
 };
 
 //GET ADMIN INFO
