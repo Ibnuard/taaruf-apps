@@ -4,6 +4,7 @@ import PeopleCardList from '../../components/PeopleCardList';
 import {FloatingAction} from 'react-native-floating-action';
 import {IMAGES_RES} from '../../helpers/images';
 import {
+  GET_CHANCE_COUNTER,
   GET_IS_ON_TAARUF,
   GET_SENDED_CV,
   GET_USER_LIST,
@@ -52,7 +53,7 @@ const CVTerkirimScreen = ({navigation, route}) => {
 
   const getSendedCV = async () => {
     setIsLoading(true);
-    const data = await GET_SENDED_CV();
+    const data = await GET_CHANCE_COUNTER();
     const isPremium = await USER_IS_PREMIUM();
 
     const filtered = data.filter((item, index) => {

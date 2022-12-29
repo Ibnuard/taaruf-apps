@@ -49,6 +49,10 @@ const AdminPokeScreen = ({navigation}) => {
       key: 'santuy',
       title: '😄 Santuy',
     },
+    {
+      key: 'julid',
+      title: '🤭 Julid',
+    },
   ];
 
   async function onDeletePress(id) {
@@ -119,6 +123,9 @@ const AdminPokeScreen = ({navigation}) => {
           break;
         case 'santuy':
           return '😄';
+          break;
+        case 'julid':
+          return '🤭';
           break;
         default:
           break;

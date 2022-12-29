@@ -240,6 +240,7 @@ const KirimTaarufScreen = ({navigation, route}) => {
   }
 
   async function onCardPress(item) {
+    setModalVisible(true);
     const data = await GET_IS_ON_TAARUF();
 
     const completeData = {taaruf: true, ...data[0]};

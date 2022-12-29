@@ -39,6 +39,9 @@ const PokeScreen = ({navigation}) => {
         case 'santuy':
           return '😄';
           break;
+        case 'julid':
+          return '🤭';
+          break;
         default:
           break;
       }

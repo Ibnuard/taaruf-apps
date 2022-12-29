@@ -472,6 +472,22 @@ const SEND_TAARUF = async (data, answers) => {
     ...parsed,
   };
 
+  const monthId = generateMonthData();
+
+  const counterData = {
+    monthId: monthId,
+  };
+
+  async function _addCounter() {
+    return await usersCollection
+      .doc(parsed.nomorwa)
+      .collection('Counter')
+      .add(counterData)
+      .then(() => {
+        return _addUserTaaruf();
+      });
+  }
+
   return usersCollection
     .doc(data?.nomorwa)
     .collection('Taaruf')
@@ -479,7 +495,7 @@ const SEND_TAARUF = async (data, answers) => {
     .set(taarufData)
     .then(() => {
       console.log('received taaruf');
-      return _addUserTaaruf();
+      return _addCounter();
     });
 };
 
@@ -651,6 +667,30 @@ const GET_SENDED_CV = async data => {
     });
 };
 
+//GET SENDED CV
+const GET_CHANCE_COUNTER = async data => {
+  const user = await retrieveUserSession();
+  const parsed = JSON.parse(user);
+
+  return await usersCollection
+    .doc(parsed.nomorwa)
+    .collection('Counter')
+    .get()
+    .then(snapshot => {
+      if (snapshot.size > 0) {
+        let temp = [];
+
+        snapshot.forEach(doc => {
+          temp.push({id: doc.id, ...doc.data()});
+        });
+
+        return temp;
+      } else {
+        return [];
+      }
+    });
+};
+
 //GET FAVORITED CV
 const GET_FAVORITED_CV = async data => {
   const user = await retrieveUserSession();
@@ -703,11 +743,37 @@ const GET_RECEIVED_CV = async data => {
 //GET SEND CV CHANCE
 const GET_CV_COUNT_BY_MONTH = async () => {
   const monthId = generateMonthData();
+  const session = await retrieveUserSession();
+  const parsed = JSON.parse(session);
 
-  const sendedCVList = await GET_SENDED_CV();
+  async function getCounterList() {
+    return await usersCollection
+      .doc(parsed.nomorwa)
+      .collection('Counter')
+      .get()
+      .then(snapshot => {
+        if (snapshot.size > 0) {
+          console.log('ADA');
+          let temp = [];
 
-  if (sendedCVList.length) {
-    const filtered = sendedCVList.filter((item, index) => {
+          snapshot.forEach(doc => {
+            temp.push({id: doc.id, ...doc.data()});
+          });
+
+          return temp;
+        } else {
+          console.log('NO');
+          return [];
+        }
+      });
+  }
+
+  const limitCount = await getCounterList();
+
+  console.log('CHANCE COUNT : ' + limitCount?.length);
+
+  if (limitCount.length) {
+    const filtered = limitCount.filter((item, index) => {
       return item?.monthId == monthId;
     });
 
@@ -852,7 +918,7 @@ const CANCEL_NADZOR = async (id, data, reason) => {
 
   const getDiff = CHECK_MOMENT_DIFF(dueDate);
 
-  if (getDiff < 23) {
+  if (getDiff < 7) {
     return 'FAILED';
   } else {
     return await usersCollection
@@ -1058,7 +1124,7 @@ const GET_POKE_LIST = async () => {
   });
 };
 
-const SEND_POKE = async (id, poke) => {
+const SEND_POKE = async (id, poke, data) => {
   const user = await retrieveUserSession();
   const parsed = JSON.parse(user);
 
@@ -1080,12 +1146,22 @@ const SEND_POKE = async (id, poke) => {
 
   async function _sendToOther() {
     const timestamp = GET_CURRENT_DATE('LLL');
-    return usersCollection.doc(id).collection('Poke').add({
-      senderId: parsed.id,
-      text: poke?.text,
-      type: poke?.type,
-      timestamp: timestamp,
-    });
+    return usersCollection
+      .doc(id)
+      .collection('Poke')
+      .add({
+        senderId: parsed.id,
+        text: poke?.text,
+        type: poke?.type,
+        timestamp: timestamp,
+      })
+      .then(() => {
+        sendNotif();
+      });
+  }
+
+  async function sendNotif() {
+    await sendNotification(data?.token, 'sendpoke');
   }
 };
 
@@ -1164,4 +1240,5 @@ export {
   CHECK_TAARUF_STATUS_RECEIVE,
   DELETE_ACC,
   GET_IS_ON_TAARUF,
+  GET_CHANCE_COUNTER,
 };

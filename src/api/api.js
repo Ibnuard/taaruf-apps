@@ -62,6 +62,12 @@ export async function sendNotification(token, type, multiple) {
           desc: 'Ada pengguna telah mengajukan premium!',
         };
         break;
+      case 'sendpoke':
+        return {
+          title: 'Anda menerima Poke',
+          desc: 'Seseorang telah mengirimkan poke kepada anda!',
+        };
+        break;
 
       default:
         break;

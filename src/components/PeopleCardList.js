@@ -40,14 +40,14 @@ const PeopleCardList = ({
       if (statusReceive == 'ACCEPTED') {
         setUserStatus('taaruf');
       } else {
-        setUserStatus('process');
+        setUserStatus('idle');
       }
     } else {
       if (findUser[0]?.id == data.id) {
         if (status == 'ACCEPTED') {
           setUserStatus('taaruf');
         } else {
-          setUserStatus('process');
+          setUserStatus('idle');
         }
       } else {
         setUserStatus('idle');
@@ -61,11 +61,9 @@ const PeopleCardList = ({
     } else if (userStatus == 'idle') {
       return (
         <Text style={styles.textPremium}>
-          {data?.premium ? 'Siap Taaruf' : 'Belum Premium'}
+          {data?.premium ? 'Siap Taaruf' : 'Ada'}
         </Text>
       );
-    } else if (userStatus == 'process') {
-      return <Text style={styles.textPremium}>{'Dalam Proses'}</Text>;
     } else {
       return <Text style={styles.textPremium}>{'Dalam Taaruf'}</Text>;
     }

@@ -64,7 +64,7 @@ const SendPokeScreen = ({navigation, route}) => {
 
   async function onSendPressed() {
     setIsLoading(true);
-    await SEND_POKE(TARGET?.nomorwa, poke[selected])
+    await SEND_POKE(TARGET?.nomorwa, poke[selected], TARGET)
       .then(() => {
         setIsLoading(false);
         Alert.alert('Sukses', 'Poke berhasil dikirim!', [
@@ -114,6 +114,9 @@ const SendPokeScreen = ({navigation, route}) => {
           break;
         case 'santuy':
           return '😄';
+          break;
+        case 'julid':
+          return '🤭';
           break;
         default:
           break;

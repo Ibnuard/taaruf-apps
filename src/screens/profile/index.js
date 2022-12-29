@@ -62,8 +62,6 @@ const ProfileScreen = ({navigation, route}) => {
   const CAN_TAARUF = route?.params?.canTaaruf;
   const IS_PREMIUM = route?.params?.isPremium;
 
-  console.log('ct : ' + AVAILABLE);
-
   const [accepted, setAccepted] = React.useState(USER_DATA?.taaruf ?? false);
   const [rejected, setRejected] = React.useState(USER_DATA?.rejected ?? false);
 
@@ -85,6 +83,12 @@ const ProfileScreen = ({navigation, route}) => {
       if (!KEY) {
         //own profile
         getOwnProfile();
+      }
+
+      if (KEY == 'ontaaruf') {
+        navigation.setOptions({
+          title: '',
+        });
       }
     });
 
@@ -462,12 +466,11 @@ const ProfileScreen = ({navigation, route}) => {
     setIsLoading(true);
     await CANCEL_NADZOR(user?.nomorwa, user, rejectReason)
       .then(result => {
-        console.log('nadzor res : ' + result);
         setIsLoading(false);
         if (result == 'FAILED') {
           Alert.alert(
             'Gagal',
-            'Anda tidak dapat membatalkan nadzor sebelum 24 jam!',
+            'Silahkan sholat istikharah terlebih dahulu, untuk pembatalan taaruf atau nadzor bisa dilakukan setelah 8 jam',
             [
               {
                 text: 'Ok',
@@ -571,6 +574,7 @@ const ProfileScreen = ({navigation, route}) => {
 
   return (
     <View style={{flex: 1}}>
+      <Modal visible={isLoading} type={'loading'} />
       <ScrollView
         ref={scrollRef}
         style={styles.container}
@@ -996,7 +1000,7 @@ const ProfileScreen = ({navigation, route}) => {
         </View>
         <Modal type={'loading'} visible={modalVisible} />
       </ScrollView>
-      {KEY && KEY !== 'favorite' && (
+      {KEY && KEY !== 'favorite' && KEY !== 'ontaaruf' && (
         <View style={{position: 'absolute', bottom: 20, right: 20}}>
           <Touchable
             style={{
