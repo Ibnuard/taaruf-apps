@@ -8,8 +8,12 @@ import {
   CHECK_IS_MATCH,
   CHECK_TAARUF_STATUS,
   CHECK_TAARUF_STATUS_RECEIVE,
+  GET_IS_ON_TAARUF,
   GET_SENDED_CV,
+  PARSE_LAST_ONLINE,
 } from '../helpers/firebase';
+import {PARSE_RELATIVE} from '../utils/moment';
+import {IMAGES_RES} from '../helpers/images';
 
 const PeopleCardList = ({
   onPress,
@@ -17,6 +21,7 @@ const PeopleCardList = ({
   showCount = true,
   showBadgePremium = false,
   showBadgeUser = true,
+  showTime,
   user,
   isAdmin,
 }) => {
@@ -27,31 +32,38 @@ const PeopleCardList = ({
   }
 
   async function checkUserStatus() {
-    const sendedCV = await GET_SENDED_CV();
-    const isMatch = await CHECK_IS_MATCH(data);
-    const status = await CHECK_TAARUF_STATUS(data?.nomorwa);
-    const statusReceive = await CHECK_TAARUF_STATUS_RECEIVE(data?.nomorwa);
+    // const sendedCV = await GET_SENDED_CV();
+    // const isMatch = await CHECK_IS_MATCH(data);
+    // const status = await CHECK_TAARUF_STATUS(data?.nomorwa);
+    // const statusReceive = await CHECK_TAARUF_STATUS_RECEIVE(data?.nomorwa);
 
-    const findUser = sendedCV.filter((item, index) => {
-      return item.id == data?.id;
-    });
+    // const findUser = sendedCV.filter((item, index) => {
+    //   return item.id == data?.id;
+    // });
 
-    if (isMatch) {
-      if (statusReceive == 'ACCEPTED') {
-        setUserStatus('taaruf');
-      } else {
-        setUserStatus('idle');
-      }
+    // if (isMatch) {
+    //   if (statusReceive == 'ACCEPTED') {
+    //     setUserStatus('taaruf');
+    //   } else {
+    //     setUserStatus('idle');
+    //   }
+    // } else {
+    //   if (findUser[0]?.id == data.id) {
+    //     if (status == 'ACCEPTED') {
+    //       setUserStatus('taaruf');
+    //     } else {
+    //       setUserStatus('idle');
+    //     }
+    //   } else {
+    //     setUserStatus('idle');
+    //   }
+    // }
+    const isOnTaaruf = await GET_IS_ON_TAARUF(data?.nomorwa);
+
+    if (isOnTaaruf.length > 0) {
+      setUserStatus('process');
     } else {
-      if (findUser[0]?.id == data.id) {
-        if (status == 'ACCEPTED') {
-          setUserStatus('taaruf');
-        } else {
-          setUserStatus('idle');
-        }
-      } else {
-        setUserStatus('idle');
-      }
+      setUserStatus('idle');
     }
   }
 
@@ -65,7 +77,7 @@ const PeopleCardList = ({
         </Text>
       );
     } else {
-      return <Text style={styles.textPremium}>{'Dalam Taaruf'}</Text>;
+      return <Text style={styles.textPremium}>{'Dalam Proses'}</Text>;
     }
   }
 
@@ -118,6 +130,11 @@ const PeopleCardList = ({
           <Text style={styles.textDesc}>
             {data?.status}, {data?.pekerjaan}, {data?.kota}
           </Text>
+          {showTime && (
+            <Text style={styles.textOnline}>
+              Aktif terakhir {PARSE_RELATIVE(data?.lastOnline)}
+            </Text>
+          )}
         </View>
         <View style={{alignItems: 'center', justifyContent: 'center'}}>
           <Icon name="heart" color={Colors.COLOR_RED} size={24} />
@@ -157,6 +174,11 @@ const styles = StyleSheet.create({
   textDesc: {
     ...Typo.TextSmallRegular,
     color: Colors.COLOR_BLACK,
+  },
+
+  textOnline: {
+    ...Typo.TextExtraSmallRegular,
+    color: Colors.COLOR_DARK_GRAY,
   },
 
   textFavCount: {

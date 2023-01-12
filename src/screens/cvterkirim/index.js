@@ -1,16 +1,19 @@
 import * as React from 'react';
-import {View, Text, StyleSheet, FlatList, SectionList} from 'react-native';
-import PeopleCardList from '../../components/PeopleCardList';
-import {FloatingAction} from 'react-native-floating-action';
-import {IMAGES_RES} from '../../helpers/images';
 import {
-  GET_CHANCE_COUNTER,
+  View,
+  Text,
+  StyleSheet,
+  FlatList,
+  SectionList,
+  Alert,
+} from 'react-native';
+import PeopleCardList from '../../components/PeopleCardList';
+import {
   GET_IS_ON_TAARUF,
   GET_SENDED_CV,
-  GET_USER_LIST,
+  IS_REJECTED_SEND,
   USER_IS_PREMIUM,
 } from '../../helpers/firebase';
-import {retrieveUserSession} from '../../helpers/storage';
 import NoItemScreen from '../../components/NoItem';
 import {splitByMonth} from '../../utils/utils';
 import {Colors, Typo} from '../../styles';
@@ -19,7 +22,6 @@ const CVTerkirimScreen = ({navigation, route}) => {
   const [users, setUsers] = React.useState([]);
   const [isLoading, setIsLoading] = React.useState(false);
   const [isPremium, setIsPremium] = React.useState(false);
-
   const USER = route?.params?.user;
 
   // React.useEffect(() => {
@@ -53,13 +55,12 @@ const CVTerkirimScreen = ({navigation, route}) => {
 
   const getSendedCV = async () => {
     setIsLoading(true);
-    const data = await GET_CHANCE_COUNTER();
+    const data = await GET_SENDED_CV();
     const isPremium = await USER_IS_PREMIUM();
 
     const filtered = data.filter((item, index) => {
       return item?.id !== USER?.id;
     });
-
     const dataSplitted = splitByMonth(filtered);
 
     setUsers(dataSplitted);
@@ -68,35 +69,30 @@ const CVTerkirimScreen = ({navigation, route}) => {
   };
 
   const onCardPress = async item => {
-    const data = await GET_IS_ON_TAARUF();
+    const data = await GET_IS_ON_TAARUF(item.nomorwa);
+    const isRejected = await IS_REJECTED_SEND(item);
 
-    const completeData = {taaruf: true, ...data[0]};
+    //const completeData = {taaruf: true, ...data[0]};
 
     if (data.length > 0) {
       Alert.alert(
         'Pemberitahuan',
-        `Anda sedang ada di sesi taaruf dengan ${data[0].name}, Anda akan diarahkan ke detail sesi taaruf yang sedang berlangsung!`,
-        [
-          {
-            text: 'Ok',
-            onPress: () => {
-              navigation.replace('ProfileDetail', {
-                key: 'ontaaruf',
-                data: completeData,
-                available: available,
-                isPremium: isPremium,
-              });
-            },
-          },
-        ],
+        'Pengguna ini sedang ada didalam sesi taaruf dengan pengguna lain!',
       );
-    } else {
-      navigation.navigate('ProfileDetail', {
-        key: 'kirimtaaruf',
-        data: item,
-        isPremium: isPremium,
-      });
+
+      return;
     }
+
+    if (isRejected.rejected == true) {
+      Alert.alert('Taaruf Ditolak', isRejected.reason);
+      return;
+    }
+
+    navigation.navigate('ProfileDetail', {
+      key: 'kirimtaaruf',
+      data: item,
+      isPremium: isPremium,
+    });
   };
 
   return (

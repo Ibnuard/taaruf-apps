@@ -7,6 +7,7 @@ import {wait} from '../../utils/utils';
 import styles from './styles';
 import messaging from '@react-native-firebase/messaging';
 import {IMAGES_RES} from '../../helpers/images';
+import {UPDATE_LAST_ONLINE} from '../../helpers/firebase';
 
 const SplashScreen = () => {
   const {restoreToken, admin} = React.useContext(AuthContext);
@@ -21,6 +22,7 @@ const SplashScreen = () => {
 
       try {
         userToken = await retrieveUserSession();
+        await UPDATE_LAST_ONLINE();
       } catch (e) {
         // Restoring token failed
       }

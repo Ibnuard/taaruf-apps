@@ -69,11 +69,6 @@ const MenuScreen = ({navigation, route}) => {
           'Setelah bersiap untuk nadzor, Ikhwan menunggu keputusan Akhwat. Tanggal nadzor diajukan oleh Akhwat, lalu admin akan mengkonfirmasi ke Ikhwan untuk tanggal yang diajukan, hingga menemui kesepakatan untuk tanggal nadzor (bertemu calon pasangan)',
       },
       {
-        q: 'Apakah ada pembayaran?',
-        answer:
-          'Ada, Kenapa sih berbayar? Untuk menjaga komitemen dan keseriusan proses taaruf agar aplikasi tidak di gunakan untuk perminan. \ndapat apa saja ?\n bisa mengajukan 5 cv setiap bulan\n cv yang di ajukan tidak hilang selama 3 bulan\n unlimited menerima pengajuan cv\n tidak dikenakan infaq pembayaran di bulan berikutnya\n akun premium akan hangus setelah nadzor\n dapat melihat cv yang memfavoritkan\n pendampingan admin taaruf secara online saat taaruf\nUntuk apa biayanya ?\n akomodasi admin selama proses taaruf\n maintenance server dan pengembangan aplikasi\n operasional tim',
-      },
-      {
         q: 'Apakah Data saya aman?',
         answer:
           'InsyaAllah Sangat Aman secara teknis dan komitmen dari kami untuk selalu menjaga kerahasiaan Datanya. Foto akan blur dan tidak bisa dilihat oleh oleh lawan jenis jika belum sama-sama menerima CV. KTP hanya untuk tim Admin mempermudah verifikasi data. \nJika setelah mendaftar kemudian akun telah aktif, akun akan bisa di non aktifkan melalui aplikasi.',
@@ -211,39 +206,38 @@ const MenuScreen = ({navigation, route}) => {
           menggunakan Cookie Keamanan untuk tujuan keamanan. {'\n\n'}
           <Text style={styles.textQ}>Penggunaan Data</Text>
           {'\n\n'}
-          Ta’aruf Online Indonesia menggunakan data yang dikumpulkan untuk
-          berbagai keperluan: {'\n\n'}• Kelola akun Anda dan berikan Anda
-          dukungan pelanggan; melakukan penelitian dan analisi tentang
-          penggunaan Anda, atau minat anda terhadap Pengguna lain. {'\n'}•
-          Berkomunikasi dengan Pengguna melalui email dan / atau perangan
-          seluler lainnya tentang Layanan kami. {'\n'}• Untuk verifikasi
-          kelayakan CV yang Anda buat. {'\n'}• Untuk memberitahukan Anda tentang
-          perubahan didalam pelayanan kami {'\n'}• Untuk memungkinkan Anda
-          berpartisipasi dalam fitur interaktif Layanan kami ketika Anda memilih
-          untuk melakukannya. {'\n'}• Untuk memberikan layanan dan dukungan
-          pelanggan {'\n'}• Untuk memberikan analisis atau informasi berharga
-          sehingga kami dapat meningkatkan Layanan {'\n'}• Untuk memantau
-          penggunaan Layanan {'\n'}• Untuk mendeteksi, mencegah dan mengatasi
-          masalah teknis {'\n\n'}
+          Aplikasi ini menggunakan data yang dikumpulkan untuk berbagai
+          keperluan: {'\n\n'}• Kelola akun Anda dan berikan Anda dukungan
+          pelanggan; melakukan penelitian dan analisi tentang penggunaan Anda,
+          atau minat anda terhadap Pengguna lain. {'\n'}• Berkomunikasi dengan
+          Pengguna melalui email dan / atau perangan seluler lainnya tentang
+          Layanan kami. {'\n'}• Untuk verifikasi kelayakan CV yang Anda buat.{' '}
+          {'\n'}• Untuk memberitahukan Anda tentang perubahan didalam pelayanan
+          kami {'\n'}• Untuk memungkinkan Anda berpartisipasi dalam fitur
+          interaktif Layanan kami ketika Anda memilih untuk melakukannya. {'\n'}
+          • Untuk memberikan layanan dan dukungan pelanggan {'\n'}• Untuk
+          memberikan analisis atau informasi berharga sehingga kami dapat
+          meningkatkan Layanan {'\n'}• Untuk memantau penggunaan Layanan {'\n'}•
+          Untuk mendeteksi, mencegah dan mengatasi masalah teknis {'\n\n'}
           <Text style={styles.textQ}>
             Dengan siapa kami membagikan informasi Anda
           </Text>
           {'\n\n'}Informasi yang Anda berikan akan dibagikan dengan Pengguna
-          Lain. Ketika Anda membuat CV sebagai Anggota Ta’aruf Online Indonesia,
-          profil anda akan dapat dilihat oleh pengguna Layanan lainnya, tapi
-          dengan menampilkan foto dalam bentuk blur. Pengguna lain akan dapat
-          melihat informasi yang anda berikan kepada kami, dengan tidak
-          menampilkan data pribadi anda seperti nomor Whatsapp dan alamat anda,
-          ketika Pengguna menekan profil anda maka akan muncul detail informasi
-          tentang anda. {'\n\n'}
+          Lain. Ketika Anda membuat CV sebagai Anggota Aplikasi ini, profil anda
+          akan dapat dilihat oleh pengguna Layanan lainnya, tapi dengan
+          menampilkan foto dalam bentuk blur. Pengguna lain akan dapat melihat
+          informasi yang anda berikan kepada kami, dengan tidak menampilkan data
+          pribadi anda seperti nomor Whatsapp dan alamat anda, ketika Pengguna
+          menekan profil anda maka akan muncul detail informasi tentang anda.{' '}
+          {'\n\n'}
           <Text style={styles.textQ}>Keterbukaan Data</Text>
           {'\n\n'}Persyaratan resmi pengelola dapat mengungkapkan Data Pribadi
           Anda dengan itikad baik bahwa tindakan tersebut diperlukan untuk:{' '}
           {'\n\n'}• Untuk mematuhi kewajiban hukum {'\n'}• Untuk melindungi dan
-          mempertahankan hak atau properti Ta’aruf Online Indonesia {'\n'}•
-          Untuk mencegah atau menyelidiki kesalahan yang mungkin terjadi
-          sehubungan dengan Layanan {'\n'}• Untuk melindungi keamanan pribadi
-          pengguna Layanan atau publik
+          mempertahankan hak atau properti Aplikasi ini {'\n'}• Untuk mencegah
+          atau menyelidiki kesalahan yang mungkin terjadi sehubungan dengan
+          Layanan {'\n'}• Untuk melindungi keamanan pribadi pengguna Layanan
+          atau publik
           {'\n'}• Untuk melindungi terhadap tanggung jawab hukum {'\n\n'}
           <Text style={styles.textQ}>Keamanan Data</Text>
           {'\n\n'}Keamanan data Anda penting bagi kami, tetapi ingat bahwa tidak
@@ -329,7 +323,7 @@ const MenuScreen = ({navigation, route}) => {
           disarankan untuk meluruskan niat dan ikhlaskan menikah adalah ibadah
           semata untuk mencari ridhaNya agar mendapatkan pasangan yang sesuai.
           Selain itu, diharapkan juga untuk dapat membaca dan memahami dengan
-          seksama panduan yang ada di dalam aplikasi Ta’aruf Online Indonesia.
+          seksama panduan yang ada di dalam aplikasi Aplikasi ini.
           {'\n\n'}
           <Text style={styles.textQ}>1. PENGANTAR </Text>
           {'\n\n'}• Syarat & Ketentuan ini berada di antara kita (“Perusahaan”,
@@ -575,12 +569,12 @@ const MenuScreen = ({navigation, route}) => {
           mengajukan atau menerima CV, sesuai dengan nominal yang tercantum
           dihalaman pembayaran. {'\n'}• Setiap pengguna diharapkan menjunjung
           kode etik dengan tidak melakukan tindakan yang dapat merugikan sesama
-          pengguna dan pengelola Ta’aruf Online Indonesia. {'\n'}• Setiap
-          pengguna diharapkan memberikan informasi yang benar, tidak
-          memanipulasi data terlebih lagi menggunakan identitas palsu/tidak
-          benar dalam melakukan proses pembuatan CV. {'\n'}• Setiap pengguna
-          tidak akan melakukan aktivitas yang melanggar kerahasiaan dan hak-hak
-          pribadi pengguna lainnya. {'\n\n'}
+          pengguna dan pengelola Aplikasi ini. {'\n'}• Setiap pengguna
+          diharapkan memberikan informasi yang benar, tidak memanipulasi data
+          terlebih lagi menggunakan identitas palsu/tidak benar dalam melakukan
+          proses pembuatan CV. {'\n'}• Setiap pengguna tidak akan melakukan
+          aktivitas yang melanggar kerahasiaan dan hak-hak pribadi pengguna
+          lainnya. {'\n\n'}
           <Text style={styles.textQ}>
             Hak kewajiban dan tanggung jawab pengelola :
           </Text>

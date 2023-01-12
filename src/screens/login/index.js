@@ -4,6 +4,7 @@ import {Button, Card, Modal, Input, Row} from '../../components';
 import Touchable from '../../components/touchable';
 import {AuthContext} from '../../context';
 import {
+  UPDATE_LAST_ONLINE,
   USER_GET_ADMIN_INFO,
   USER_LOGIN,
   USER_REGISTER,
@@ -77,6 +78,7 @@ const LoginScreen = ({navigation}) => {
         setIsLoading(false);
         const token = await retrieveData('fcmToken');
         await storeUserSession({token: token, ...login});
+        await UPDATE_LAST_ONLINE(nomor);
 
         signIn();
       }

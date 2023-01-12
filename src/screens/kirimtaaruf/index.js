@@ -8,6 +8,8 @@ import {
   GET_CV_COUNT_BY_MONTH,
   GET_IS_ON_TAARUF,
   GET_USER_LIST,
+  IS_HAVE_CHANCE,
+  IS_REJECTED_SEND,
   USER_IS_PREMIUM,
 } from '../../helpers/firebase';
 import {retrieveUserSession} from '../../helpers/storage';
@@ -79,7 +81,6 @@ const KirimTaarufScreen = ({navigation, route}) => {
           let pendidikanFiltered;
           let statusFiltered;
           let ibadahFiltered;
-          let sukuFiltered;
           let kulitFiltered;
           let domisiliFiltered;
 
@@ -117,12 +118,12 @@ const KirimTaarufScreen = ({navigation, route}) => {
             ibadahFiltered = item?.ibadah == item?.ibadah;
           }
 
-          if (FILTER?.suku?.length) {
-            console.log('suku filter : ' + FILTER?.suku);
-            sukuFiltered = item?.suku == FILTER?.suku;
-          } else {
-            sukuFiltered = item?.suku == item?.suku;
-          }
+          // if (FILTER?.suku?.length) {
+          //   console.log('suku filter : ' + FILTER?.suku);
+          //   sukuFiltered = item?.suku == FILTER?.suku;
+          // } else {
+          //   sukuFiltered = item?.suku == item?.suku;
+          // }
 
           if (FILTER?.kulit?.length) {
             console.log('kulit filter : ' + FILTER?.kulit);
@@ -145,7 +146,6 @@ const KirimTaarufScreen = ({navigation, route}) => {
             pendidikanFiltered &&
             statusFiltered &&
             ibadahFiltered &&
-            sukuFiltered &&
             kulitFiltered &&
             domisiliFiltered
           );
@@ -159,7 +159,6 @@ const KirimTaarufScreen = ({navigation, route}) => {
   };
 
   const onSearch = (arr = []) => {
-    console.log('active : ' + inputActive);
     if (keyword !== '' && !inputActive) {
       return arr.filter((item, index) => {
         return (
@@ -197,9 +196,9 @@ const KirimTaarufScreen = ({navigation, route}) => {
     setUsers(sortedbyDomisili);
 
     const isPremium = await USER_IS_PREMIUM();
-    const chance = await GET_CV_COUNT_BY_MONTH();
+    const chance = await IS_HAVE_CHANCE();
 
-    console.log('CHANCE : ' + chance);
+    console.log('have chance: ' + chance);
 
     if (chance !== null && isPremium !== null) {
       setAvailable(chance);
@@ -241,28 +240,26 @@ const KirimTaarufScreen = ({navigation, route}) => {
 
   async function onCardPress(item) {
     setModalVisible(true);
-    const data = await GET_IS_ON_TAARUF();
+    const data = await GET_IS_ON_TAARUF(item.nomorwa);
+    const isRejected = await IS_REJECTED_SEND(item);
 
-    const completeData = {taaruf: true, ...data[0]};
+    if (isRejected.rejected == true) {
+      setModalVisible(false);
+      Alert.alert(
+        'Taaruf Anda Ditolak',
+        'Alasan : ' +
+          isRejected.reason +
+          '.\n\nAnda dapat mengajukan kembali bulan depan',
+      );
+      return;
+    }
 
     if (data.length > 0) {
       Alert.alert(
         'Pemberitahuan',
-        `Anda sedang ada di sesi taaruf dengan ${data[0].name}, Anda akan diarahkan ke detail sesi taaruf yang sedang berlangsung!`,
-        [
-          {
-            text: 'Ok',
-            onPress: () => {
-              navigation.replace('ProfileDetail', {
-                key: 'ontaaruf',
-                data: completeData,
-                available: available,
-                isPremium: isPremium,
-              });
-            },
-          },
-        ],
+        'Pengguna ini sedang ada didalam sesi taaruf dengan pengguna lain!',
       );
+      setModalVisible(false);
     } else {
       const isMatch = await CHECK_IS_MATCH(item);
 
@@ -312,6 +309,7 @@ const KirimTaarufScreen = ({navigation, route}) => {
               <PeopleCardList
                 data={item}
                 user={USER}
+                showTime
                 onPress={
                   () => onCardPress(item)
                   // navigation.navigate('Upgrade')

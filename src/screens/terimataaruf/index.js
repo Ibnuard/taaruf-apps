@@ -1,5 +1,5 @@
 import * as React from 'react';
-import {View, Text, StyleSheet, FlatList} from 'react-native';
+import {View, Text, StyleSheet, FlatList, Alert} from 'react-native';
 import PeopleCardList from '../../components/PeopleCardList';
 import {FloatingAction} from 'react-native-floating-action';
 import {IMAGES_RES} from '../../helpers/images';
@@ -8,6 +8,7 @@ import {
   GET_IS_ON_TAARUF,
   GET_RECEIVED_CV,
   GET_USER_LIST,
+  IS_REJECTED_RECEIVED,
   USER_IS_PREMIUM,
 } from '../../helpers/firebase';
 import {retrieveUserSession} from '../../helpers/storage';
@@ -71,36 +72,28 @@ const TerimaTaarufScreen = ({navigation, route}) => {
   };
 
   const onCardPress = async item => {
-    const data = await GET_IS_ON_TAARUF();
+    const data = await GET_IS_ON_TAARUF(item.nomorwa);
+    const isRejected = await IS_REJECTED_RECEIVED(item);
 
-    const completeData = {taaruf: true, ...data[0]};
+    console.log(JSON.stringify(isRejected));
 
     if (data.length > 0) {
-      Alert.alert(
+      return Alert.alert(
         'Pemberitahuan',
-        `Anda sedang ada di sesi taaruf dengan ${data[0].name}, Anda akan diarahkan ke detail sesi taaruf yang sedang berlangsung!`,
-        [
-          {
-            text: 'Ok',
-            onPress: () => {
-              navigation.replace('ProfileDetail', {
-                key: 'ontaaruf',
-                data: completeData,
-                available: available,
-                isPremium: isPremium,
-              });
-            },
-          },
-        ],
+        'Pengguna ini sedang ada didalam sesi taaruf dengan pengguna lain!',
       );
-    } else {
-      navigation.navigate('ProfileDetail', {
-        key: 'terimataaruf',
-        data: item,
-        canTaaruf: canTaaruf,
-        isPremium: isPremium,
-      });
     }
+
+    if (isRejected?.rejected == true) {
+      return Alert.alert('Taaruf Ditolak', isRejected.reason);
+    }
+
+    navigation.navigate('ProfileDetail', {
+      key: 'terimataaruf',
+      data: item,
+      canTaaruf: canTaaruf,
+      isPremium: isPremium,
+    });
   };
 
   return (

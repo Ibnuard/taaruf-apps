@@ -125,7 +125,7 @@ const HomeScreen = ({navigation}) => {
         </View>
         <Touchable
           style={{marginHorizontal: 14}}
-          onPress={() => navigation.navigate('Favorite')}>
+          onPress={() => navigation.navigate('Faving')}>
           <Icon name="heart" color={Colors.COLOR_WHITE} size={20} />
         </Touchable>
       </View>

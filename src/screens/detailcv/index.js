@@ -23,7 +23,7 @@ import {
 } from '../../helpers/storage';
 import Touchable from '../../components/touchable';
 import DatePicker from 'react-native-date-picker';
-import {PARSE_DATE} from '../../utils/moment';
+import {GET_CURRENT_DATE, PARSE_DATE} from '../../utils/moment';
 import {retrieveData} from '../../utils/store';
 import {AuthContext} from '../../context';
 
@@ -63,6 +63,7 @@ const DetailCVScreen = ({navigation, route}) => {
   );
   const [kriteria, setKriteria] = React.useState(USER?.kriteria ?? '');
   const [deskripsi, setDeskripsi] = React.useState(USER?.deskripsi ?? '');
+  const [suku, setSuku] = React.useState(USER?.suku ?? '');
   const [hobi, setHobi] = React.useState(USER?.hobi ?? '');
   const [anak, setAnak] = React.useState(USER?.anak ?? '');
   const [selectedSuku, setSelectedSuku] = React.useState(USER?.suku ?? '');
@@ -133,27 +134,27 @@ const DetailCVScreen = ({navigation, route}) => {
     'Sering Ibadah',
     'Sangat Sering Ibadah',
   ];
-  const suku = [
-    'Jawa',
-    'Sunda',
-    'Batak',
-    'Madura',
-    'Betawi',
-    'Minangkabau',
-    'Bugis',
-    'Melayu',
-    'Arab',
-    'Banten',
-    'Bali',
-    'Sasak',
-    'Dayak',
-    'Tionghoa',
-    'Makassar',
-    'Cirebon',
-    'Ambon',
-    'Lampung',
-    'Tolaki',
-  ];
+  // const suku = [
+  //   'Jawa',
+  //   'Sunda',
+  //   'Batak',
+  //   'Madura',
+  //   'Betawi',
+  //   'Minangkabau',
+  //   'Bugis',
+  //   'Melayu',
+  //   'Arab',
+  //   'Banten',
+  //   'Bali',
+  //   'Sasak',
+  //   'Dayak',
+  //   'Tionghoa',
+  //   'Makassar',
+  //   'Cirebon',
+  //   'Ambon',
+  //   'Lampung',
+  //   'Tolaki',
+  // ];
   const skin = ['Putih', 'Kuning Langsat', 'Coklat', 'Hitam'];
 
   const input_config = [
@@ -254,10 +255,12 @@ const DetailCVScreen = ({navigation, route}) => {
       preventNumber: true,
     },
     {
-      key: 'selSuku',
+      key: 'suku',
       required: true,
-      value: selectedSuku ?? '',
+      minMaxChar: [1, 128],
+      value: suku,
       caption: 'Suku',
+      preventNumber: true,
     },
     {
       key: 'selKulit',
@@ -458,7 +461,7 @@ const DetailCVScreen = ({navigation, route}) => {
       deskripsi: deskripsi,
       hobi: hobi,
       anak: anak,
-      suku: selectedSuku,
+      suku: suku,
       kulit: selectedWarnaKulit,
       penyakit: penyakit,
       organisasi: organisasi,
@@ -635,26 +638,28 @@ const DetailCVScreen = ({navigation, route}) => {
           <Text style={styles.textPhotoInfo}>Upload Foto Full</Text>
         </Card>
       </Row>
-      <Card
-        onPress={() => {
-          setSelectType('ktp');
-          setImagePickerVisible(true);
-        }}
-        style={{
-          height: 148,
-          alignItems: 'center',
-          justifyContent: 'center',
-        }}>
-        {!ktpImage ? (
-          <Text style={styles.textPhotoInfo}>Upload Foto KTP</Text>
-        ) : (
-          <Image
-            source={{uri: `data:image/png;base64,${ktpImage}`}}
-            style={{height: 148, margin: 4, borderRadius: 4, width: '100%'}}
-            resizeMode={'contain'}
-          />
-        )}
-      </Card>
+      {KEY !== 'edit' && (
+        <Card
+          onPress={() => {
+            setSelectType('ktp');
+            setImagePickerVisible(true);
+          }}
+          style={{
+            height: 148,
+            alignItems: 'center',
+            justifyContent: 'center',
+          }}>
+          {!ktpImage ? (
+            <Text style={styles.textPhotoInfo}>Upload Foto KTP</Text>
+          ) : (
+            <Image
+              source={{uri: `data:image/png;base64,${ktpImage}`}}
+              style={{height: 148, margin: 4, borderRadius: 4, width: '100%'}}
+              resizeMode={'contain'}
+            />
+          )}
+        </Card>
+      )}
       <View style={styles.child}>
         {KEY == 'edit' ? (
           <>
@@ -804,14 +809,22 @@ const DetailCVScreen = ({navigation, route}) => {
           onChangeText={text => setAnak(text)}
           value={anak}
         />
-        <Dropdown
+        <Input
+          caption={'Suku'}
+          containerStyle={styles.input}
+          placeholder={'Suku'}
+          errorMessage={inputError['suku']}
+          onChangeText={text => setSuku(text)}
+          value={suku}
+        />
+        {/* <Dropdown
           caption={'Suku'}
           style={styles.input}
           data={suku}
           title={'Suku'}
           onItemSelected={item => setSelectedSuku(item)}
           defaultValue={selectedSuku}
-        />
+        /> */}
         <Dropdown
           caption={'Warna Kulit'}
           style={styles.input}

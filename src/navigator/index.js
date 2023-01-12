@@ -42,6 +42,7 @@ import ProsedurScreen from '../screens/prosedur';
 import AdminBannerScreen from '../screens/adminbanner';
 import AdminProsedurScreen from '../screens/adminprosedur';
 import FotoScreen from '../screens/foto';
+import FavoritingScreen from '../screens/cvmemfavoritkan';
 
 //create stack screen
 const Stack = createNativeStackNavigator();
@@ -306,6 +307,19 @@ export const HomeStack = () => {
         component={FavoriteScreen}
         options={{
           title: 'Favorit',
+          headerTitleStyle: {
+            color: Colors.COLOR_WHITE,
+          },
+          headerStyle: {
+            backgroundColor: Colors.COLOR_STATUSBAR,
+          },
+        }}
+      />
+      <Stack.Screen
+        name="Faving"
+        component={FavoritingScreen}
+        options={{
+          title: 'Memfavoritkan Saya',
           headerTitleStyle: {
             color: Colors.COLOR_WHITE,
           },

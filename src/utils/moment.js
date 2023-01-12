@@ -1,4 +1,6 @@
 import moment from 'moment';
+import 'moment/locale/id'; // without this line it didn't work
+moment.locale('id');
 
 export const GET_CURRENT_DATE = (format = '') => {
   const result = moment(new Date()).format(format);
@@ -14,10 +16,10 @@ export const CHECK_IS_VALID = date => {
   return diff;
 };
 
-export const CHECK_MOMENT_DIFF = date => {
+export const CHECK_MOMENT_DIFF = (date, type = 'hours') => {
   const currentDate = moment(new Date());
   const selectedDate = moment(date);
-  const diff = currentDate.diff(selectedDate, 'hours');
+  const diff = currentDate.diff(selectedDate, type);
 
   return diff;
 };
@@ -28,4 +30,9 @@ export const PARSE_DATE = (date, format = 'll') => {
 
 export const DECODE_MOMENT = (date, format = '') => {
   return moment(date, format).format();
+};
+
+export const PARSE_RELATIVE = date => {
+  moment.locale('id');
+  return moment(date).fromNow();
 };

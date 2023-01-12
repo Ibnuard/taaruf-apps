@@ -21,12 +21,12 @@ import {
   ACCEPT_TAARUF,
   ADD_TO_FAVORITE,
   CANCEL_NADZOR,
-  CANCEL_TAARUF,
   CHECK_IS_MATCH,
   CHECK_IS_TAARUFED,
   CHECK_TAARUF_STATUS,
-  CREATE_NOTIFICATION,
+  IS_CAN_EDIT,
   IS_FAVORITED,
+  IS_HAVE_CHANCE,
   REJECT_TAARUF,
   REMOVE_FROM_FAVORITE,
   SEND_TAARUF,
@@ -58,9 +58,7 @@ const ProfileScreen = ({navigation, route}) => {
 
   const KEY = route?.params?.key;
   const USER_DATA = route?.params?.data;
-  const AVAILABLE = route?.params?.available;
   const CAN_TAARUF = route?.params?.canTaaruf;
-  const IS_PREMIUM = route?.params?.isPremium;
 
   const [accepted, setAccepted] = React.useState(USER_DATA?.taaruf ?? false);
   const [rejected, setRejected] = React.useState(USER_DATA?.rejected ?? false);
@@ -84,6 +82,8 @@ const ProfileScreen = ({navigation, route}) => {
         //own profile
         getOwnProfile();
       }
+
+      getOwnStatus();
 
       if (KEY == 'ontaaruf') {
         navigation.setOptions({
@@ -185,20 +185,18 @@ const ProfileScreen = ({navigation, route}) => {
     }
   };
 
-  console.log('is accepted : ' + true);
-
   async function getOwnProfile() {
     console.log('Get user session!!!');
     const user = await retrieveUserSession();
     const parse = JSON.parse(user);
 
-    console.log('is prem : ' + isPremium);
     setUser(parse);
+  }
 
-    const token = parse.token;
-    console.log('token : ' + token);
-
+  async function getOwnStatus() {
+    console.log('checking own status...');
     const isPremium = await USER_IS_PREMIUM();
+    console.log('IS SELF PREMIUM : ' + isPremium);
     setIsPremium(isPremium);
   }
 
@@ -230,114 +228,66 @@ const ProfileScreen = ({navigation, route}) => {
 
   //AJUKAN TAARUF PRESSED
   const onSendTaarufButtonPressed = async () => {
-    if (IS_PREMIUM) {
-      setButtonId('taaruf');
-      if (taarufed) {
-        console.log('cancel');
-        Alert.alert(
-          'Konfirmasi',
-          'Apakah anda yakin ingin membatalkan pengajuan CV anda?',
-          [
-            {
-              text: 'Batalkan',
-              onPress: () => setIsLoading(false),
-              style: 'cancel',
-            },
-            {
-              text: 'Ok',
-              onPress: async () => {
-                setIsLoading(true);
-                await CANCEL_TAARUF(USER_DATA)
+    const CAN_TAARUF = await IS_HAVE_CHANCE();
+    if (isPremium) {
+      Alert.alert(
+        'Konfirmasi',
+        'Apakah anda yakin ingin mengajukan CV taaruf anda?',
+        [
+          {
+            text: 'Batalkan',
+            onPress: () => setIsLoading(false),
+            style: 'cancel',
+          },
+          {
+            text: 'Ok',
+            onPress: async () => {
+              setIsLoading(true);
+              const answers = {
+                q1: firstQ,
+                q2: secondQ,
+                q3: thirdQ,
+              };
+
+              if (CAN_TAARUF) {
+                await SEND_TAARUF(USER_DATA, answers)
                   .then(() => {
                     setIsLoading(false);
-                    setTaarufed(false);
-                    Alert.alert(
-                      'Sukses!',
-                      'Permintaan taaruf telah dibatalkan!',
-                      [
-                        {
-                          text: 'OK',
-                          onPress: () => navigation.goBack(),
-                        },
-                      ],
-                    );
+                    Alert.alert('Sukses!', 'Pengajuan taaruf telah terkirim!', [
+                      {
+                        text: 'OK',
+                        onPress: () => navigation.navigate('CVTerkirim'),
+                      },
+                    ]);
                   })
                   .catch(err => {
-                    console.log('errors: ' + err);
+                    console.log('fail : ' + err);
                     setIsLoading(false);
                     Alert.alert(
                       'Gagal!',
-                      'Permintaan taaruf gagal dibatalkan, mohon coba lagi!',
+                      'Permintaan taaruf gagal dikirim, mohon coba lagi!',
                     );
                   });
-              },
+              } else {
+                setIsLoading(false);
+                Alert.alert(
+                  'Gagal!',
+                  'Anda telah mencapai batas maksimum pengajuan CV bulan ini!',
+                );
+              }
             },
-          ],
-        );
-      } else {
-        console.log('send');
-        Alert.alert(
-          'Konfirmasi',
-          'Apakah anda yakin ingin mengajukan CV taaruf anda?',
-          [
-            {
-              text: 'Batalkan',
-              onPress: () => setIsLoading(false),
-              style: 'cancel',
-            },
-            {
-              text: 'Ok',
-              onPress: async () => {
-                setIsLoading(true);
-                const answers = {
-                  q1: firstQ,
-                  q2: secondQ,
-                  q3: thirdQ,
-                };
-
-                if (AVAILABLE) {
-                  await SEND_TAARUF(USER_DATA, answers)
-                    .then(() => {
-                      setIsLoading(false);
-                      Alert.alert(
-                        'Sukses!',
-                        'Pengajuan taaruf telah terkirim!',
-                        [
-                          {
-                            text: 'OK',
-                            onPress: () => navigation.navigate('CVTerkirim'),
-                          },
-                        ],
-                      );
-                    })
-                    .catch(err => {
-                      console.log('fail : ' + err);
-                      setIsLoading(false);
-                      Alert.alert(
-                        'Gagal!',
-                        'Permintaan taaruf gagal dikirim, mohon coba lagi!',
-                      );
-                    });
-                } else {
-                  setIsLoading(false);
-                  Alert.alert(
-                    'Gagal!',
-                    'Anda telah mencapai batas maksimum pengajuan CV bulan ini!',
-                  );
-                }
-              },
-            },
-          ],
-        );
-      }
+          },
+        ],
+      );
     } else {
+      console.log('IS PREM : ' + isPremium);
       navigation.navigate('Upgrade', {user: USER_DATA});
     }
   };
 
   //MENERIMA TAARUF
   const onAcceptTaarufPressed = async () => {
-    if (!IS_PREMIUM) {
+    if (!isPremium) {
       navigation.navigate('Upgrade', {user: USER_DATA});
     } else {
       if (CAN_TAARUF) {
@@ -392,7 +342,7 @@ const ProfileScreen = ({navigation, route}) => {
   };
 
   const onRejectTaarufPressed = async () => {
-    if (!IS_PREMIUM) {
+    if (!isPremium) {
       navigation.navigate('Upgrade', {user: USER_DATA});
     } else {
       Alert.alert(
@@ -496,6 +446,19 @@ const ProfileScreen = ({navigation, route}) => {
         Alert.alert('Gagal', 'Ada masalah, silahkan coba lagi!');
       });
   };
+
+  async function onEditCVPressed() {
+    const CAN_EDIT = await IS_CAN_EDIT();
+
+    if (CAN_EDIT === true) {
+      navigation.navigate('EditCV', {key: 'edit', user: user});
+    } else {
+      Alert.alert(
+        'Pemberitahuan',
+        'Anda sudah melakukan edit CV minggu ini, silahkan tunggu minggu depan untuk dapat melakukan edit CV',
+      );
+    }
+  }
 
   const PROFILE_DATA = [
     {
@@ -646,7 +609,7 @@ const ProfileScreen = ({navigation, route}) => {
                   />
                 </GestureHandlerRootView>
                 <Text style={styles.textName}>
-                  {KEY ? (IS_PREMIUM ? user?.nama : user?.id) : user?.nama}
+                  {KEY ? user.id : user?.nama}
                 </Text>
                 <Text style={styles.textUmur}>{user?.umur} tahun</Text>
                 {isPremium && (
@@ -869,85 +832,69 @@ const ProfileScreen = ({navigation, route}) => {
           {KEY ? (
             //TERIMA / AJUKAN TAARUF
             <View style={{marginTop: 14}}>
-              {KEY == 'favorite'
-                ? null
-                : KEY == 'terimataaruf'
-                ? //TERIMA TAARUF
-                  !accepted &&
-                  //TIDAK DALAM TAARUF
-                  (!rejected ? (
-                    //TIDAK DI TOLAK
-                    !rejectPressed ? (
-                      <>
-                        <Button
-                          title="Terima Taaruf"
-                          isLoading={isLoading}
-                          buttonStyle={{flex: 1, marginBottom: 14}}
-                          onPress={() => onAcceptTaarufPressed()}
-                        />
-                        <Button
-                          isLoading={isLoading}
-                          title="Tolak Taaruf"
-                          invert
-                          onPress={() => onRejectTaarufPressed()}
-                        />
-                      </>
-                    ) : (
-                      <>
-                        <Input
-                          placeholder={'Masukan alasan menolak taaruf ini'}
-                          onChangeText={text => setRejectReason(text)}
-                          value={rejectReason}
-                        />
-                        <Button
-                          title="Kirim Alasan Tolak Taaruf"
-                          isLoading={isLoading}
-                          buttonStyle={{flex: 1, marginVertical: 14}}
-                          onPress={() => rejectingTaaruf()}
-                        />
-                        <Button
-                          isLoading={isLoading}
-                          title="Batalkan"
-                          invert
-                          onPress={() => setRejectPressed(false)}
-                        />
-                      </>
-                    )
-                  ) : (
-                    <Button disabled title="Taaruf Ditolak" invert />
-                  ))
-                : !accepted &&
-                  //AJUKAN TAARUF
-                  //TIDAK DALAM TAARUF
-                  (!rejected ? (
-                    //TIDAK DITOLAK
+              {KEY == 'favorite' ? null : KEY == 'terimataaruf' ? (
+                //TERIMA TAARUF
+                !accepted &&
+                //TIDAK DALAM TAARUF
+                (!rejected ? (
+                  //TIDAK DI TOLAK
+                  !rejectPressed ? (
                     <>
                       <Button
-                        disabled={
-                          taarufed ? false : !firstQ || !secondQ || !thirdQ
-                        }
-                        isLoading={buttonId == 'taaruf' ? isLoading : false}
-                        title={
-                          !taarufed
-                            ? 'Ajukan Taaruf'
-                            : 'Batalkan Pengajuan Taaruf'
-                        }
-                        buttonStyle={{flex: 1}}
-                        onPress={() => onSendTaarufButtonPressed()}
+                        title="Terima Taaruf"
+                        isLoading={isLoading}
+                        buttonStyle={{flex: 1, marginBottom: 14}}
+                        onPress={() => onAcceptTaarufPressed()}
                       />
-                      {taarufed && (
-                        //TIDAK DIRESPON
-                        <Button
-                          buttonStyle={{marginTop: 14}}
-                          invert
-                          title="Kirim Poke"
-                          onPress={() => onPokeButtonPressed()}
-                        />
-                      )}
+                      <Button
+                        isLoading={isLoading}
+                        title="Tolak Taaruf"
+                        invert
+                        onPress={() => onRejectTaarufPressed()}
+                      />
                     </>
                   ) : (
-                    <Button disabled title="Taaruf Ditolak" invert />
-                  ))}
+                    <>
+                      <Input
+                        placeholder={'Masukan alasan menolak taaruf ini'}
+                        onChangeText={text => setRejectReason(text)}
+                        value={rejectReason}
+                      />
+                      <Button
+                        title="Kirim Alasan Tolak Taaruf"
+                        isLoading={isLoading}
+                        buttonStyle={{flex: 1, marginVertical: 14}}
+                        onPress={() => rejectingTaaruf()}
+                      />
+                      <Button
+                        isLoading={isLoading}
+                        title="Batalkan"
+                        invert
+                        onPress={() => setRejectPressed(false)}
+                      />
+                    </>
+                  )
+                ) : (
+                  <Button disabled title="Taaruf Ditolak" invert />
+                ))
+              ) : rejected ? (
+                <Button disabled title="Taaruf Ditolak" invert />
+              ) : !accepted && taarufed ? (
+                <Button
+                  buttonStyle={{marginTop: 14}}
+                  invert
+                  title="Kirim Poke"
+                  onPress={() => onPokeButtonPressed()}
+                />
+              ) : (
+                <Button
+                  disabled={taarufed ? false : !firstQ || !secondQ || !thirdQ}
+                  isLoading={buttonId == 'taaruf' ? isLoading : false}
+                  title={'Ajukan Taaruf'}
+                  buttonStyle={{flex: 1}}
+                  onPress={() => onSendTaarufButtonPressed()}
+                />
+              )}
             </View>
           ) : (
             //USER PROFILE
@@ -963,9 +910,7 @@ const ProfileScreen = ({navigation, route}) => {
               <Button
                 invert
                 title="Edit CV"
-                onPress={() =>
-                  navigation.navigate('EditCV', {key: 'edit', user: user})
-                }
+                onPress={() => onEditCVPressed()}
               />
             </View>
           )}

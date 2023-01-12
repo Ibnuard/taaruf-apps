@@ -8,6 +8,7 @@ import {
   GET_CV_COUNT_BY_MONTH,
   GET_FAVORITED_CV,
   GET_IS_ON_TAARUF,
+  IS_HAVE_CHANCE,
   USER_IS_PREMIUM,
 } from '../../helpers/firebase';
 import NoItemScreen from '../../components/NoItem';
@@ -51,7 +52,7 @@ const FavoriteScreen = ({navigation}) => {
     const data = await GET_FAVORITED_CV();
 
     const isPremium = await USER_IS_PREMIUM();
-    const chance = await GET_CV_COUNT_BY_MONTH();
+    const chance = await IS_HAVE_CHANCE();
 
     setAvailable(chance);
     setIsPremium(isPremium);

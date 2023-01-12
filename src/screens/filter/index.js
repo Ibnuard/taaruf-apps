@@ -30,7 +30,6 @@ const FilterScreen = ({navigation, route}) => {
   const [selectedIbadah, setSelectedIbadah] = React.useState(
     FILTER?.ibadah ?? '',
   );
-  const [selectedSuku, setSelectedSuku] = React.useState(FILTER?.suku ?? '');
   const [selectedWarnaKulit, setSelectedWarnaKulit] = React.useState(
     FILTER?.kulit ?? '',
   );
@@ -61,7 +60,6 @@ const FilterScreen = ({navigation, route}) => {
             ? ''
             : selectedIbadah
           : '',
-        suku: selectedSuku ? (selectedSuku == 'Semua' ? '' : selectedSuku) : '',
         kulit: selectedWarnaKulit
           ? selectedWarnaKulit == 'Semua'
             ? ''
@@ -210,14 +208,6 @@ const FilterScreen = ({navigation, route}) => {
         title={'Semua'}
         onItemSelected={item => setSelectedIbadah(item)}
         defaultValue={selectedIbadah}
-      />
-      <Dropdown
-        caption={'Suku'}
-        style={styles.input}
-        data={suku}
-        title={'Semua'}
-        onItemSelected={item => setSelectedSuku(item)}
-        defaultValue={selectedSuku}
       />
       <Dropdown
         caption={'Warna Kulit'}

@@ -5,6 +5,7 @@ import {
   CHECK_MOMENT_DIFF,
   GET_CURRENT_DATE,
   PARSE_DATE,
+  PARSE_RELATIVE,
 } from '../utils/moment';
 import {retrieveData} from '../utils/store';
 import {generateMonthData, generateUID, getRandomNumber} from '../utils/utils';
@@ -84,6 +85,7 @@ const USER_REGISTER = data => {
 };
 
 const USER_UPDATE = (id, data) => {
+  const datetime = GET_CURRENT_DATE();
   const user = {
     id: generateUID(),
     gender: data.gender ?? 'kosong',
@@ -121,11 +123,33 @@ const USER_UPDATE = (id, data) => {
     pertanyaansatu: data?.pertanyaansatu ?? 'kosong',
     pertanyaandua: data?.pertanyaandua ?? 'kosong',
     pertanyaantiga: data?.pertanyaantiga ?? 'kosong',
-    premium: false,
-    favoritCount: 0,
+    lastEdit: datetime,
   };
 
   return usersCollection?.doc(id).update(user);
+};
+
+//is can edit
+const IS_CAN_EDIT = async () => {
+  const session = await retrieveUserSession();
+  const parsed = JSON.parse(session);
+
+  const user = await usersCollection.doc(parsed.nomorwa).get();
+  const userData = user.data();
+
+  if (userData?.lastEdit) {
+    const diff = CHECK_MOMENT_DIFF(userData?.lastEdit, 'days');
+
+    console.log('EDIT DIFF : ' + diff);
+
+    if (diff > 7) {
+      return true;
+    } else {
+      return false;
+    }
+  } else {
+    return true;
+  }
 };
 
 //CHECK IF USER EXIST
@@ -290,12 +314,12 @@ const GET_USER_LIST = async () => {
   });
 };
 
-const GET_IS_ON_TAARUF = async () => {
+const GET_IS_ON_TAARUF = async id => {
   const session = await retrieveUserSession();
   const parsed = JSON.parse(session);
 
   return await usersCollection
-    .doc(parsed.nomorwa)
+    .doc(id ?? parsed.nomorwa)
     .collection('ROOM')
     .get()
     .then(snapshot => {
@@ -344,6 +368,17 @@ const ADD_TO_FAVORITE = async data => {
       .doc(data?.nomorwa)
       .set(data)
       .then(() => {
+        return addFaving();
+      });
+  }
+
+  async function addFaving() {
+    return await usersCollection
+      .doc(data?.nomorwa)
+      .collection('Faving')
+      .doc(parsed?.nomorwa)
+      .set(parsed)
+      .then(() => {
         return _createNotifOther();
       });
   }
@@ -385,7 +420,21 @@ const REMOVE_FROM_FAVORITE = async data => {
 
   async function _removeFavfromUser() {
     console.log('remove own fav');
-    return path.doc(data?.nomorwa).delete();
+    return path
+      .doc(data?.nomorwa)
+      .delete()
+      .then(() => {
+        return _removeFavingfromUser();
+      });
+  }
+
+  async function _removeFavingfromUser() {
+    console.log('remove own fav');
+    return await usersCollection
+      .doc(data?.nomorwa)
+      .collection('Faving')
+      .doc(parsed.nomorwa)
+      .delete();
   }
 };
 
@@ -429,20 +478,21 @@ const IS_FAVORITED = async data => {
 const SEND_TAARUF = async (data, answers) => {
   const user = await retrieveUserSession();
   const parsed = JSON.parse(user);
+  const monthId = generateMonthData();
 
   const _addUserTaaruf = async () => {
     console.log('save taaruf data');
-    const monthId = generateMonthData();
 
     const taarufDateData = {
       monthId: monthId,
+      rejected: false,
       ...data,
     };
 
     return taarufCollection
       .doc(parsed?.nomorwa)
       .collection('LIST')
-      .doc(data?.nomorwa)
+      .doc(data?.nomorwa + monthId)
       .set(taarufDateData)
       .then(() => {
         return createNotification();
@@ -469,33 +519,19 @@ const SEND_TAARUF = async (data, answers) => {
 
   const taarufData = {
     answer: answers,
+    monthId: monthId,
+    rejected: false,
     ...parsed,
   };
-
-  const monthId = generateMonthData();
-
-  const counterData = {
-    monthId: monthId,
-  };
-
-  async function _addCounter() {
-    return await usersCollection
-      .doc(parsed.nomorwa)
-      .collection('Counter')
-      .add(counterData)
-      .then(() => {
-        return _addUserTaaruf();
-      });
-  }
 
   return usersCollection
     .doc(data?.nomorwa)
     .collection('Taaruf')
-    .doc(parsed.nomorwa)
+    .doc(parsed.nomorwa + monthId)
     .set(taarufData)
     .then(() => {
       console.log('received taaruf');
-      return _addCounter();
+      return _addUserTaaruf();
     });
 };
 
@@ -557,10 +593,12 @@ const CHECK_IS_TAARUFED = async data => {
   const user = await retrieveUserSession();
   const parsed = JSON.parse(user);
 
+  const monthId = generateMonthData();
+
   return await taarufCollection
     .doc(parsed.nomorwa)
     .collection('LIST')
-    .doc(data?.nomorwa)
+    .doc(data?.nomorwa + monthId)
     .get()
     .then(snapshot => {
       if (snapshot.exists) {
@@ -576,10 +614,12 @@ const CHECK_IS_MATCH = async data => {
   const user = await retrieveUserSession();
   const parsed = JSON.parse(user);
 
+  const monthId = generateMonthData();
+
   return await usersCollection
     .doc(parsed.nomorwa)
     .collection('Taaruf')
-    .doc(data?.nomorwa)
+    .doc(data?.nomorwa + monthId)
     .get()
     .then(snapshot => {
       if (snapshot.exists) {
@@ -595,10 +635,12 @@ const CHECK_TAARUF_STATUS = async id => {
   const user = await retrieveUserSession();
   const parsed = JSON.parse(user);
 
+  const monthId = generateMonthData();
+
   return await taarufCollection
     .doc(parsed.nomorwa)
     .collection('LIST')
-    .doc(id)
+    .doc(id + monthId)
     .get()
     .then(snapshot => {
       if (snapshot.exists) {
@@ -621,10 +663,12 @@ const CHECK_TAARUF_STATUS_RECEIVE = async id => {
   const user = await retrieveUserSession();
   const parsed = JSON.parse(user);
 
+  const monthId = generateMonthData();
+
   return await taarufCollection
     .doc(id)
     .collection('LIST')
-    .doc(parsed.nomorwa)
+    .doc(parsed.nomorwa + monthId)
     .get()
     .then(snapshot => {
       if (snapshot.exists) {
@@ -667,16 +711,41 @@ const GET_SENDED_CV = async data => {
     });
 };
 
-//GET SENDED CV
-const GET_CHANCE_COUNTER = async data => {
+const IS_HAVE_CHANCE = async () => {
+  const sended_cv = await GET_SENDED_CV();
+  const monthId = generateMonthData();
+
+  if (sended_cv.length > 0) {
+    const filtered = sended_cv.filter((item, index) => {
+      return item.monthId == monthId;
+    });
+
+    console.log('CC : ' + filtered.length);
+
+    if (filtered.length < 5) {
+      console.log('HAVE CHANCE');
+      return true;
+    } else {
+      console.log('NO HAVE CHANCE');
+      return false;
+    }
+  } else {
+    console.log('HAVE CHANCE');
+    return true;
+  }
+};
+
+//GET FAVORITED CV
+const GET_FAVORITED_CV = async data => {
   const user = await retrieveUserSession();
   const parsed = JSON.parse(user);
 
   return await usersCollection
     .doc(parsed.nomorwa)
-    .collection('Counter')
+    .collection('Favs')
     .get()
     .then(snapshot => {
+      console.log('fav count : ' + snapshot.size);
       if (snapshot.size > 0) {
         let temp = [];
 
@@ -692,13 +761,13 @@ const GET_CHANCE_COUNTER = async data => {
 };
 
 //GET FAVORITED CV
-const GET_FAVORITED_CV = async data => {
+const GET_FAVING_CV = async data => {
   const user = await retrieveUserSession();
   const parsed = JSON.parse(user);
 
   return await usersCollection
     .doc(parsed.nomorwa)
-    .collection('Favs')
+    .collection('Faving')
     .get()
     .then(snapshot => {
       console.log('fav count : ' + snapshot.size);
@@ -792,10 +861,12 @@ const ACCEPT_TAARUF = async (id, data) => {
   const user = await retrieveUserSession();
   const parsed = JSON.parse(user);
 
+  const monthId = generateMonthData();
+
   return await usersCollection
     .doc(parsed.nomorwa)
     .collection('Taaruf')
-    .doc(id)
+    .doc(id + monthId)
     .update({
       taaruf: true,
     })
@@ -808,7 +879,7 @@ const ACCEPT_TAARUF = async (id, data) => {
     return await taarufCollection
       .doc(id)
       .collection('LIST')
-      .doc(parsed?.nomorwa)
+      .doc(parsed?.nomorwa + monthId)
       .update({
         taaruf: true,
       })
@@ -824,7 +895,7 @@ const ACCEPT_TAARUF = async (id, data) => {
         return usersCollection
           .doc(parsed.nomorwa)
           .collection('ROOM')
-          .doc(id)
+          .doc(id + monthId)
           .set({due: duedate, ...data});
       }
 
@@ -832,7 +903,7 @@ const ACCEPT_TAARUF = async (id, data) => {
         return usersCollection
           .doc(id)
           .collection('ROOM')
-          .doc(parsed.nomorwa)
+          .doc(parsed.nomorwa + monthId)
           .set({due: duedate, ...parsed});
       }
 
@@ -855,10 +926,12 @@ const REJECT_TAARUF = async (id, data, reason) => {
   const user = await retrieveUserSession();
   const parsed = JSON.parse(user);
 
+  const monthId = generateMonthData();
+
   return await usersCollection
     .doc(parsed.nomorwa)
     .collection('Taaruf')
-    .doc(id)
+    .doc(id + data?.monthId)
     .delete()
     .then(() => {
       return _updateStatusOther();
@@ -869,8 +942,11 @@ const REJECT_TAARUF = async (id, data, reason) => {
     return await taarufCollection
       .doc(id)
       .collection('LIST')
-      .doc(parsed?.nomorwa)
-      .delete()
+      .doc(parsed?.nomorwa + data?.monthId)
+      .update({
+        rejected: true,
+        rejectReason: reason,
+      })
       .then(() => {
         return _updateNotifOther();
       });
@@ -907,11 +983,14 @@ const CANCEL_NADZOR = async (id, data, reason) => {
   const user = await retrieveUserSession();
   const parsed = JSON.parse(user);
 
+  const monthId = generateMonthData();
+
   const room = await usersCollection
     .doc(parsed.nomorwa)
     .collection('ROOM')
-    .doc(id)
+    .doc(id + monthId)
     .get();
+
   const roomData = room.data();
 
   const dueDate = roomData.due;
@@ -924,7 +1003,7 @@ const CANCEL_NADZOR = async (id, data, reason) => {
     return await usersCollection
       .doc(parsed.nomorwa)
       .collection('Taaruf')
-      .doc(id)
+      .doc(id + monthId)
       .delete()
       .then(() => {
         return deleteROOM();
@@ -935,7 +1014,7 @@ const CANCEL_NADZOR = async (id, data, reason) => {
         return await usersCollection
           .doc(parsed.nomorwa)
           .collection('ROOM')
-          .doc(id)
+          .doc(id + monthId)
           .delete();
       }
 
@@ -943,39 +1022,39 @@ const CANCEL_NADZOR = async (id, data, reason) => {
         return await usersCollection
           .doc(id)
           .collection('ROOM')
-          .doc(parsed.nomorwa)
+          .doc(parsed.nomorwa + monthId)
           .delete();
       }
 
       Promise.all([selfRoom(), otherRoom()]).then(() => {
         console.log('success deleting room!');
-        return _updateStatusOther();
+        return _updateNotif();
       });
     }
 
-    async function _updateStatusOther() {
-      console.log('updating other...');
-      return await taarufCollection
-        .doc(id)
-        .collection('LIST')
-        .doc(parsed?.nomorwa)
-        .delete()
-        .then(() => {
-          return _updateSended();
-        });
-    }
+    // async function _updateStatusOther() {
+    //   console.log('updating other...');
+    //   return await taarufCollection
+    //     .doc(id)
+    //     .collection('LIST')
+    //     .doc(parsed?.nomorwa)
+    //     .delete()
+    //     .then(() => {
+    //       return _updateSended();
+    //     });
+    // }
 
-    async function _updateSended() {
-      console.log('updating sended...');
-      return await taarufCollection
-        .doc(parsed?.nomorwa)
-        .collection('LIST')
-        .doc(id)
-        .delete()
-        .then(() => {
-          return _updateNotif();
-        });
-    }
+    // async function _updateSended() {
+    //   console.log('updating sended...');
+    //   return await taarufCollection
+    //     .doc(parsed?.nomorwa)
+    //     .collection('LIST')
+    //     .doc(id)
+    //     .delete()
+    //     .then(() => {
+    //       return _updateNotif();
+    //     });
+    // }
 
     async function _updateNotif() {
       await sendNotification(data?.token, 'nadzorcanceled');
@@ -992,6 +1071,64 @@ const CANCEL_NADZOR = async (id, data, reason) => {
 
       return Promise.all([_notifSelf(), _notifOther()]);
     }
+  }
+};
+
+const IS_REJECTED_RECEIVED = async data => {
+  const session = await retrieveUserSession();
+  const parsed = JSON.parse(session);
+
+  const getUserData = await usersCollection
+    .doc(parsed.nomorwa)
+    .collection('Taaruf')
+    .doc(data.nomorwa + data?.monthId)
+    .get();
+  const userData = getUserData.data();
+
+  if (userData.rejected === true) {
+    return {
+      rejected: true,
+      reason: userData?.rejectReason,
+    };
+  } else {
+    return {
+      rejected: false,
+      reason: null,
+    };
+  }
+};
+
+const IS_REJECTED_SEND = async data => {
+  const session = await retrieveUserSession();
+  const parsed = JSON.parse(session);
+
+  const monthData = data?.monthData ?? generateMonthData();
+
+  const getUserData = await taarufCollection
+    .doc(parsed.nomorwa)
+    .collection('LIST')
+    .doc(data.nomorwa + monthData)
+    .get();
+
+  if (getUserData.exists) {
+    const userData = getUserData.data();
+
+    if (userData.rejected === true) {
+      return {
+        rejected: true,
+        reason: userData?.rejectReason,
+      };
+    } else {
+      return {
+        rejected: false,
+        reason: null,
+      };
+    }
+  } else {
+    return {
+      rejected: false,
+      reason: null,
+    };
   }
 };
 // ====================================
@@ -1031,6 +1168,7 @@ const CREATE_NOTIFICATION = async (id, type, senderId, opt) => {
       type: type,
       senderId: id,
       timestamp: timestamp,
+      opened: false,
       opt: opt ?? '',
     })
     .then(() => {
@@ -1201,6 +1339,23 @@ const DELETE_ACC = async id => {
   return await usersCollection.doc(id).delete();
 };
 
+const UPDATE_LAST_ONLINE = async id => {
+  console.log('Updating last online...');
+  const currentDate = GET_CURRENT_DATE();
+  const session = await retrieveUserSession();
+  const parsed = JSON.parse(session);
+
+  return await usersCollection.doc(id ?? parsed.nomorwa).update({
+    lastOnline: currentDate,
+  });
+};
+
+const PARSE_LAST_ONLINE = async datetime => {
+  const relative = PARSE_RELATIVE(datetime);
+
+  return relative;
+};
+
 export {
   USER_REGISTER,
   USER_UPDATE,
@@ -1217,6 +1372,7 @@ export {
   CHECK_IS_MATCH,
   GET_SENDED_CV,
   GET_FAVORITED_CV,
+  GET_FAVING_CV,
   GET_RECEIVED_CV,
   GET_CV_COUNT_BY_MONTH,
   ACCEPT_TAARUF,
@@ -1240,5 +1396,10 @@ export {
   CHECK_TAARUF_STATUS_RECEIVE,
   DELETE_ACC,
   GET_IS_ON_TAARUF,
-  GET_CHANCE_COUNTER,
+  IS_HAVE_CHANCE,
+  IS_CAN_EDIT,
+  IS_REJECTED_RECEIVED,
+  IS_REJECTED_SEND,
+  UPDATE_LAST_ONLINE,
+  PARSE_LAST_ONLINE,
 };

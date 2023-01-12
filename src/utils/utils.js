@@ -36,9 +36,9 @@ export const generateUID = () => {
 export const generateMonthData = () => {
   const currentMonth = GET_CURRENT_DATE('ll');
 
-  const splitMonth = currentMonth.split(',');
-  const month = splitMonth[0].substring(0, 3).trim(' ');
-  const year = splitMonth[1].trim(' ');
+  const splitMonth = currentMonth.split(' ');
+  const month = splitMonth[1];
+  const year = splitMonth[2];
 
   const result = `${month}-${year}`;
 
