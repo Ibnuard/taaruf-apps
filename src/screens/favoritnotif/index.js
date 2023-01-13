@@ -25,8 +25,6 @@ const FavoritNotifScreen = ({navigation, route}) => {
         return item?.type == 'favorite';
       });
 
-      console.log(JSON.stringify(filtered));
-
       setNotification(filtered);
       setIsLoading(false);
     }
@@ -38,7 +36,17 @@ const FavoritNotifScreen = ({navigation, route}) => {
         <FlatList
           contentContainerStyle={{paddingBottom: 60, paddingTop: 18}}
           data={notification}
-          renderItem={({item, index}) => <NotificationCard data={item} />}
+          renderItem={({item, index}) => (
+            <NotificationCard
+              onPress={() =>
+                navigation.navigate('ProfileDetail', {
+                  key: 'favorite',
+                  data: item.opt,
+                })
+              }
+              data={item}
+            />
+          )}
         />
       ) : (
         <NoItemScreen isLoading={isLoading} />

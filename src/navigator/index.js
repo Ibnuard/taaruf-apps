@@ -30,6 +30,19 @@ import FavoritNotifScreen from '../screens/favoritnotif';
 import SendPokeScreen from '../screens/sendpoke';
 import PokeScreen from '../screens/poke';
 import ForgotScreen from '../screens/forgot';
+import AdminHomeScreen from '../screens/adminhome';
+import AdminUsersScreen from '../screens/adminusers';
+import AdminDetailScreen from '../screens/admindetail';
+import AdminNumberScreen from '../screens/adminnumber';
+import AdminPokeScreen from '../screens/adminpoke';
+import AdminPremiumScreen from '../screens/adminpremium';
+import SettingScreen from '../screens/setting';
+import MenuScreen from '../screens/menu';
+import ProsedurScreen from '../screens/prosedur';
+import AdminBannerScreen from '../screens/adminbanner';
+import AdminProsedurScreen from '../screens/adminprosedur';
+import FotoScreen from '../screens/foto';
+import FavoritingScreen from '../screens/cvmemfavoritkan';
 
 //create stack screen
 const Stack = createNativeStackNavigator();
@@ -125,6 +138,7 @@ export const MainScreen = () => {
   };
   return (
     <Tab.Navigator
+      initialRouteName="Home"
       screenOptions={({route}) => ({
         tabBarIcon: ({focused, color, size}) => {
           let iconName;
@@ -302,6 +316,19 @@ export const HomeStack = () => {
         }}
       />
       <Stack.Screen
+        name="Faving"
+        component={FavoritingScreen}
+        options={{
+          title: 'Memfavoritkan Saya',
+          headerTitleStyle: {
+            color: Colors.COLOR_WHITE,
+          },
+          headerStyle: {
+            backgroundColor: Colors.COLOR_STATUSBAR,
+          },
+        }}
+      />
+      <Stack.Screen
         name="Filter"
         component={FilterScreen}
         options={{
@@ -366,6 +393,59 @@ export const HomeStack = () => {
           },
         }}
       />
+      <Stack.Screen
+        name="Setting"
+        component={SettingScreen}
+        options={{
+          title: 'Informasi',
+          headerTitleStyle: {
+            color: Colors.COLOR_WHITE,
+          },
+          headerStyle: {
+            backgroundColor: Colors.COLOR_STATUSBAR,
+          },
+        }}
+      />
+      <Stack.Screen
+        name="Prosedur"
+        component={ProsedurScreen}
+        options={{
+          title: 'Prosedur',
+          headerTitleStyle: {
+            color: Colors.COLOR_WHITE,
+          },
+          headerStyle: {
+            backgroundColor: Colors.COLOR_STATUSBAR,
+          },
+        }}
+      />
+      <Stack.Screen
+        name="Menu"
+        component={MenuScreen}
+        options={{
+          title: '',
+          headerTitleStyle: {
+            color: Colors.COLOR_WHITE,
+          },
+          headerStyle: {
+            backgroundColor: Colors.COLOR_STATUSBAR,
+          },
+        }}
+      />
+      <Stack.Screen
+        name="FotoDetail"
+        component={FotoScreen}
+        options={{
+          title: 'Foto',
+        }}
+      />
+      <Stack.Screen
+        name="Domisili"
+        component={DomisiliScreen}
+        options={{
+          title: 'Pilih Domisili',
+        }}
+      />
     </Stack.Navigator>
   );
 };
@@ -392,6 +472,76 @@ const ProfileStack = () => {
         component={DetailCVScreen}
         options={{
           title: 'Edit CV',
+        }}
+      />
+      <Stack.Screen
+        name="Foto"
+        component={FotoScreen}
+        options={{
+          title: 'Foto',
+        }}
+      />
+    </Stack.Navigator>
+  );
+};
+
+export const AdminStack = () => {
+  return (
+    <Stack.Navigator>
+      <Stack.Screen
+        name="AdminHome"
+        component={AdminHomeScreen}
+        options={{
+          headerShown: false,
+        }}
+      />
+      <Stack.Screen
+        name="AdminUsers"
+        component={AdminUsersScreen}
+        options={{
+          title: 'Semua User',
+        }}
+      />
+      <Stack.Screen
+        name="AdminPremium"
+        component={AdminPremiumScreen}
+        options={{
+          title: 'Permintaan Premium',
+        }}
+      />
+      <Stack.Screen
+        name="AdminNumber"
+        component={AdminNumberScreen}
+        options={{
+          title: 'Ganti Nomor Admin',
+        }}
+      />
+      <Stack.Screen
+        name="AdminPoke"
+        component={AdminPokeScreen}
+        options={{
+          title: 'Poke',
+        }}
+      />
+      <Stack.Screen
+        name="AdminBanner"
+        component={AdminBannerScreen}
+        options={{
+          title: 'Banner',
+        }}
+      />
+      <Stack.Screen
+        name="AdminProsedur"
+        component={AdminProsedurScreen}
+        options={{
+          title: 'Prosedur',
+        }}
+      />
+      <Stack.Screen
+        name="AdminDetail"
+        component={AdminDetailScreen}
+        options={{
+          title: 'Detail User',
         }}
       />
     </Stack.Navigator>

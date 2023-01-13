@@ -8,18 +8,20 @@ export const MushForm = (config = []) => {
   function _setErrorMessage(key, data) {
     switch (key) {
       case 'REQUIRED_ERROR':
-        return data?.requiredErrorMessage ?? `Data tidak boleh kosong!`;
+        return (
+          data?.requiredErrorMessage ?? `${data?.caption} tidak boleh kosong!`
+        );
         break;
       case 'MIN_CHAR_ERROR':
         return (
           data?.minCharErrorMessage ??
-          `Minimal terdiri dari ${data?.minMaxChar[0]} karakter`
+          `${data.caption} minimal terdiri dari ${data?.minMaxChar[0]} karakter`
         );
         break;
       case 'MAX_CHAR_ERROR':
         return (
           data?.maxCharErrorMessage ??
-          `Maksimal terdiri dari ${data?.minMaxChar[1]} karakter`
+          `${data.caption} maksimal terdiri dari ${data?.minMaxChar[1]} karakter`
         );
         break;
       case 'EMAIL_VALIDATION_ERROR':
@@ -28,6 +30,12 @@ export const MushForm = (config = []) => {
       case 'PHONE_VALIDATION_ERROR':
         return data?.phoneErrorMessage ?? `Format nomor harus diawali 62xx`;
         break;
+      case 'NUMBER_ALLOWED_ERROR':
+        return (
+          data?.phoneErrorMessage ??
+          `${data.caption} tidak boleh mengandung angka atau nomor telpon`
+        );
+        break;
       default:
         break;
     }
@@ -35,6 +43,8 @@ export const MushForm = (config = []) => {
 
   //validation
   function _validate(data) {
+    const numberExamples = ['08', '62', '628'];
+
     if (data?.required) {
       if (data.value.length < 1) {
         return {[data?.key]: _setErrorMessage('REQUIRED_ERROR', data)};
@@ -78,12 +88,44 @@ export const MushForm = (config = []) => {
             };
           }
         } else {
-          if (data?.value?.length < data?.minMaxChar[0]) {
-            return {[data?.key]: _setErrorMessage('MIN_CHAR_ERROR', data)};
-          } else if (data?.value?.length > data?.minMaxChar[1]) {
-            return {[data?.key]: _setErrorMessage('MAX_CHAR_ERROR', data)};
+          if (data.minMaxChar) {
+            if (data?.value?.length < data?.minMaxChar[0]) {
+              return {[data?.key]: _setErrorMessage('MIN_CHAR_ERROR', data)};
+            } else if (data?.value?.length > data?.minMaxChar[1]) {
+              return {[data?.key]: _setErrorMessage('MAX_CHAR_ERROR', data)};
+            } else {
+              if (!data.preventNumber) {
+                return null;
+              } else {
+                if (
+                  numberExamples.some(v => {
+                    return data.value.includes(v);
+                  })
+                ) {
+                  return {
+                    [data?.key]: _setErrorMessage('NUMBER_ALLOWED_ERROR', data),
+                  };
+                } else {
+                  return null;
+                }
+              }
+            }
           } else {
-            return null;
+            if (!data.preventNumber) {
+              return null;
+            } else {
+              if (
+                numberExamples.some(v => {
+                  return data.value.includes(v);
+                })
+              ) {
+                return {
+                  [data?.key]: _setErrorMessage('NUMBER_ALLOWED_ERROR', data),
+                };
+              } else {
+                return null;
+              }
+            }
           }
         }
       }
@@ -94,10 +136,38 @@ export const MushForm = (config = []) => {
         } else if (data?.value?.length > data?.minMaxChar[1]) {
           return {[data?.key]: _setErrorMessage('MIN_CHAR_ERROR', data)};
         } else {
-          return null;
+          if (!data.preventNumber) {
+            return null;
+          } else {
+            if (
+              numberExamples.some(v => {
+                return data.value.includes(v);
+              })
+            ) {
+              return {
+                [data?.key]: _setErrorMessage('NUMBER_ALLOWED_ERROR', data),
+              };
+            } else {
+              return null;
+            }
+          }
         }
       } else {
-        return null;
+        if (!data.preventNumber) {
+          return null;
+        } else {
+          if (
+            numberExamples.some(v => {
+              return data.value.includes(v);
+            })
+          ) {
+            return {
+              [data?.key]: _setErrorMessage('NUMBER_ALLOWED_ERROR', data),
+            };
+          } else {
+            return null;
+          }
+        }
       }
     }
   }

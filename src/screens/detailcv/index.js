@@ -15,15 +15,23 @@ import Icon from 'react-native-vector-icons/AntDesign';
 import {LaunchCamera, LaunchGallery} from '../../utils/imagePicker';
 import _ from 'lodash';
 import {MushForm} from '../../utils/forms';
-import {USER_REGISTER, USER_UPDATE} from '../../helpers/firebase';
-import {storeUserSession, updateUserSession} from '../../helpers/storage';
+import {DELETE_ACC, USER_REGISTER, USER_UPDATE} from '../../helpers/firebase';
+import {
+  removeUserSession,
+  storeUserSession,
+  updateUserSession,
+} from '../../helpers/storage';
 import Touchable from '../../components/touchable';
 import DatePicker from 'react-native-date-picker';
-import {PARSE_DATE} from '../../utils/moment';
+import {GET_CURRENT_DATE, PARSE_DATE} from '../../utils/moment';
+import {retrieveData} from '../../utils/store';
+import {AuthContext} from '../../context';
 
 const DetailCVScreen = ({navigation, route}) => {
   const KEY = route?.params?.key;
   const USER = route?.params?.user;
+
+  const {signOut} = React.useContext(AuthContext);
 
   const [mode, setMode] = React.useState('pria'); //pria || wanita
   const [imagePickerVisible, setImagePickerVisible] = React.useState(false);
@@ -55,6 +63,7 @@ const DetailCVScreen = ({navigation, route}) => {
   );
   const [kriteria, setKriteria] = React.useState(USER?.kriteria ?? '');
   const [deskripsi, setDeskripsi] = React.useState(USER?.deskripsi ?? '');
+  const [suku, setSuku] = React.useState(USER?.suku ?? '');
   const [hobi, setHobi] = React.useState(USER?.hobi ?? '');
   const [anak, setAnak] = React.useState(USER?.anak ?? '');
   const [selectedSuku, setSelectedSuku] = React.useState(USER?.suku ?? '');
@@ -118,138 +127,218 @@ const DetailCVScreen = ({navigation, route}) => {
     'S2',
     'S3',
   ];
-  const status = ['Single', 'Duda', 'Menikah'];
+  const status = ['Single', 'Duda', 'Janda'];
   const ibadah_rate = [
     'Kurang Ibadah',
     'Belajar Ibadah',
     'Sering Ibadah',
     'Sangat Sering Ibadah',
   ];
-  const suku = [
-    'Jawa',
-    'Sunda',
-    'Batak',
-    'Madura',
-    'Betawi',
-    'Minangkabau',
-    'Bugis',
-    'Melayu',
-    'Arab',
-    'Banten',
-    'Bali',
-    'Sasak',
-    'Dayak',
-    'Tionghoa',
-    'Makassar',
-    'Cirebon',
-    'Ambon',
-    'Lampung',
-    'Tolaki',
-  ];
+  // const suku = [
+  //   'Jawa',
+  //   'Sunda',
+  //   'Batak',
+  //   'Madura',
+  //   'Betawi',
+  //   'Minangkabau',
+  //   'Bugis',
+  //   'Melayu',
+  //   'Arab',
+  //   'Banten',
+  //   'Bali',
+  //   'Sasak',
+  //   'Dayak',
+  //   'Tionghoa',
+  //   'Makassar',
+  //   'Cirebon',
+  //   'Ambon',
+  //   'Lampung',
+  //   'Tolaki',
+  // ];
   const skin = ['Putih', 'Kuning Langsat', 'Coklat', 'Hitam'];
 
   const input_config = [
     {
+      key: 'fotowajah',
+      required: true,
+      value: faceImage ?? '',
+      caption: 'Foto Wajah',
+    },
+    {
+      key: 'fotofull',
+      required: true,
+      value: bodyImage ?? '',
+      caption: 'Foto Full',
+    },
+    {
+      key: 'fotoktp',
+      required: true,
+      value: ktpImage ?? '',
+      caption: 'Foto KTP',
+    },
+    {
+      key: 'selPekerjaan',
+      required: true,
+      value: selectedPekerjaan ?? '',
+      caption: 'Pekerjaan',
+    },
+    {
+      key: 'selPendidikan',
+      required: true,
+      value: selectedPendidikan ?? '',
+      caption: 'Pendidikan terakhir',
+    },
+    {
       key: 'riwayat',
       required: true,
-      minMaxChar: [3, 128],
+      minMaxChar: [1, 10000],
       value: riwayatPendidikan,
+      caption: 'Riwayat pendidikan',
+      preventNumber: true,
+    },
+    {
+      key: 'selStatus',
+      required: true,
+      value: selectedStatus ?? '',
+      caption: 'Status',
     },
     {
       key: 'tinggi',
       required: true,
       minMaxChar: [1, 3],
       value: tinggiBadan,
+      caption: 'Tinggi badan',
     },
     {
       key: 'berat',
       required: true,
       minMaxChar: [1, 3],
       value: beratBadan,
+      caption: 'Berat badan',
+    },
+    {
+      key: 'selIbadah',
+      required: true,
+      value: selectedIbadah ?? '',
+      caption: 'Melakukan ibadah',
     },
     {
       key: 'kriteria',
       required: true,
-      minMaxChar: [3, 128],
+      minMaxChar: [1, 10000],
       value: kriteria,
+      caption: 'Kriteria yang diinginkan',
+      preventNumber: true,
     },
     {
       key: 'deskripsi',
       required: true,
-      minMaxChar: [100, 1000], //100
+      minMaxChar: [50, 10000], //100
       value: deskripsi,
+      caption: 'Deskripsi singkat diri',
+      preventNumber: true,
     },
     {
       key: 'hobi',
       required: true,
-      minMaxChar: [3, 512],
+      minMaxChar: [1, 10000],
       value: hobi,
+      caption: 'Hobi',
+      preventNumber: true,
     },
     {
       key: 'anak',
       required: true,
-      minMaxChar: [1, 2],
+      minMaxChar: [1, 128],
       value: anak,
+      caption: 'Anak ke',
+      preventNumber: true,
+    },
+    {
+      key: 'suku',
+      required: true,
+      minMaxChar: [1, 128],
+      value: suku,
+      caption: 'Suku',
+      preventNumber: true,
+    },
+    {
+      key: 'selKulit',
+      required: true,
+      value: selectedWarnaKulit ?? '',
+      caption: 'Warna kulit',
     },
     {
       key: 'penyakit',
       required: true,
-      minMaxChar: [3, 128],
+      minMaxChar: [1, 10000],
       value: penyakit,
-    },
-    {
-      key: 'penyakit',
-      required: true,
-      minMaxChar: [3, 128],
-      value: penyakit,
+      caption: 'Riwayat penyakit',
+      preventNumber: true,
     },
     {
       key: 'organisasi',
       required: true,
-      minMaxChar: [3, 128],
+      minMaxChar: [1, 10000],
       value: organisasi,
+      caption: 'Organisasi atau komunitas yang diikuti',
+      preventNumber: true,
     },
     {
       key: 'kelebihan',
       required: true,
-      minMaxChar: [3, 128],
+      minMaxChar: [1, 10000],
       value: kelebihan,
+      caption: 'Kelebihan diri',
+      preventNumber: true,
     },
     {
       key: 'kekurangan',
       required: true,
-      minMaxChar: [3, 128],
+      minMaxChar: [1, 10000],
       value: kekurangan,
+      caption: 'Kekurangan diri',
+      preventNumber: true,
     },
     {
       key: 'aktivitas',
       required: true,
-      minMaxChar: [3, 150],
+      minMaxChar: [1, 10000],
       value: aktivitasHarian,
+      caption: 'Aktivitas harian',
+      preventNumber: true,
     },
     {
       key: 'visimisi',
       required: true,
-      minMaxChar: [3, 150],
+      minMaxChar: [1, 10000],
       value: visimisi,
+      caption: 'Visi misi pernikahan',
+      preventNumber: true,
     },
     {
       key: 'q1',
       required: true,
-      minMaxChar: [3, 150],
+      minMaxChar: [1, 1500],
       value: firstQA,
+      caption: 'Pertanyaan pertama',
+      preventNumber: true,
     },
     {
       key: 'q2',
       required: true,
-      minMaxChar: [3, 150],
+      minMaxChar: [1, 1500],
       value: secondQA,
+      caption: 'Pertanyaan kedua',
+      preventNumber: true,
     },
     {
       key: 'q3',
       required: true,
-      minMaxChar: [3, 150],
+      minMaxChar: [1, 1500],
       value: thirdQA,
+      caption: 'Pertanyaan ketiga',
+      preventNumber: true,
     },
   ];
 
@@ -257,20 +346,25 @@ const DetailCVScreen = ({navigation, route}) => {
     {
       key: 'name',
       required: true,
-      minMaxChar: [3, 64],
+      minMaxChar: [1, 300],
       value: name,
+      caption: 'Nama',
+      preventNumber: true,
     },
     {
       key: 'olddomisili',
       required: true,
-      minMaxChar: [3, 128],
+      minMaxChar: [1, 300],
       value: domisiliOrangTua,
+      caption: 'Domisili orang tua',
+      preventNumber: true,
     },
     {
       key: 'alamat',
       required: true,
-      minMaxChar: [3, 128],
+      minMaxChar: [1, 500],
       value: alamat,
+      caption: 'Alamat',
     },
   ];
 
@@ -367,7 +461,7 @@ const DetailCVScreen = ({navigation, route}) => {
       deskripsi: deskripsi,
       hobi: hobi,
       anak: anak,
-      suku: selectedSuku,
+      suku: suku,
       kulit: selectedWarnaKulit,
       penyakit: penyakit,
       organisasi: organisasi,
@@ -387,20 +481,25 @@ const DetailCVScreen = ({navigation, route}) => {
       KEY == 'edit' ? _updateUser(data) : _registerUser(data);
     } else {
       setIsLoading(false);
+      const errorData = Object.keys(errors).map(key => [key, errors[key]]);
+      Alert.alert('Gagal!', errorData[0][1]);
     }
   };
 
   const _registerUser = async data => {
-    USER_REGISTER(data)
+    const token = await retrieveData('fcmToken');
+    const addFCM = {fcmToken: token, ...data};
+    USER_REGISTER(addFCM)
       .then(() => {
         setIsLoading(false);
         navigation.navigate('DoneCV');
       })
       .catch(err => {
+        console.log(err);
         setIsLoading(false);
         Alert.alert(
           'Pendaftaran Gagal',
-          'Ada kesalahan data, mohon di cek kembali',
+          'Ukuran foto terlalu besar, silahkan pilih foto lain atau compress terlebih dahulu!',
         );
       });
   };
@@ -433,6 +532,45 @@ const DetailCVScreen = ({navigation, route}) => {
         Alert.alert('Gagal!', 'Ada kesalahan data, mohon di cek kembali!');
       });
   };
+
+  function _onDeleteButtonPress() {
+    //await DELETE_ACC(PREV_DATA.nomorwa)
+    Alert.alert('Konfirmasi', 'Apakah anda yakin ingin menghapus akun ini?', [
+      {
+        text: 'Ok',
+        onPress: () => deleteAccount(),
+      },
+      {
+        text: 'Batalkan',
+        onPress: () => null,
+      },
+    ]);
+  }
+
+  async function deleteAccount() {
+    setIsLoading(true);
+    await DELETE_ACC(USER?.nomorwa)
+      .then(() => {
+        Alert.alert(
+          'Akun berhasil di hapus!',
+          'Kamu akan diarahkan kembali ke menu utama!',
+          [
+            {
+              text: 'Ok',
+              onPress: () => onAccountDeleted(),
+            },
+          ],
+        );
+      })
+      .catch(e => {
+        Alert.alert('Gagal!', 'Ada masalah tidak diketahui, mohon coba lagi!');
+      });
+  }
+
+  async function onAccountDeleted() {
+    await removeUserSession();
+    signOut();
+  }
 
   // React.useEffect(() => {
   //   console.log(faceImage?.length, bodyImage?.length, ktpImage?.length);
@@ -476,7 +614,7 @@ const DetailCVScreen = ({navigation, route}) => {
                 : IMAGES_RES.girl_head
             }
             style={{height: 152, margin: 4, borderRadius: 4, width: 152}}
-            resizeMode={'contain'}
+            resizeMode={'cover'}
           />
           <Text style={styles.textPhotoInfo}>Upload Foto Wajah</Text>
         </Card>
@@ -500,26 +638,28 @@ const DetailCVScreen = ({navigation, route}) => {
           <Text style={styles.textPhotoInfo}>Upload Foto Full</Text>
         </Card>
       </Row>
-      <Card
-        onPress={() => {
-          setSelectType('ktp');
-          setImagePickerVisible(true);
-        }}
-        style={{
-          height: 148,
-          alignItems: 'center',
-          justifyContent: 'center',
-        }}>
-        {!ktpImage ? (
-          <Text style={styles.textPhotoInfo}>Upload Foto KTP</Text>
-        ) : (
-          <Image
-            source={{uri: `data:image/png;base64,${ktpImage}`}}
-            style={{height: 148, margin: 4, borderRadius: 4, width: '100%'}}
-            resizeMode={'contain'}
-          />
-        )}
-      </Card>
+      {KEY !== 'edit' && (
+        <Card
+          onPress={() => {
+            setSelectType('ktp');
+            setImagePickerVisible(true);
+          }}
+          style={{
+            height: 148,
+            alignItems: 'center',
+            justifyContent: 'center',
+          }}>
+          {!ktpImage ? (
+            <Text style={styles.textPhotoInfo}>Upload Foto KTP</Text>
+          ) : (
+            <Image
+              source={{uri: `data:image/png;base64,${ktpImage}`}}
+              style={{height: 148, margin: 4, borderRadius: 4, width: '100%'}}
+              resizeMode={'contain'}
+            />
+          )}
+        </Card>
+      )}
       <View style={styles.child}>
         {KEY == 'edit' ? (
           <>
@@ -664,20 +804,27 @@ const DetailCVScreen = ({navigation, route}) => {
         <Input
           caption={'Anak ke ( contoh 1 dari 3 )'}
           containerStyle={styles.input}
-          keyboardType={'phone-pad'}
           placeholder={'Anak ke ( contoh 1 dari 3 )'}
           errorMessage={inputError['anak']}
           onChangeText={text => setAnak(text)}
           value={anak}
         />
-        <Dropdown
+        <Input
+          caption={'Suku'}
+          containerStyle={styles.input}
+          placeholder={'Suku'}
+          errorMessage={inputError['suku']}
+          onChangeText={text => setSuku(text)}
+          value={suku}
+        />
+        {/* <Dropdown
           caption={'Suku'}
           style={styles.input}
           data={suku}
           title={'Suku'}
           onItemSelected={item => setSelectedSuku(item)}
           defaultValue={selectedSuku}
-        />
+        /> */}
         <Dropdown
           caption={'Warna Kulit'}
           style={styles.input}
@@ -803,11 +950,22 @@ const DetailCVScreen = ({navigation, route}) => {
       <Text style={styles.textInfo}>Kosongi jika tidak punya</Text> */}
       <View style={{marginTop: 48}}>
         <Button
-          disabled={isButtonDisabled()}
+          disabled={/*isButtonDisabled()*/ false}
           isLoading={isLoading}
           title={KEY == 'edit' ? 'Update CV' : 'Buat CV'}
           onPress={() => _onDoneButtonPressed()}
         />
+
+        {KEY == 'edit' && (
+          <Button
+            disabled={/*isButtonDisabled()*/ false}
+            isLoading={isLoading}
+            buttonStyle={{marginTop: 14}}
+            invert
+            title={'Hapus Akun'}
+            onPress={() => _onDeleteButtonPress()}
+          />
+        )}
       </View>
       <Modal
         type={'popup3b'}
@@ -830,6 +988,7 @@ const DetailCVScreen = ({navigation, route}) => {
           setShowDatePicker(false);
         }}
       />
+      <Modal type={'loading'} visible={isLoading} />
     </ScrollView>
   );
 };
@@ -874,7 +1033,7 @@ const styles = StyleSheet.create({
   textInfo: {
     ...Typo.TextSmallRegular,
     color: Colors.COLOR_ACCENT,
-    marginTop: 4,
+    marginTop: 12,
   },
 
   textPhotoInfo: {

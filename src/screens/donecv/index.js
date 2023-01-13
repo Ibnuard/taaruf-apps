@@ -25,8 +25,7 @@ const DoneCVScreen = ({navigation}) => {
   return (
     <View style={styles.container}>
       <Text style={styles.textTitle}>
-        CV Antum sedang di review oleh Admin dalam 1x24 jam. Antum dapat
-        melakukan edit CV setelah disetujui
+        Selamat CV sudah berhasil dibuat silahkan login.
       </Text>
       <Image source={IMAGES_RES.love_pic} style={{height: 100, width: 100}} />
       <Touchable

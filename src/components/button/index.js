@@ -4,7 +4,7 @@ import {Colors} from '../../styles';
 import styles from './styles';
 
 const Button = ({
-  upperCase = false,
+  upperCase = true,
   isLoading = false,
   disabled = false,
   invert = false,

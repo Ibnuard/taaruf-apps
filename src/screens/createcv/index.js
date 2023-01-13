@@ -47,18 +47,28 @@ const CreateCVScreen = ({navigation, route}) => {
       required: true,
       minMaxChar: [3, 64],
       value: name,
+      caption: 'Nama',
+    },
+    {
+      key: 'domisili',
+      required: true,
+      minMaxChar: [3, 64],
+      value: SELECTED_DOMISILI ?? '',
+      caption: 'Kota domisili',
     },
     {
       key: 'olddomisili',
       required: true,
       minMaxChar: [3, 128],
       value: domisiliOrangTua,
+      caption: 'Domisili orang tua',
     },
     {
       key: 'alamat',
       required: true,
       minMaxChar: [3, 128],
       value: alamat,
+      caption: 'Alamat domisili',
     },
     {
       key: 'noWA',
@@ -66,6 +76,7 @@ const CreateCVScreen = ({navigation, route}) => {
       minMaxChar: [9, 15],
       type: 'phonenumber',
       value: noWA,
+      caption: 'Nomor WA',
     },
     {
       key: 'email',
@@ -73,12 +84,14 @@ const CreateCVScreen = ({navigation, route}) => {
       minMaxChar: [3, 128],
       type: 'email',
       value: email,
+      caption: 'Email',
     },
     {
       key: 'password',
       required: true,
       minMaxChar: [6, 32],
       value: password,
+      caption: 'Password',
     },
   ];
 
@@ -92,7 +105,8 @@ const CreateCVScreen = ({navigation, route}) => {
     const data = {
       gender: mode,
       nama: name,
-      ttl: String(selectedDate),
+      ttl: PARSE_DATE(selectedDate),
+      umur: CHECK_IS_VALID(selectedDate),
       kota: SELECTED_DOMISILI,
       orangtuadom: domisiliOrangTua,
       alamatdom: alamat,
@@ -114,6 +128,8 @@ const CreateCVScreen = ({navigation, route}) => {
         console.log('Not Exist');
       }
     } else {
+      const errorData = Object.keys(errors).map(key => [key, errors[key]]);
+      Alert.alert('Gagal!', errorData[0][1]);
       setIsLoading(false);
     }
   };
@@ -186,6 +202,7 @@ const CreateCVScreen = ({navigation, route}) => {
               editable={false}
               placeholder={'Kota Domisili'}
               value={SELECTED_DOMISILI}
+              errorMessage={inputError['domisili']}
             />
           </Touchable>
           <Input
@@ -234,12 +251,13 @@ const CreateCVScreen = ({navigation, route}) => {
           <View style={{marginTop: 48}}>
             <Button
               disabled={
-                !name.length ||
-                !SELECTED_DOMISILI?.length ||
-                !domisiliOrangTua.length ||
-                !alamat.length ||
-                !noWA.length ||
-                !password.length
+                // !name.length ||
+                // !SELECTED_DOMISILI?.length ||
+                // !domisiliOrangTua.length ||
+                // !alamat.length ||
+                // !noWA.length ||
+                // !password.length
+                false
               }
               title="Lanjutkan"
               isLoading={isLoading}

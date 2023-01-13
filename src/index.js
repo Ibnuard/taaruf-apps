@@ -1,10 +1,15 @@
 import * as React from 'react';
 import {NavigationContainer} from '@react-navigation/native';
-import {AuthStackScreen, MainScreen, SplashStack} from './navigator';
+import {
+  AdminStack,
+  AuthStackScreen,
+  MainScreen,
+  SplashStack,
+} from './navigator';
 import {AuthContext} from './context';
-import {retrieveData} from './utils/store';
-import SplashScreen from './screens/splash';
 import {removeUserSession} from './helpers/storage';
+import {removeData} from './utils/store';
+import {SAVE_ADMIN_FCM} from './helpers/admin';
 
 const App = () => {
   //handle auth flow
@@ -15,24 +20,35 @@ const App = () => {
           return {
             ...prevState,
             userToken: action.token,
+            admin: false,
             isLoading: false,
           };
         case 'SIGN_IN':
           return {
             ...prevState,
             isSignout: false,
+            admin: false,
+            userToken: action.token,
+          };
+        case 'ADMIN':
+          return {
+            ...prevState,
+            isSignout: false,
+            admin: true,
             userToken: action.token,
           };
         case 'SIGN_OUT':
           return {
             ...prevState,
             isSignout: true,
+            admin: false,
             userToken: null,
           };
       }
     },
     {
       isLoading: true,
+      admin: false,
       isSignout: false,
       userToken: null,
     },
@@ -69,8 +85,22 @@ const App = () => {
 
         dispatch({type: 'SIGN_IN', token: 'dummy-auth-token'});
       },
+      admin: async data => {
+        // In a production app, we need to send some data (usually username, password) to server and get a token
+        // We will also need to handle errors if sign in failed
+        // After getting token, we need to persist the token using `SecureStore`
+        // In the example, we'll use a dummy token
+        console.log('ADMIN FCM : ' + data);
+
+        await SAVE_ADMIN_FCM(data).then(() => {
+          console.log('SUCCESS UPDATE ADMIN FCM!');
+        });
+
+        dispatch({type: 'ADMIN', token: 'dummy-auth-token'});
+      },
       signOut: async () => {
         await removeUserSession();
+        await removeData('isAdmin');
         dispatch({type: 'SIGN_OUT'});
       },
       signUp: async data => {
@@ -88,6 +118,10 @@ const App = () => {
         // In the example, we'll use a dummy token
 
         dispatch({type: 'RESTORE_TOKEN', token: data});
+
+        // parseData.token == 'ADMIN'
+        //   ? dispatch({type: 'ADMIN', token: 'ADMIN'})
+        //   : dispatch({type: 'RESTORE_TOKEN', token: data});
       },
     }),
     [],
@@ -96,16 +130,30 @@ const App = () => {
   return (
     <NavigationContainer>
       <AuthContext.Provider value={authContext}>
-        {state.isLoading ? (
+        {state.admin == true ? (
+          <AdminStack />
+        ) : state.isLoading ? (
           <SplashStack />
-        ) : state.userToken == null ? (
-          <AuthStackScreen />
-        ) : (
+        ) : state.userToken ? (
           <MainScreen />
+        ) : (
+          <AuthStackScreen />
         )}
       </AuthContext.Provider>
     </NavigationContainer>
   );
 };
+
+/**
+ {state.isLoading ? (
+          <SplashStack />
+        ) : state.userToken == null ? (
+          <AuthStackScreen />
+        ) : state.admin == true ? (
+          <AdminStack />
+        ) : (
+          <MainScreen />
+        )}
+ */
 
 export default App;

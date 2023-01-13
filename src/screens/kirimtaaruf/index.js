@@ -6,12 +6,15 @@ import {IMAGES_RES} from '../../helpers/images';
 import {
   CHECK_IS_MATCH,
   GET_CV_COUNT_BY_MONTH,
+  GET_IS_ON_TAARUF,
   GET_USER_LIST,
+  IS_HAVE_CHANCE,
+  IS_REJECTED_SEND,
   USER_IS_PREMIUM,
 } from '../../helpers/firebase';
 import {retrieveUserSession} from '../../helpers/storage';
 import NoItemScreen from '../../components/NoItem';
-import {Modal} from '../../components';
+import {Input, Modal} from '../../components';
 
 const KirimTaarufScreen = ({navigation, route}) => {
   const [users, setUsers] = React.useState([]);
@@ -19,6 +22,8 @@ const KirimTaarufScreen = ({navigation, route}) => {
   const [isPremium, setIsPremium] = React.useState(false);
   const [isLoading, setIsLoading] = React.useState(false);
   const [modalVisible, setModalVisible] = React.useState(false);
+  const [inputActive, setInputActive] = React.useState(false);
+  const [keyword, setKeyword] = React.useState('');
 
   const USER = route?.params?.user;
   const FILTER = route?.params?.filter;
@@ -29,7 +34,7 @@ const KirimTaarufScreen = ({navigation, route}) => {
 
   React.useEffect(() => {
     const unsubscribe = navigation.addListener('focus', () => {
-      getAllUsers();
+      getIsOnTaaruf();
       if (FILTER) {
         _handleFilter();
       }
@@ -48,6 +53,25 @@ const KirimTaarufScreen = ({navigation, route}) => {
   //   return unsubscribe;
   // }, [navigation, FILTER]);
 
+  async function getIsOnTaaruf() {
+    setIsLoading(true);
+    //getAllUsers();
+    const data = await GET_IS_ON_TAARUF();
+
+    const completeData = {taaruf: true, ...data[0]};
+
+    if (data.length > 0) {
+      navigation.replace('ProfileDetail', {
+        key: 'ontaaruf',
+        data: completeData,
+        available: available,
+        isPremium: isPremium,
+      });
+    } else {
+      getAllUsers();
+    }
+  }
+
   const _handleFilter = (data = []) => {
     if (FILTER) {
       const filterUmur = FILTER?.umurMinMax;
@@ -57,6 +81,8 @@ const KirimTaarufScreen = ({navigation, route}) => {
           let pendidikanFiltered;
           let statusFiltered;
           let ibadahFiltered;
+          let kulitFiltered;
+          let domisiliFiltered;
 
           const umurFiltered =
             item?.umur >= filterUmur[0] && item?.umur <= filterUmur[1];
@@ -92,13 +118,36 @@ const KirimTaarufScreen = ({navigation, route}) => {
             ibadahFiltered = item?.ibadah == item?.ibadah;
           }
 
+          // if (FILTER?.suku?.length) {
+          //   console.log('suku filter : ' + FILTER?.suku);
+          //   sukuFiltered = item?.suku == FILTER?.suku;
+          // } else {
+          //   sukuFiltered = item?.suku == item?.suku;
+          // }
+
+          if (FILTER?.kulit?.length) {
+            console.log('kulit filter : ' + FILTER?.kulit);
+            kulitFiltered = item?.kulit == FILTER?.kulit;
+          } else {
+            kulitFiltered = item?.kulit == item?.kulit;
+          }
+
+          if (FILTER?.domisili?.length) {
+            console.log('domisili filter : ' + FILTER?.domisili);
+            domisiliFiltered = item?.kota == FILTER?.domisili;
+          } else {
+            domisiliFiltered = item?.kota == item?.kota;
+          }
+
           return (
             umurFiltered &&
             tinggiFiltered &&
             pekerjaanFiltered &&
             pendidikanFiltered &&
             statusFiltered &&
-            ibadahFiltered
+            ibadahFiltered &&
+            kulitFiltered &&
+            domisiliFiltered
           );
         });
 
@@ -106,6 +155,19 @@ const KirimTaarufScreen = ({navigation, route}) => {
       }
     } else {
       return data;
+    }
+  };
+
+  const onSearch = (arr = []) => {
+    if (keyword !== '' && !inputActive) {
+      return arr.filter((item, index) => {
+        return (
+          item?.id.toLowerCase()?.includes(keyword.toLowerCase()) ||
+          item?.nama?.toLowerCase()?.includes(keyword.toLowerCase())
+        );
+      });
+    } else {
+      return arr;
     }
   };
 
@@ -134,9 +196,9 @@ const KirimTaarufScreen = ({navigation, route}) => {
     setUsers(sortedbyDomisili);
 
     const isPremium = await USER_IS_PREMIUM();
-    const chance = await GET_CV_COUNT_BY_MONTH();
+    const chance = await IS_HAVE_CHANCE();
 
-    console.log('CHANCE : ' + chance);
+    console.log('have chance: ' + chance);
 
     if (chance !== null && isPremium !== null) {
       setAvailable(chance);
@@ -178,43 +240,85 @@ const KirimTaarufScreen = ({navigation, route}) => {
 
   async function onCardPress(item) {
     setModalVisible(true);
-    const isMatch = await CHECK_IS_MATCH(item);
+    const data = await GET_IS_ON_TAARUF(item.nomorwa);
+    const isRejected = await IS_REJECTED_SEND(item);
 
-    if (isMatch) {
+    if (isRejected.rejected == true) {
       setModalVisible(false);
       Alert.alert(
-        'Pesan!',
-        'User ini telah mengajukan taaruf ke anda, silahkan cek di Menerima CV!',
-        [{text: 'OK', onPress: () => navigation.navigate('TerimaTaaruf')}],
+        'Taaruf Anda Ditolak',
+        'Alasan : ' +
+          isRejected.reason +
+          '.\n\nAnda dapat mengajukan kembali bulan depan',
       );
-    } else {
+      return;
+    }
+
+    if (data.length > 0) {
+      Alert.alert(
+        'Pemberitahuan',
+        'Pengguna ini sedang ada didalam sesi taaruf dengan pengguna lain!',
+      );
       setModalVisible(false);
-      navigation.navigate('ProfileDetail', {
-        key: 'kirimtaaruf',
-        data: item,
-        available: available,
-      });
+    } else {
+      const isMatch = await CHECK_IS_MATCH(item);
+
+      if (isMatch) {
+        setModalVisible(false);
+        Alert.alert(
+          'Pesan!',
+          'User ini telah mengajukan taaruf ke anda, silahkan cek di Menerima CV!',
+          [
+            {
+              text: 'OK',
+              onPress: () => navigation.navigate('TerimaTaaruf', {user: USER}),
+            },
+          ],
+        );
+      } else {
+        setModalVisible(false);
+        navigation.navigate('ProfileDetail', {
+          key: 'kirimtaaruf',
+          data: item,
+          available: available,
+          isPremium: isPremium,
+        });
+      }
     }
   }
 
   return (
     <View style={styles.container}>
-      {_handleFilter(users).length ? (
-        <FlatList
-          data={_handleFilter(users)}
-          contentContainerStyle={{paddingBottom: 64}}
-          renderItem={({item, index}) => (
-            <PeopleCardList
-              data={item}
-              blur={!isPremium}
-              onPress={
-                () => onCardPress(item)
-                // navigation.navigate('Upgrade')
-              }
-            />
-          )}
-          numColumns={2}
-        />
+      <Input
+        placeholder={'Cari'}
+        containerStyle={{marginBottom: 14}}
+        onFocus={() => setInputActive(true)}
+        onBlur={() => setInputActive(false)}
+        onChangeText={text => setKeyword(text)}
+        showClearButton={keyword}
+        onClear={() => setKeyword('')}
+        value={keyword}
+      />
+      {_handleFilter(onSearch(users)).length ? (
+        <>
+          <FlatList
+            data={_handleFilter(onSearch(users))}
+            contentContainerStyle={{paddingBottom: 64}}
+            extraData={isLoading}
+            renderItem={({item, index}) => (
+              <PeopleCardList
+                data={item}
+                user={USER}
+                showTime
+                onPress={
+                  () => onCardPress(item)
+                  // navigation.navigate('Upgrade')
+                }
+              />
+            )}
+            numColumns={2}
+          />
+        </>
       ) : (
         <NoItemScreen isLoading={isLoading} />
       )}

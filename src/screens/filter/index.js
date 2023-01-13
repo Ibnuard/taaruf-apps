@@ -2,16 +2,20 @@ import * as React from 'react';
 import {View, Text, StyleSheet, ScrollView} from 'react-native';
 import Slider from '@react-native-community/slider';
 import {Colors, Typo} from '../../styles';
-import {Button, Dropdown} from '../../components';
+import {Button, Dropdown, Input} from '../../components';
+import Touchable from '../../components/touchable';
 
 const FilterScreen = ({navigation, route}) => {
   const USER = route?.params?.user;
   const FILTER = route?.params?.filter;
 
   const [umur, setUmur] = React.useState(FILTER?.umurMinMax[0] ?? 18);
-  const [umurMax, setUmurMax] = React.useState(FILTER?.umurMinMax[1] ?? 19);
+  const [umurMax, setUmurMax] = React.useState(FILTER?.umurMinMax[1] ?? 50);
   const [umurMaxMinimumAmount, setUmurMaxMinimumAmount] = React.useState(19);
   const [tinggi, setTinggi] = React.useState(FILTER?.tinggi ?? 0);
+
+  //DOMISILI
+  const SELECTED_DOMISILI = FILTER?.domisili ?? route?.params?.domisili;
 
   //inpput
   const [selectedPekerjaan, setSelectedPekerjaan] = React.useState(
@@ -25,6 +29,9 @@ const FilterScreen = ({navigation, route}) => {
   );
   const [selectedIbadah, setSelectedIbadah] = React.useState(
     FILTER?.ibadah ?? '',
+  );
+  const [selectedWarnaKulit, setSelectedWarnaKulit] = React.useState(
+    FILTER?.kulit ?? '',
   );
 
   const onFilterPressed = () => {
@@ -53,6 +60,12 @@ const FilterScreen = ({navigation, route}) => {
             ? ''
             : selectedIbadah
           : '',
+        kulit: selectedWarnaKulit
+          ? selectedWarnaKulit == 'Semua'
+            ? ''
+            : selectedWarnaKulit
+          : '',
+        domisili: SELECTED_DOMISILI ?? '',
       },
     });
   };
@@ -87,7 +100,7 @@ const FilterScreen = ({navigation, route}) => {
     'S2',
     'S3',
   ];
-  const status = ['Semua', 'Single', 'Duda', 'Menikah'];
+  const status = ['Semua', 'Single', 'Duda', 'Janda'];
   const ibadah_rate = [
     'Semua',
     'Kurang Ibadah',
@@ -95,6 +108,30 @@ const FilterScreen = ({navigation, route}) => {
     'Sering Ibadah',
     'Sangat Sering Ibadah',
   ];
+
+  const suku = [
+    'Semua',
+    'Jawa',
+    'Sunda',
+    'Batak',
+    'Madura',
+    'Betawi',
+    'Minangkabau',
+    'Bugis',
+    'Melayu',
+    'Arab',
+    'Banten',
+    'Bali',
+    'Sasak',
+    'Dayak',
+    'Tionghoa',
+    'Makassar',
+    'Cirebon',
+    'Ambon',
+    'Lampung',
+    'Tolaki',
+  ];
+  const skin = ['Semua', 'Putih', 'Kuning Langsat', 'Coklat', 'Hitam'];
 
   return (
     <ScrollView
@@ -172,6 +209,24 @@ const FilterScreen = ({navigation, route}) => {
         onItemSelected={item => setSelectedIbadah(item)}
         defaultValue={selectedIbadah}
       />
+      <Dropdown
+        caption={'Warna Kulit'}
+        style={styles.input}
+        data={skin}
+        title={'Semua'}
+        onItemSelected={item => setSelectedWarnaKulit(item)}
+        defaultValue={selectedWarnaKulit}
+      />
+      <Touchable
+        onPress={() => navigation.navigate('Domisili', {fromFilter: true})}>
+        <Input
+          caption={'Kota Domisili'}
+          containerStyle={styles.input}
+          editable={false}
+          placeholder={'Kota Domisili'}
+          value={SELECTED_DOMISILI}
+        />
+      </Touchable>
       <View style={{marginTop: 32}}>
         <Button title="Terapkan Filter" onPress={() => onFilterPressed()} />
         <View style={{marginTop: 14}} />

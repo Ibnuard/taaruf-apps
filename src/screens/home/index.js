@@ -1,5 +1,13 @@
 import * as React from 'react';
-import {View, Text, Image, StyleSheet, StatusBar} from 'react-native';
+import {
+  View,
+  Text,
+  Image,
+  StyleSheet,
+  StatusBar,
+  ScrollView,
+  Dimensions,
+} from 'react-native';
 import {Button, Card, Modal, Input, Row} from '../../components';
 import Touchable from '../../components/touchable';
 import {AuthContext} from '../../context';
@@ -7,9 +15,17 @@ import {IMAGES_RES} from '../../helpers/images';
 import {Colors, Typo} from '../../styles';
 import Icon from 'react-native-vector-icons/AntDesign';
 import {retrieveUserSession} from '../../helpers/storage';
+import Carousel from 'react-native-reanimated-carousel';
+import {GET_BANNER} from '../../helpers/admin';
+import {USER_IS_PREMIUM} from '../../helpers/firebase';
+import {GestureHandlerRootView} from 'react-native-gesture-handler';
 
 const HomeScreen = ({navigation}) => {
   const [user, setUser] = React.useState();
+  const [banners, setBanners] = React.useState([]);
+  const [isPremium, setIsPremium] = React.useState(false);
+
+  const {width} = Dimensions.get('window');
 
   React.useEffect(() => {
     getUserData();
@@ -17,14 +33,67 @@ const HomeScreen = ({navigation}) => {
 
   const getUserData = async () => {
     const user = await retrieveUserSession();
+    const premium = await USER_IS_PREMIUM();
 
     const parsed = JSON.parse(user);
 
     setUser(parsed);
+
+    setIsPremium(premium);
+
+    //banner
+    const banner = await GET_BANNER();
+
+    if (banner) {
+      setBanners(banner);
+    }
   };
 
+  const MENU = [
+    {
+      title: 'Pengajuan Taaruf',
+      desc: 'Silahkan ajukan CV untuk taaruf',
+      icon: IMAGES_RES.kirimTaaruf,
+      onpress: () => navigation.navigate('KirimTaaruf', {user: user}),
+    },
+    {
+      title: 'Menerima Taaruf',
+      desc: 'Daftar CV yang diajukan',
+      icon: IMAGES_RES.terimaTaaruf,
+      onpress: () => navigation.navigate('TerimaTaaruf', {user: user}),
+    },
+    {
+      title: 'Daftar CV Terkirim',
+      desc: 'Daftar CV yang sudah dikirim',
+      icon: IMAGES_RES.sended,
+      onpress: () => navigation.navigate('CVTerkirim'),
+    },
+    {
+      title: 'Prosedur',
+      desc: 'Menjelaskan alur proses aplikasi ini',
+      icon: IMAGES_RES.gear,
+      onpress: () => navigation.navigate('Prosedur'),
+    },
+    {
+      title: 'Informasi',
+      desc: 'Pertanyaan yang sering ditanyakan',
+      icon: IMAGES_RES.info,
+      onpress: () => navigation.navigate('Setting'),
+    },
+    !isPremium && {
+      title: 'Daftar Premium',
+      desc: 'Daftar menjadi anggota premium',
+      icon: IMAGES_RES.premium,
+      onpress: () => navigation.navigate('Upgrade', {user: user}),
+    },
+  ];
+
   return (
-    <View style={styles.container}>
+    <ScrollView
+      showsVerticalScrollIndicator={false}
+      style={styles.container}
+      nestedScrollEnabled
+      contentContainerStyle={{paddingBottom: 60}}>
       <StatusBar backgroundColor={Colors.COLOR_STATUSBAR} />
       <Image
         source={IMAGES_RES.wave_background}
@@ -39,63 +108,88 @@ const HomeScreen = ({navigation}) => {
           alignItems: 'center',
           paddingHorizontal: 14,
         }}>
+        <View style={{flex: 1}}>
+          <Touchable
+            style={{width: 36}}
+            onPress={() => navigation.jumpTo('Profile')}>
+            <Image
+              source={{uri: `data:image/png;base64,${user?.fotowajah}`}}
+              style={{
+                height: 36,
+                width: 36,
+                borderRadius: 28,
+                backgroundColor: 'white',
+              }}
+            />
+          </Touchable>
+        </View>
         <Touchable
-          style={{flex: 1}}
-          onPress={() => navigation.jumpTo('Profile')}>
-          <Image
-            source={{uri: `data:image/png;base64,${user?.fotowajah}`}}
-            style={{
-              height: 36,
-              width: 36,
-              borderRadius: 28,
-              backgroundColor: 'white',
-            }}
-          />
-        </Touchable>
-        <Touchable onPress={() => navigation.navigate('Favorite')}>
+          style={{marginHorizontal: 14}}
+          onPress={() => navigation.navigate('Faving')}>
           <Icon name="heart" color={Colors.COLOR_WHITE} size={20} />
         </Touchable>
       </View>
-      <View style={{paddingHorizontal: 14}}>
-        <Card>
-          <Touchable
-            onPress={() => navigation.navigate('KirimTaaruf', {user: user})}>
-            <Row>
+      <GestureHandlerRootView>
+        <Carousel
+          loop={true}
+          autoPlay={true}
+          style={{
+            width: width,
+            height: 200,
+            marginTop: -14,
+          }}
+          width={width}
+          data={banners}
+          panGestureHandlerProps={{
+            activeOffsetX: [-10, 10],
+          }}
+          mode="parallax"
+          modeConfig={{
+            parallaxScrollingScale: 0.9,
+            parallaxScrollingOffset: 50,
+          }}
+          renderItem={({item, index}) => {
+            return (
               <Image
-                source={IMAGES_RES.kirimTaaruf}
-                style={{width: 48, height: 48, marginRight: 18}}
-                resizeMode={'contain'}
+                style={{
+                  height: 200,
+                  width: '100%',
+                  backgroundColor: Colors.COLOR_LIGHT_GRAY,
+                  borderRadius: 8,
+                }}
+                source={{uri: `data:image/png;base64,${item}`}}
               />
-              <View style={{flex: 1}}>
-                <Text style={styles.textTitle}>Pengajuan Taaruf</Text>
-                <Text style={styles.textDesc}>
-                  Antum mengajukan CV ke akhwat
-                </Text>
-              </View>
-            </Row>
-          </Touchable>
-        </Card>
+            );
+          }}
+          scrollAnimationDuration={1500}
+          autoPlayInterval={5000}
+        />
+      </GestureHandlerRootView>
 
-        <Card style={{marginTop: 14}}>
-          <Touchable
-            onPress={() => navigation.navigate('TerimaTaaruf', {user: user})}>
-            <Row>
-              <Image
-                source={IMAGES_RES.terimaTaaruf}
-                style={{width: 48, height: 48, marginRight: 18}}
-                resizeMode={'contain'}
-              />
-              <View style={{flex: 1}}>
-                <Text style={styles.textTitle}>Menerima Taaruf</Text>
-                <Text style={styles.textDesc}>
-                  Daftar CV yang diajukan akhwat ke antum
-                </Text>
-              </View>
-            </Row>
-          </Touchable>
-        </Card>
+      <View style={{paddingHorizontal: 14}}>
+        {MENU.map((item, index) => {
+          return (
+            item && (
+              <Card style={{marginTop: 14}} key={index}>
+                <Touchable onPress={() => item.onpress()}>
+                  <Row>
+                    <Image
+                      source={item?.icon}
+                      style={{width: 48, height: 48, marginRight: 18}}
+                      resizeMode={'contain'}
+                    />
+                    <View style={{flex: 1}}>
+                      <Text style={styles.textTitle}>{item?.title}</Text>
+                      <Text style={styles.textDesc}>{item?.desc}</Text>
+                    </View>
+                  </Row>
+                </Touchable>
+              </Card>
+            )
+          );
+        })}
       </View>
-    </View>
+    </ScrollView>
   );
 };
 

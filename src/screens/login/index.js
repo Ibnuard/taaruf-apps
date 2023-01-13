@@ -3,18 +3,54 @@ import {View, Text, Image, StyleSheet, StatusBar, Alert} from 'react-native';
 import {Button, Card, Modal, Input, Row} from '../../components';
 import Touchable from '../../components/touchable';
 import {AuthContext} from '../../context';
-import {USER_LOGIN, USER_REGISTER} from '../../helpers/firebase';
+import {
+  UPDATE_LAST_ONLINE,
+  USER_GET_ADMIN_INFO,
+  USER_LOGIN,
+  USER_REGISTER,
+} from '../../helpers/firebase';
 import {IMAGES_RES} from '../../helpers/images';
 import {storeUserSession} from '../../helpers/storage';
 import {Colors, Typo} from '../../styles';
+import {retrieveData, storeData} from '../../utils/store';
+import messaging from '@react-native-firebase/messaging';
 
 const LoginScreen = ({navigation}) => {
   const [nomor, setNomor] = React.useState('');
   const [pw, setPW] = React.useState('');
+  const [adminData, setAdminData] = React.useState({no: '', pw: ''});
 
   const [isLoading, setIsLoading] = React.useState(false);
 
-  const {signIn} = React.useContext(AuthContext);
+  const {signIn, admin} = React.useContext(AuthContext);
+
+  // React.useLayoutEffect(() => {
+  //   checkIsAdmin();
+  // }, []);
+
+  React.useEffect(() => {
+    const unsubscribe = navigation.addListener('focus', () => {
+      getAdminInfo();
+    });
+
+    return unsubscribe;
+  }, [navigation]);
+
+  // async function checkIsAdmin() {
+  //   const isAdmin = await retrieveData('isAdmin', false);
+
+  //   if (isAdmin) {
+  //     admin();
+  //   }
+  // }
+
+  async function getAdminInfo() {
+    const data = await USER_GET_ADMIN_INFO();
+
+    if (data) {
+      setAdminData({no: data?.loginNumber, pw: data?.loginPassword});
+    }
+  }
 
   const _userLogin = async () => {
     setIsLoading(true);
@@ -23,19 +59,29 @@ const LoginScreen = ({navigation}) => {
       password: pw,
     };
 
-    const login = await USER_LOGIN(data);
-
-    if (login == 'NOT_USER') {
-      setIsLoading(false);
-      Alert.alert('Gagal Masuk', 'User tidak ditemukan!');
-    } else if (login == 'PASSWORD_INVALID') {
-      setIsLoading(false);
-      Alert.alert('Gagal Masuk', 'Kata Sandi salah!');
+    if (nomor == adminData.no && pw == adminData.pw) {
+      console.log('login admin');
+      await storeData('isAdmin', 'true', false);
+      const token = await messaging().getToken();
+      admin(token);
     } else {
-      setIsLoading(false);
-      await storeUserSession(login);
+      console.log('Login user!');
+      const login = await USER_LOGIN(data);
 
-      signIn();
+      if (login == 'NOT_USER') {
+        setIsLoading(false);
+        Alert.alert('Gagal Masuk', 'User tidak ditemukan!');
+      } else if (login == 'PASSWORD_INVALID') {
+        setIsLoading(false);
+        Alert.alert('Gagal Masuk', 'Kata Sandi salah!');
+      } else {
+        setIsLoading(false);
+        const token = await retrieveData('fcmToken');
+        await storeUserSession({token: token, ...login});
+        await UPDATE_LAST_ONLINE(nomor);
+
+        signIn();
+      }
     }
   };
 
@@ -48,10 +94,10 @@ const LoginScreen = ({navigation}) => {
         resizeMode={'stretch'}
       />
       <View style={styles.child}>
-        <Text style={styles.textLogin}>Masuk</Text>
+        <Text style={styles.textLogin}>Login</Text>
         <Text style={styles.textDesc}>
-          Mencari Cinta Sejati adalah aplikasi pencari jodoh dengan jalan
-          ta'aruf silahkan buat CV atau login untuk yang sudah membuat CV.
+          Mungkinkan jodoh anda di sini ? Ayo dapatkan jodoh dengan jalan
+          ta'aruf silahkan buat CV atau login
         </Text>
         <View style={styles.inputContainer}>
           <Input
