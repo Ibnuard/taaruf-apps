@@ -887,13 +887,15 @@ const ProfileScreen = ({navigation, route}) => {
                   onPress={() => onPokeButtonPressed()}
                 />
               ) : (
-                <Button
-                  disabled={taarufed ? false : !firstQ || !secondQ || !thirdQ}
-                  isLoading={buttonId == 'taaruf' ? isLoading : false}
-                  title={'Ajukan Taaruf'}
-                  buttonStyle={{flex: 1}}
-                  onPress={() => onSendTaarufButtonPressed()}
-                />
+                !accepted && (
+                  <Button
+                    disabled={taarufed ? false : !firstQ || !secondQ || !thirdQ}
+                    isLoading={buttonId == 'taaruf' ? isLoading : false}
+                    title={'Ajukan Taaruf'}
+                    buttonStyle={{flex: 1}}
+                    onPress={() => onSendTaarufButtonPressed()}
+                  />
+                )
               )}
             </View>
           ) : (
